@@ -10,13 +10,11 @@ import com.yeepay.g3.facade.yop.ca.enums.DigestAlgEnum;
 import com.yeepay.g3.frame.yop.ca.DigitalEnvelopeUtils;
 import com.yeepay.g3.frame.yop.ca.rsa.RSAKeyUtils;
 import com.yeepay.g3.frame.yop.ca.utils.Exceptions;
-import com.yeepay.g3.sdk.yop.enums.FormatType;
 import com.yeepay.g3.sdk.yop.enums.HttpMethodType;
 import com.yeepay.g3.sdk.yop.exception.YopClientException;
 import com.yeepay.g3.sdk.yop.http.Headers;
 import com.yeepay.g3.sdk.yop.http.HttpUtils;
 import com.yeepay.g3.sdk.yop.unmarshaller.YopMarshallerUtils;
-import com.yeepay.g3.sdk.yop.utils.Assert;
 import com.yeepay.g3.sdk.yop.utils.DateUtils;
 import com.yeepay.g3.sdk.yop.utils.InternalConfig;
 import org.apache.commons.lang3.StringUtils;
@@ -24,15 +22,11 @@ import org.apache.log4j.Logger;
 import org.springframework.http.HttpEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
 
-import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.spec.InvalidKeySpecException;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -44,13 +38,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * @author wang.bao
  * @version 1.0
  */
-public class YopClient3 {
+public class YopClient3 extends YopBaseClient {
 
     protected static final Logger logger = Logger.getLogger(YopClient3.class);
-
-    protected static RestTemplate restTemplate = new YopRestTemplate();
-
-    protected static Map<String, List<String>> uriTemplateCache = new HashMap<String, List<String>>();
 
     private static final Set<String> defaultHeadersToSign = Sets.newHashSet();
     private static final Joiner headerJoiner = Joiner.on('\n');
@@ -88,13 +78,13 @@ public class YopClient3 {
      * @return 字符串形式的响应
      */
     public static String postRsaString(String methodOrUri, YopRequest request) {
+        logger.debug(request.toQueryString());
         String serverUrl = richRequest(HttpMethodType.POST, methodOrUri,
                 request);
-        logger.info("signature:" + request.getParamValue(YopConstants.SIGN));
         request.setAbsoluteURL(serverUrl);
 
         String appKey = request.getAppKey();
-        String timestamp = DateUtils.formatAlternateIso8601Date(new Date());
+        String timestamp = DateUtils.formatCompressedIso8601Timestamp(new Date().getTime());
         InternalConfig internalConfig = InternalConfig.Factory.getInternalConfig();
         String protocolVersion = internalConfig.getProtocolVersion();
 
@@ -189,90 +179,11 @@ public class YopClient3 {
                 continue;
             }
 
-            parameterStrings.add(normalize(key) + '=' + normalize(entry.getValue()));
+            parameterStrings.add(HttpUtils.normalize(key) + '=' + HttpUtils.normalize(entry.getValue()));
         }
         Collections.sort(parameterStrings);
 
         return queryStringJoiner.join(parameterStrings);
-    }
-
-
-    private static BitSet URI_UNRESERVED_CHARACTERS = new BitSet();
-    private static String[] PERCENT_ENCODED_STRINGS = new String[256];
-
-    static {
-        for (int i = 'a'; i <= 'z'; i++) {
-            URI_UNRESERVED_CHARACTERS.set(i);
-        }
-        for (int i = 'A'; i <= 'Z'; i++) {
-            URI_UNRESERVED_CHARACTERS.set(i);
-        }
-        for (int i = '0'; i <= '9'; i++) {
-            URI_UNRESERVED_CHARACTERS.set(i);
-        }
-        URI_UNRESERVED_CHARACTERS.set('-');
-        URI_UNRESERVED_CHARACTERS.set('.');
-        URI_UNRESERVED_CHARACTERS.set('_');
-        URI_UNRESERVED_CHARACTERS.set('~');
-
-        for (int i = 0; i < PERCENT_ENCODED_STRINGS.length; ++i) {
-            PERCENT_ENCODED_STRINGS[i] = String.format("%%%02X", i);
-        }
-    }
-
-    public static String normalize(String value) {
-        try {
-            StringBuilder builder = new StringBuilder();
-            for (byte b : value.getBytes(YopConstants.ENCODING)) {
-                int bl = b & 0xFF;
-                if (URI_UNRESERVED_CHARACTERS.get(bl)) {
-                    builder.append((char) b);
-                } else {
-                    builder.append(PERCENT_ENCODED_STRINGS[bl]);
-                }
-            }
-            return builder.toString();
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static RestTemplate getRestTemplate(YopRequest request) {
-        if (null != request.getConnectTimeout() || null != request.getReadTimeout()) {
-            int connectTimeout = null != request.getConnectTimeout() ? request.getConnectTimeout().intValue() : YopConfig.getConnectTimeout();
-            int readTimeout = null != request.getReadTimeout() ? request.getReadTimeout().intValue() : YopConfig.getReadTimeout();
-            return new YopRestTemplate(connectTimeout, readTimeout);
-        } else {
-            return restTemplate;
-        }
-    }
-
-    /**
-     * 自动补全请求
-     */
-    protected static String richRequest(HttpMethodType type,
-                                        String methodOrUri, YopRequest request) {
-        Assert.notNull(methodOrUri, "method name or rest uri");
-        if (methodOrUri.startsWith(request.getServerRoot())) {
-            methodOrUri = methodOrUri.substring(request.getServerRoot()
-                    .length() + 1);
-        }
-        boolean isRest = methodOrUri.startsWith("/rest/");
-        request.setRest(isRest);
-        String serverUrl = request.getServerRoot();
-        if (isRest) {
-            methodOrUri = mergeTplUri(methodOrUri, request);
-            serverUrl += methodOrUri;
-            String version = StringUtils.substringBetween(methodOrUri,
-                    "/rest/v", "/");
-            if (StringUtils.isNotBlank(version)) {
-                request.setVersion(version);
-            }
-        } else {
-            serverUrl += "/command?" + YopConstants.METHOD + "=" + methodOrUri;
-        }
-        request.setMethod(methodOrUri);
-        return serverUrl;
     }
 
     protected static void handleRsaResult(YopRequest request,
@@ -313,59 +224,6 @@ public class YopClient3 {
         DigitalEnvelopeUtils.verify(digitalSignatureDTO, internalConfig.getYopPublicKey(CertTypeEnum.RSA2048));
         return true;
     }
-
-    /**
-     * 从完整返回结果中获取业务结果，主要用于验证返回结果签名
-     */
-    private static String getBizResult(String content, FormatType format) {
-        if (StringUtils.isBlank(content)) {
-            return content;
-        }
-        switch (format) {
-            case json:
-                String jsonStr = StringUtils.substringAfter(content,
-                        "\"result\" : ");
-                jsonStr = StringUtils.substringBeforeLast(jsonStr, "\"ts\"");
-                // 去除逗号
-                jsonStr = StringUtils.substringBeforeLast(jsonStr, ",");
-                return jsonStr;
-            default:
-                String xmlStr = StringUtils.substringAfter(content, "</state>");
-                xmlStr = StringUtils.substringBeforeLast(xmlStr, "<ts>");
-                return xmlStr;
-        }
-    }
-
-    /**
-     * 模板URL自动补全参数
-     *
-     * @param tplUri
-     * @param request
-     * @return
-     */
-    protected static String mergeTplUri(String tplUri, YopRequest request) {
-        String uri = tplUri;
-        if (tplUri.indexOf("{") < 0) {
-            return uri;
-        }
-        List<String> dynaParamNames = uriTemplateCache.get(tplUri);
-        if (dynaParamNames == null) {
-            dynaParamNames = new LinkedList<String>();
-            Pattern pattern = Pattern.compile("\\{([^\\}]+)\\}");
-            Matcher matcher = pattern.matcher(tplUri);
-            while (matcher.find()) {
-                dynaParamNames.add(matcher.group(1));
-            }
-            uriTemplateCache.put(tplUri, dynaParamNames);
-        }
-        for (String dynaParamName : dynaParamNames) {
-            String value = request.removeParam(dynaParamName);
-            Assert.notNull(value, dynaParamName + " must be specified");
-            uri = uri.replace("{" + dynaParamName + "}", value);
-        }
-        return uri;
-    }
-
 
     private static String getCanonicalHeaders(SortedMap<String, String> headers) {
         if (headers.isEmpty()) {

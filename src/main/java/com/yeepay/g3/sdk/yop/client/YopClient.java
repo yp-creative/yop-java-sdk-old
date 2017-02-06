@@ -4,7 +4,6 @@ import com.yeepay.g3.sdk.yop.encrypt.AESEncrypter;
 import com.yeepay.g3.sdk.yop.encrypt.BlowfishEncrypter;
 import com.yeepay.g3.sdk.yop.encrypt.Digest;
 import com.yeepay.g3.sdk.yop.encrypt.YopSignUtils;
-import com.yeepay.g3.sdk.yop.enums.FormatType;
 import com.yeepay.g3.sdk.yop.enums.HttpMethodType;
 import com.yeepay.g3.sdk.yop.unmarshaller.YopMarshallerUtils;
 import com.yeepay.g3.sdk.yop.utils.Assert;
@@ -14,13 +13,10 @@ import org.apache.log4j.Logger;
 import org.springframework.core.io.UrlResource;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
 import java.net.URLEncoder;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * <pre>
@@ -30,15 +26,9 @@ import java.util.regex.Pattern;
  * @author wang.bao
  * @version 1.0
  */
-public class YopClient {
+public class YopClient extends YopBaseClient {
 
     protected static final Logger logger = Logger.getLogger(YopClient.class);
-
-    protected static RestTemplate restTemplate = new YopRestTemplate();
-
-    protected static Map<String, List<String>> uriTemplateCache = new HashMap<String, List<String>>();
-
-//    private static JacksonJsonMarshaller jm = new JacksonJsonMarshaller();
 
     /**
      * 发起post请求，以YopResponse对象返回
@@ -164,16 +154,6 @@ public class YopClient {
         return content;
     }
 
-    private static RestTemplate getRestTemplate(YopRequest request) {
-        if (null != request.getConnectTimeout() || null != request.getReadTimeout()) {
-            int connectTimeout = null != request.getConnectTimeout() ? request.getConnectTimeout().intValue() : YopConfig.getConnectTimeout();
-            int readTimeout = null != request.getReadTimeout() ? request.getReadTimeout().intValue() : YopConfig.getReadTimeout();
-            return new YopRestTemplate(connectTimeout, readTimeout);
-        } else {
-            return restTemplate;
-        }
-    }
-
     /**
      * 简单校验及请求签名
      */
@@ -291,34 +271,6 @@ public class YopClient {
         return StringUtils.join(list, ",");
     }
 
-    /**
-     * 自动补全请求
-     */
-    protected static String richRequest(HttpMethodType type,
-                                        String methodOrUri, YopRequest request) {
-        Assert.notNull(methodOrUri, "method name or rest uri");
-        if (methodOrUri.startsWith(request.getServerRoot())) {
-            methodOrUri = methodOrUri.substring(request.getServerRoot()
-                    .length() + 1);
-        }
-        boolean isRest = methodOrUri.startsWith("/rest/");
-        request.setRest(isRest);
-        String serverUrl = request.getServerRoot();
-        if (isRest) {
-            methodOrUri = mergeTplUri(methodOrUri, request);
-            serverUrl += methodOrUri;
-            String version = StringUtils.substringBetween(methodOrUri,
-                    "/rest/v", "/");
-            if (StringUtils.isNotBlank(version)) {
-                request.setVersion(version);
-            }
-        } else {
-            serverUrl += "/command?" + YopConstants.METHOD + "=" + methodOrUri;
-        }
-        request.setMethod(methodOrUri);
-        return serverUrl;
-    }
-
     protected static void handleResult(YopRequest request,
                                        YopResponse response, String content) {
         response.setFormat(request.getFormat());
@@ -351,28 +303,6 @@ public class YopClient {
     }
 
     /**
-     * 从完整返回结果中获取业务结果，主要用于验证返回结果签名
-     */
-    private static String getBizResult(String content, FormatType format) {
-        if (StringUtils.isBlank(content)) {
-            return content;
-        }
-        switch (format) {
-            case json:
-                String jsonStr = StringUtils.substringAfter(content,
-                        "\"result\" : ");
-                jsonStr = StringUtils.substringBeforeLast(jsonStr, "\"ts\"");
-                // 去除逗号
-                jsonStr = StringUtils.substringBeforeLast(jsonStr, ",");
-                return jsonStr;
-            default:
-                String xmlStr = StringUtils.substringAfter(content, "</state>");
-                xmlStr = StringUtils.substringBeforeLast(xmlStr, "<ts>");
-                return xmlStr;
-        }
-    }
-
-    /**
      * 帮助方法，构建get类型的完整请求路径
      *
      * @param methodOrUri
@@ -399,36 +329,6 @@ public class YopClient {
         richRequest(HttpMethodType.GET, methodOrUri, request);
         signAndEncrypt(request);
         return request.getParamValue(YopConstants.SIGN);
-    }
-
-    /**
-     * 模板URL自动补全参数
-     *
-     * @param tplUri
-     * @param request
-     * @return
-     */
-    protected static String mergeTplUri(String tplUri, YopRequest request) {
-        String uri = tplUri;
-        if (tplUri.indexOf("{") < 0) {
-            return uri;
-        }
-        List<String> dynaParamNames = uriTemplateCache.get(tplUri);
-        if (dynaParamNames == null) {
-            dynaParamNames = new LinkedList<String>();
-            Pattern pattern = Pattern.compile("\\{([^\\}]+)\\}");
-            Matcher matcher = pattern.matcher(tplUri);
-            while (matcher.find()) {
-                dynaParamNames.add(matcher.group(1));
-            }
-            uriTemplateCache.put(tplUri, dynaParamNames);
-        }
-        for (String dynaParamName : dynaParamNames) {
-            String value = request.removeParam(dynaParamName);
-            Assert.notNull(value, dynaParamName + " must be specified");
-            uri = uri.replace("{" + dynaParamName + "}", value);
-        }
-        return uri;
     }
 
     public static String acceptNotificationAsJson(String key, String response) {
