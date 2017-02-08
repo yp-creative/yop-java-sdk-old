@@ -23,7 +23,8 @@ import java.util.List;
 public class QaDemo {
 
     //    private static final String BASE_URL = "http://10.151.30.87:8064/yop-center/";
-    private static final String BASE_URL = "http://10.151.30.88:8064/yop-center/";
+//    private static final String BASE_URL = "http://10.151.30.88:8064/yop-center/";
+    private static final String BASE_URL = "http://172.17.102.175:8064/yop-center/";
 
     private static final String[] APP_KEYS = {"yop-boss", "jinkela"};
     private static final String[] APP_SECRETS = {"PdZ74F6sxapgOWJ31QKmYw==", "cAFj+DxhpeMo8afn7s0z5w=="};
@@ -37,7 +38,7 @@ public class QaDemo {
     public void testIdCard() throws Exception {
         int i = 1;
         YopRequest request = new YopRequest(null, APP_SECRETS[i], BASE_URL);
-//        YopRequest request = new YopRequest(null, "cAFj+DxhpeMo8afn7s0z5w==", "http://10.151.30.88:8064/yop-center/");
+//        YopRequest request = new YopRequest(null, "cAFj+DxhpeMo8afn7s0z5w==", BASE_URL);
         request.setEncrypt(true);
         request.setSignRet(true);
         request.setSignAlg("sha-256");
@@ -68,7 +69,7 @@ public class QaDemo {
     public void v() {
         YopRequest request = new YopRequest(null,
                 "8intulgnqibv77f1t8q9j0hhlkiy6ei6c82sknv63vib3zhgyzl8uif9ky7a",
-                "http://open.yeepay.com:8064/yop-center");
+                BASE_URL);
         request.setEncrypt(true);
         request.setSignRet(true);
         request.addParam("customerNo", "10040011444");
@@ -82,7 +83,7 @@ public class QaDemo {
     @Test
     public void testEnterprise() throws Exception {
         YopRequest request = new YopRequest("yop-boss",
-                "QFdODaBYBiVuLpP+sbyH+g==", "http://open.yeepay.com:8064/yop-center/");
+                "QFdODaBYBiVuLpP+sbyH+g==", BASE_URL);
         request.setEncrypt(false);
         request.setSignRet(true);
         request.addParam("appKey", "yop-boss");//这个写YOP就可以了
@@ -101,7 +102,7 @@ public class QaDemo {
     public void testName1() throws Exception {
         YopRequest request = new YopRequest(null,
                 "8intulgnqibv77f1t8q9j0hhlkiy6ei6c82sknv63vib3zhgyzl8uif9ky7a",
-                "http://open.yeepay.com:8064/yop-center");
+                BASE_URL);
         request.setEncrypt(true);
         request.setSignRet(true);
         request.addParam("customerNo", "10040011444");
@@ -118,7 +119,7 @@ public class QaDemo {
     public void testName2() throws Exception {
         YopRequest request = new YopRequest(null,
                 "8intulgnqibv77f1t8q9j0hhlkiy6ei6c82sknv63vib3zhgyzl8uif9ky7a",
-                "http://open.yeepay.com:8064/yop-center");
+                BASE_URL);
         request.setEncrypt(true);
         request.setSignRet(true);
         request.addParam("customerNo", "10040011444");
@@ -143,7 +144,7 @@ public class QaDemo {
     public void test1() {
         YopRequest request = new YopRequest(null,
                 "s5KI8r0920SQ339oVlFE6eWJ0yk019SD7015nw39iaXJp10856z0C1d7JV5l",
-                "https://open.yeepay.com:8064/yop-center/");
+                BASE_URL);
         request.setEncrypt(true);
         request.setSignRet(true);
         request.addParam("customerNo", "10011830665");
@@ -162,7 +163,7 @@ public class QaDemo {
     public void testSendSms() {
         YopConfig.setAppKey("TestAppKey002");//yop应用
         YopConfig.setAesSecretKey("TestAppSecret002");//yop应用密钥，需要和短信通知应用的密钥保持一致才行，否则验证签名不通过
-        YopConfig.setServerRoot("http://open.yeepay.com:8064/yop-center");
+        YopConfig.setServerRoot(BASE_URL);
         YopRequest request = new YopRequest();
         // request.setSignAlg("SHA1");
         request.setSignAlg("MD5");//具体看api签名算法而定
@@ -186,7 +187,7 @@ public class QaDemo {
     public void testSendSmsQa() {
         YopConfig.setAppKey("openSmsApi");//yop应用
         YopConfig.setAesSecretKey("1234554321");//yop应用密钥，需要和短信通知应用的密钥保持一致才行，否则验证签名不通过
-        YopConfig.setServerRoot("http://open.yeepay.com:8064/yop-center/");
+        YopConfig.setServerRoot(BASE_URL);
         YopRequest request = new YopRequest();
         request.setSignAlg("MD5");//具体看api签名算法而定
         //request.setEncrypt(true);
@@ -239,7 +240,7 @@ public class QaDemo {
     public void testValidate() {
         YopRequest request = new YopRequest(null,
                 "cGB2CeC3YmwSWGoVz0kAvQ==",
-                "http://localhost:8064/yop-center/");
+                BASE_URL);
         request.setEncrypt(false);
         request.setSignRet(true);
         request.setSignAlg("sha-256");
@@ -256,7 +257,7 @@ public class QaDemo {
         request.addParam("idcard", "370982199101186");
 
 
-        YopResponse response = YopClient.get("/yop-center/rest/v1.0/kong/validator", request);
+        YopResponse response = YopClient.get("/rest/v1.0/kong/validator", request);
         System.out.println(response.toString());
     }
 
@@ -264,7 +265,7 @@ public class QaDemo {
     public void testWhiteList() throws Exception {
         YopRequest request = new YopRequest(null,
                 "cGB2CeC3YmwSWGoVz0kAvQ==",
-                "http://localhost:8064/yop-center");
+                BASE_URL);
         request.setEncrypt(false);
         request.setSignRet(true);
         request.addParam("appKey", "yop-boss");
@@ -279,15 +280,15 @@ public class QaDemo {
 
     @Test
     public void testCreateToken() {
-        YopRequest request = new YopRequest(null, "cGB2CeC3YmwSWGoVz0kAvQ==", "http://127.0.0.1:7777/yop-center");
-//                YopRequest request = new YopRequest(null, "cGB2CeC3YmwSWGoVz0kAvQ==", "http://172.17.102.177:7777/yop-center");
+        YopRequest request = new YopRequest(null, "cGB2CeC3YmwSWGoVz0kAvQ==", BASE_URL);
+//                YopRequest request = new YopRequest(null, "cGB2CeC3YmwSWGoVz0kAvQ==", BASE_URL);
 //        YopRequest request = new YopRequest(null,
 //                "cGB2CeC3YmwSWGoVz0kAvQ==",
-//                "http://localhost:8064/yop-center");
-//        YopRequest request = new YopRequest(null, "8intulgnqibv77f1t8q9j0hhlkiy6ei6c82sknv63vib3zhgyzl8uif9ky7a", "http://127.0.0.1:7777");
+//                BASE_URL);
+//        YopRequest request = new YopRequest(null, "8intulgnqibv77f1t8q9j0hhlkiy6ei6c82sknv63vib3zhgyzl8uif9ky7a", BASE_URL);
 //        YopRequest request = new YopRequest(null,
 //                "8intulgnqibv77f1t8q9j0hhlkiy6ei6c82sknv63vib3zhgyzl8uif9ky7a",
-//                "http://localhost:8064/yop-center");
+//                BASE_URL);
         request.setEncrypt(true);
         request.setSignRet(true);
 //        request.setSignAlg("SHA1");
@@ -305,15 +306,15 @@ public class QaDemo {
 
     @Test
     public void testAmount() {
-        YopRequest request = new YopRequest(null, "cGB2CeC3YmwSWGoVz0kAvQ==", "http://127.0.0.1:8064/yop-center");
-//                YopRequest request = new YopRequest(null, "cGB2CeC3YmwSWGoVz0kAvQ==", "http://172.17.102.177:7777/yop-center");
+        YopRequest request = new YopRequest(null, "cGB2CeC3YmwSWGoVz0kAvQ==", BASE_URL);
+//                YopRequest request = new YopRequest(null, "cGB2CeC3YmwSWGoVz0kAvQ==", BASE_URL);
 //        YopRequest request = new YopRequest(null,
 //                "cGB2CeC3YmwSWGoVz0kAvQ==",
-//                "http://localhost:8064/yop-center");
-//        YopRequest request = new YopRequest(null, "8intulgnqibv77f1t8q9j0hhlkiy6ei6c82sknv63vib3zhgyzl8uif9ky7a", "http://127.0.0.1:7777");
+//                BASE_URL);
+//        YopRequest request = new YopRequest(null, "8intulgnqibv77f1t8q9j0hhlkiy6ei6c82sknv63vib3zhgyzl8uif9ky7a", BASE_URL);
 //        YopRequest request = new YopRequest(null,
 //                "8intulgnqibv77f1t8q9j0hhlkiy6ei6c82sknv63vib3zhgyzl8uif9ky7a",
-//                "http://localhost:8064/yop-center");
+//                BASE_URL);
         request.setEncrypt(true);
         request.setSignRet(true);
 //        request.setSignAlg("SHA1");
@@ -333,14 +334,14 @@ public class QaDemo {
     public void testJvmCollect() {
         int i = 0;
         YopRequest request = new YopRequest(null, APP_SECRETS[i], BASE_URL);
-//                YopRequest request = new YopRequest(null, "cGB2CeC3YmwSWGoVz0kAvQ==", "http://172.17.102.177:7777/yop-center");
+//                YopRequest request = new YopRequest(null, "cGB2CeC3YmwSWGoVz0kAvQ==", BASE_URL);
 //        YopRequest request = new YopRequest(null,
 //                "cGB2CeC3YmwSWGoVz0kAvQ==",
-//                "http://localhost:8064/yop-center");
-//        YopRequest request = new YopRequest(null, "8intulgnqibv77f1t8q9j0hhlkiy6ei6c82sknv63vib3zhgyzl8uif9ky7a", "http://127.0.0.1:7777");
+//                BASE_URL);
+//        YopRequest request = new YopRequest(null, "8intulgnqibv77f1t8q9j0hhlkiy6ei6c82sknv63vib3zhgyzl8uif9ky7a", BASE_URL);
 //        YopRequest request = new YopRequest(null,
 //                "8intulgnqibv77f1t8q9j0hhlkiy6ei6c82sknv63vib3zhgyzl8uif9ky7a",
-//                "http://localhost:8064/yop-center");
+//                BASE_URL);
         request.setEncrypt(false);
         request.setSignRet(true);
         request.setSignAlg("sha-256");
@@ -371,7 +372,7 @@ public class QaDemo {
 
     @Test
     public void testUpLoadFile() {
-        YopRequest request = new YopRequest(APP_KEYS[0], APP_SECRETS[0], "http://10.151.30.87:8064/yop-center");
+        YopRequest request = new YopRequest(APP_KEYS[0], APP_SECRETS[0], BASE_URL);
         request.setEncrypt(true);
         request.setSignRet(true);
         request.addParam("appKey", APP_KEYS[0]);
@@ -384,7 +385,7 @@ public class QaDemo {
 
     @Test
     public void testSopay() {
-        YopRequest request = new YopRequest(APP_KEYS[0], APP_SECRETS[0], "http://10.151.30.87:8064/yop-center");
+        YopRequest request = new YopRequest(APP_KEYS[0], APP_SECRETS[0], BASE_URL);
         request.setEncrypt(true);
         request.setSignRet(true);
         request.setSignAlg("sha-256");
@@ -400,7 +401,7 @@ public class QaDemo {
 
     @Test
     public void testLaike() {
-        YopRequest request = new YopRequest(APP_KEYS[0], APP_SECRETS[0], "http://10.151.30.87:8064/yop-center");
+        YopRequest request = new YopRequest(APP_KEYS[0], APP_SECRETS[0], BASE_URL);
         request.setEncrypt(true);
         request.setSignRet(true);
         request.setSignAlg("sha-256");
@@ -440,12 +441,7 @@ public class QaDemo {
         }
         //int i = 0;
         String secretKey ="MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCEk5fANXccim3575EasuANg_U_rM14xSNKi7KWdHRSY7hAJK7N-QhWOGz81rKLmgyd4Q7c1dmZbLzNnOQlGYjBAy2jH0a84EW5dM3GqNCX_A3iJda8xSUIpsaxOceqc46z370sijjVmn9rlbJMNpx-BZuLAHivYVOtg95-VOeWiyGMsDlMpAZQjD-bRWshMV41Bzlq-9u5h-NGJ7371wvrqSpAId2Jxp9OR-G8_nSByAvS3y2xliwbntK9MEcD64ew-6dkLb3hsmVc2pWm0uZPumnirjyvGatd--OrEAtb_8-Bki-ukqJWOAdb5bdp29gkg738Gdl-5at3e6uHdz0JAgMBAAECggEAYYJUmLA6PSmrnaqQJPzvQcGOfhjQv0TvogKBhZt9eqORfsv8Lc4-TXwO3R_kDj1tjilbzx0SgH-zld8RBiBzrtJxnIqCcqTZY3__YWAEm-RtKan--LRfeq9_cBY5PqrjiHTFJJ89Eg4iLbTagKeiDiZ9sozUNtn0u6hD2tMDynrU7pI9uyFIkPdU9ratku8tOgKWLFchRCQ1UD5Knda3F7fW0V4sCxfVqpuCZIROj7zAoB-RCMxkubiO6CyMZA19sunUQRwnp71DXcUqbZK-_jhef_hBQBUX1oaEojYtua4jx5p8xo9nP7jJeK-xqCj_CAoQF4LomezuGojgvxOoAQKBgQDSsCdKL_aFO7ONJSMgRGpNT9MGOMfKmAfPuELDOqRmJyTfbyR8TUiDYq74L3ffgjPIjZlJJM8m5gpCGalmsxRMUyvsDXE_bU2Zb1jlj_FFSdC2y5eTVfac-Ihp1qISm-t8EwvE0qzNK2xbG3G6ijy4WOtMoUh6FfZhzfmbxDgoiQKBgQChFtqYFu--khcyd26GVjxdDyPyiQfyAyqwdaWHqjyYad0sjEgZDaaAF_2qvrkSuD7kYULI9nVZv7kJmQu-T8owf38Hz931r9GaJdJJSTvexinJ54T0GpJdPsOUosHHgfPFvyetl1pxD05GMt88Z36KUUcZXVnoJxS9mo7HpoBQgQKBgAfJRspxF1U5LZuLwc6ReLQ-vPe_5XJRSAifMKhyZFz6GVzAiMKnQITKgtjdODrkXvGMehu_5n_zhHGI7T_EYn2nnTnuDT9g1LtU6B4jwbDj13jJ8WIajTCj5rayne6-IGfHdGnjt0slza1YSE2yiift8VQ1qa4JXb-jkxP0nnaxAoGAO4t4F9n6msXjnzr4dt2viHKNRhyS_ElhYULLgh9SMMCJCet8xw39qsGzeYbwYFQMo1y0VBaOADPXUQ3qgll6En0-VoPmtudbohAy7_YLFGjJj6FtytF7os4Ne4bB_F4z3revEgKtYrdWpqotTGWxJ62ti1mvXxn7F67m8jPAoIECgYEA0dGY2JnYVIku9hOYTTzjAJCRqA2Exl4lzxLYyD1SG_gTly9cee77m4wHOwYpLrRAu8zwLK5_4EkKDk_AKAVP9-lbqIWo7LG3KQ8OAbaJ3XnF4-ildPGQWXlpusDZQhYTFZIbbZ7zhi30A3XiZUqVMBkn8y1LdFmgj7Ogb4_87K4" ;
-
-        //String BASE_URL = "http://10.151.30.80:18064/yop-center/";
-//        String BASE_URL = "https://open.yeepay.com/yop-center/";
-//        String BASE_URL = "https://58.83.141.56/yop-center/";
-
-
+        
         String appKey = "OPR:10012481831" ;
         YopRequest request = new YopRequest(appKey, secretKey, BASE_URL);
         //YopRequest request = new YopRequest(appKey, "", BASE_URL);
