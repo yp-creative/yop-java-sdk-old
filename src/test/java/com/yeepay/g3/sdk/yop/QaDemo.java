@@ -2,7 +2,12 @@ package com.yeepay.g3.sdk.yop;
 
 import com.TrustAllHttpsCertificates;
 import com.yeepay.g3.frame.yop.ca.utils.Encodes;
-import com.yeepay.g3.sdk.yop.client.*;
+import com.yeepay.g3.sdk.yop.client.YopClient;
+import com.yeepay.g3.sdk.yop.client.YopConfig;
+import com.yeepay.g3.sdk.yop.client.YopRequest;
+import com.yeepay.g3.sdk.yop.client.YopResponse;
+import com.yeepay.g3.sdk.yop.client.rsa.YopRSAClient;
+import com.yeepay.g3.sdk.yop.client.rsa.YopRsaRequest;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,7 +27,7 @@ import java.util.List;
  */
 public class QaDemo {
 
-    //    private static final String BASE_URL = "http://10.151.30.87:8064/yop-center/";
+    //        private static final String BASE_URL = "http://10.151.30.87:8064/yop-center/";
 //    private static final String BASE_URL = "http://10.151.30.88:8064/yop-center/";
     private static final String BASE_URL = "http://172.17.102.175:8064/yop-center/";
 
@@ -37,12 +42,11 @@ public class QaDemo {
     @Test
     public void testIdCard() throws Exception {
         int i = 1;
-        YopRequest request = new YopRequest(null, APP_SECRETS[i], BASE_URL);
+        YopRequest request = new YopRequest(APP_KEYS[i], APP_SECRETS[i], BASE_URL);
 //        YopRequest request = new YopRequest(null, "cAFj+DxhpeMo8afn7s0z5w==", BASE_URL);
         request.setEncrypt(true);
         request.setSignRet(true);
         request.setSignAlg("sha-256");
-        request.addParam("appKey", APP_KEYS[i]);
         request.addParam("requestFlowId", "test123456");//请求流水标识
         request.addParam("name", "张文康");
         request.addParam("idCardNumber", "370982199101186692");
@@ -443,7 +447,7 @@ public class QaDemo {
         String secretKey ="MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCEk5fANXccim3575EasuANg_U_rM14xSNKi7KWdHRSY7hAJK7N-QhWOGz81rKLmgyd4Q7c1dmZbLzNnOQlGYjBAy2jH0a84EW5dM3GqNCX_A3iJda8xSUIpsaxOceqc46z370sijjVmn9rlbJMNpx-BZuLAHivYVOtg95-VOeWiyGMsDlMpAZQjD-bRWshMV41Bzlq-9u5h-NGJ7371wvrqSpAId2Jxp9OR-G8_nSByAvS3y2xliwbntK9MEcD64ew-6dkLb3hsmVc2pWm0uZPumnirjyvGatd--OrEAtb_8-Bki-ukqJWOAdb5bdp29gkg738Gdl-5at3e6uHdz0JAgMBAAECggEAYYJUmLA6PSmrnaqQJPzvQcGOfhjQv0TvogKBhZt9eqORfsv8Lc4-TXwO3R_kDj1tjilbzx0SgH-zld8RBiBzrtJxnIqCcqTZY3__YWAEm-RtKan--LRfeq9_cBY5PqrjiHTFJJ89Eg4iLbTagKeiDiZ9sozUNtn0u6hD2tMDynrU7pI9uyFIkPdU9ratku8tOgKWLFchRCQ1UD5Knda3F7fW0V4sCxfVqpuCZIROj7zAoB-RCMxkubiO6CyMZA19sunUQRwnp71DXcUqbZK-_jhef_hBQBUX1oaEojYtua4jx5p8xo9nP7jJeK-xqCj_CAoQF4LomezuGojgvxOoAQKBgQDSsCdKL_aFO7ONJSMgRGpNT9MGOMfKmAfPuELDOqRmJyTfbyR8TUiDYq74L3ffgjPIjZlJJM8m5gpCGalmsxRMUyvsDXE_bU2Zb1jlj_FFSdC2y5eTVfac-Ihp1qISm-t8EwvE0qzNK2xbG3G6ijy4WOtMoUh6FfZhzfmbxDgoiQKBgQChFtqYFu--khcyd26GVjxdDyPyiQfyAyqwdaWHqjyYad0sjEgZDaaAF_2qvrkSuD7kYULI9nVZv7kJmQu-T8owf38Hz931r9GaJdJJSTvexinJ54T0GpJdPsOUosHHgfPFvyetl1pxD05GMt88Z36KUUcZXVnoJxS9mo7HpoBQgQKBgAfJRspxF1U5LZuLwc6ReLQ-vPe_5XJRSAifMKhyZFz6GVzAiMKnQITKgtjdODrkXvGMehu_5n_zhHGI7T_EYn2nnTnuDT9g1LtU6B4jwbDj13jJ8WIajTCj5rayne6-IGfHdGnjt0slza1YSE2yiift8VQ1qa4JXb-jkxP0nnaxAoGAO4t4F9n6msXjnzr4dt2viHKNRhyS_ElhYULLgh9SMMCJCet8xw39qsGzeYbwYFQMo1y0VBaOADPXUQ3qgll6En0-VoPmtudbohAy7_YLFGjJj6FtytF7os4Ne4bB_F4z3revEgKtYrdWpqotTGWxJ62ti1mvXxn7F67m8jPAoIECgYEA0dGY2JnYVIku9hOYTTzjAJCRqA2Exl4lzxLYyD1SG_gTly9cee77m4wHOwYpLrRAu8zwLK5_4EkKDk_AKAVP9-lbqIWo7LG3KQ8OAbaJ3XnF4-ildPGQWXlpusDZQhYTFZIbbZ7zhi30A3XiZUqVMBkn8y1LdFmgj7Ogb4_87K4" ;
         
         String appKey = "OPR:10012481831" ;
-        YopRequest request = new YopRequest(appKey, secretKey, BASE_URL);
+        YopRsaRequest request = new YopRsaRequest(appKey, secretKey, BASE_URL);
         //YopRequest request = new YopRequest(appKey, "", BASE_URL);
 
 
@@ -453,7 +457,7 @@ public class QaDemo {
         request.addParam("uniqueOrderNo", "1001201611290000000000000808");
 
         System.out.println(request.toQueryString());
-        YopResponse response = YopClient3.postRsa("/rest/v2.0/opr/queryorder", request);
+        YopResponse response = YopRSAClient.postRsa("/rest/v2.0/opr/queryorder", request);
         System.out.println(response.toString());
     }
 

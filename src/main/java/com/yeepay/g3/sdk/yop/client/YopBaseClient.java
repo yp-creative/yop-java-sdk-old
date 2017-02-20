@@ -106,6 +106,19 @@ public class YopBaseClient {
         return uri;
     }
 
+    protected static String handleResult(YopRequest request, YopResponse response, String content) {
+        response.setFormat(request.getFormat());
+        String ziped = "";
+        if (response.isSuccess()) {
+            String strResult = getBizResult(content, request.getFormat());
+            ziped = strResult.replaceAll("[ \t\n]", "");
+            if (StringUtils.isNotBlank(strResult) && response.getError() == null) {
+                response.setStringResult(strResult);
+            }
+        }
+        return ziped;
+    }
+
     /**
      * 从完整返回结果中获取业务结果，主要用于验证返回结果签名
      */

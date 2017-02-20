@@ -1,7 +1,12 @@
 package com.yeepay.g3.sdk.yop;
 
 import com.TrustAllHttpsCertificates;
-import com.yeepay.g3.sdk.yop.client.*;
+import com.yeepay.g3.sdk.yop.client.YopClient;
+import com.yeepay.g3.sdk.yop.client.YopConfig;
+import com.yeepay.g3.sdk.yop.client.YopRequest;
+import com.yeepay.g3.sdk.yop.client.YopResponse;
+import com.yeepay.g3.sdk.yop.client.rsa.YopRSAClient;
+import com.yeepay.g3.sdk.yop.client.rsa.YopRsaRequest;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -41,7 +46,7 @@ public class ProductiveDemo {
 //        request.setSignAlg("sha-256");
         request.addParam("requestFlowId", "test123456");//请求流水标识
         request.addParam("name", "张文康");
-        request.addParam("idCardNumber", "370982199101186691111");
+        request.addParam("idCardNumber", "370982199101186691");
 
         YopResponse response = YopClient.post("/rest/v2.0/auth/idcard", request);
         AssertUtils.assertYopResponse(response);
@@ -349,14 +354,14 @@ public class ProductiveDemo {
 //        YopConfig.setReadTimeout(1);
 
         String appKey = "OPR:10012481831";
-        YopRequest request = new YopRequest(appKey, null);
+        YopRsaRequest request = new YopRsaRequest(appKey, null);
         // YopRequest request = new YopRequest(appKey, "");
 
         request.addParam("customerNo", "10012481831");
         request.addParam("parentCustomerNo", "10012481831");
         request.addParam("requestId", "requestId1480392119078");
         request.addParam("uniqueOrderNo", "1001201611290000000000000808");
-        YopResponse response = YopClient3.postRsa("/rest/v2.0/opr/queryorder", request);
+        YopResponse response = YopRSAClient.postRsa("/rest/v2.0/opr/queryorder", request);
         AssertUtils.assertYopResponse(response);
     }
 

@@ -1,4 +1,4 @@
-package com.yeepay.g3.sdk.yop.client;
+package com.yeepay.g3.sdk.yop.client.rsa;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
@@ -10,6 +10,8 @@ import com.yeepay.g3.facade.yop.ca.enums.DigestAlgEnum;
 import com.yeepay.g3.frame.yop.ca.DigitalEnvelopeUtils;
 import com.yeepay.g3.frame.yop.ca.rsa.RSAKeyUtils;
 import com.yeepay.g3.frame.yop.ca.utils.Exceptions;
+import com.yeepay.g3.sdk.yop.client.YopBaseClient;
+import com.yeepay.g3.sdk.yop.client.YopResponse;
 import com.yeepay.g3.sdk.yop.enums.HttpMethodType;
 import com.yeepay.g3.sdk.yop.exception.YopClientException;
 import com.yeepay.g3.sdk.yop.http.Headers;
@@ -38,9 +40,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * @author wang.bao
  * @version 1.0
  */
-public class YopClient3 extends YopBaseClient {
+public class YopRSAClient extends YopBaseClient {
 
-    protected static final Logger logger = Logger.getLogger(YopClient3.class);
+    protected static final Logger logger = Logger.getLogger(YopRSAClient.class);
 
     private static final Set<String> defaultHeadersToSign = Sets.newHashSet();
     private static final Joiner headerJoiner = Joiner.on('\n');
@@ -62,7 +64,7 @@ public class YopClient3 extends YopBaseClient {
      * @param request     客户端请求对象
      * @return 响应对象
      */
-    public static YopResponse postRsa(String methodOrUri, YopRequest request) {
+    public static YopResponse postRsa(String methodOrUri, YopRsaRequest request) {
         String content = postRsaString(methodOrUri, request);
         YopResponse response = YopMarshallerUtils.unmarshal(content,
                 request.getFormat(), YopResponse.class);
@@ -77,7 +79,7 @@ public class YopClient3 extends YopBaseClient {
      * @param request     客户端请求对象
      * @return 字符串形式的响应
      */
-    public static String postRsaString(String methodOrUri, YopRequest request) {
+    public static String postRsaString(String methodOrUri, YopRsaRequest request) {
         logger.debug(request.toQueryString());
         String serverUrl = richRequest(HttpMethodType.POST, methodOrUri,
                 request);
@@ -186,21 +188,11 @@ public class YopClient3 extends YopBaseClient {
         return queryStringJoiner.join(parameterStrings);
     }
 
-    protected static void handleRsaResult(YopRequest request,
+    protected static void handleRsaResult(YopRsaRequest request,
                                           YopResponse response, String content) {
-        response.setFormat(request.getFormat());
-        String ziped = StringUtils.EMPTY;
-        if (response.isSuccess()) {
-            String strResult = getBizResult(content, request.getFormat());
-            ziped = strResult.replaceAll("[ \t\n]", "");
-            // 先解密，极端情况可能业务正常，但返回前处理（如加密）出错，所以要判断是否有error
-            if (StringUtils.isNotBlank(strResult)
-                    && response.getError() == null) {
-                response.setStringResult(strResult);
-            }
-        }
         // 再验签
-        String signStr = ziped;
+        String signStr = handleResult(request, response, content);
+        ;
         isValidResult(signStr, response.getSign());
     }
 

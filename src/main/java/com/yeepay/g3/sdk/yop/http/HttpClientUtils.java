@@ -8,11 +8,9 @@ import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.*;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
-import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import java.io.File;
 import java.io.FileInputStream;
@@ -22,7 +20,6 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.concurrent.TimeUnit;
 
 /**
  * title: <br/>
@@ -60,7 +57,7 @@ public class HttpClientUtils {
                 .build();
 
         // TODO 生效？！
-        HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
+//        HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
 
         // now, we create connection-manager using our Registry.
         //      -- allows multi-threaded use
@@ -85,7 +82,7 @@ public class HttpClientUtils {
     }
 
     private static SSLContext getSSLContext() throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
-        return 1 == 1 ? getYeepaySSLContext() : getTrustAllSSLContext();
+        return 1 == 0 ? getYeepaySSLContext() : getTrustAllSSLContext();
     }
 
     public static SSLContext getTrustAllSSLContext() throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
@@ -102,7 +99,7 @@ public class HttpClientUtils {
         try {
             char[] password = "1".toCharArray();
             KeyStore keyStore = KeyStore.getInstance("PKCS12");
-            FileInputStream instream = new FileInputStream(new File("/Users/dreambt/Yeepay/yop-java-sdk-old/src/test/resources/cer/test1.pfx"));
+            FileInputStream instream = new FileInputStream(new File("/User1s/dreambt/Yeepay/yop-java-sdk-old/src/test/resources/cer/test1.pfx"));
             try {
                 keyStore.load(instream, password);
             } finally {

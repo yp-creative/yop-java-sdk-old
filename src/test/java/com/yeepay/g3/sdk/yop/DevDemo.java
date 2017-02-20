@@ -2,9 +2,10 @@ package com.yeepay.g3.sdk.yop;
 
 import com.TrustAllHttpsCertificates;
 import com.yeepay.g3.sdk.yop.client.YopClient;
-import com.yeepay.g3.sdk.yop.client.YopClient3;
 import com.yeepay.g3.sdk.yop.client.YopRequest;
 import com.yeepay.g3.sdk.yop.client.YopResponse;
+import com.yeepay.g3.sdk.yop.client.rsa.YopRSAClient;
+import com.yeepay.g3.sdk.yop.client.rsa.YopRsaRequest;
 import com.yeepay.g3.sdk.yop.encrypt.AESEncrypter;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Before;
@@ -133,7 +134,7 @@ public class DevDemo {
 
 
         String appKey = "OPR:10012481831" ;
-        YopRequest request = new YopRequest(appKey, secretKey, BASE_URL);
+        YopRsaRequest request = new YopRsaRequest(appKey, secretKey, BASE_URL);
         //YopRequest request = new YopRequest(appKey, "", BASE_URL);
 
 
@@ -143,7 +144,7 @@ public class DevDemo {
         request.addParam("uniqueOrderNo", "1001201611290000000000000808");
 
         System.out.println(request.toQueryString());
-        YopResponse response = YopClient3.postRsa("/rest/v2.0/opr/queryorder", request);
+        YopResponse response = YopRSAClient.postRsa("/rest/v2.0/opr/queryorder", request);
         System.out.println(response.toString());
     }
 

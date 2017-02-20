@@ -1,6 +1,9 @@
-package com.yeepay.g3.sdk.yop.client;
+package com.yeepay.g3.sdk.yop.client.basic;
 
 import com.yeepay.g3.frame.yop.ca.utils.Encodes;
+import com.yeepay.g3.sdk.yop.client.YopBaseClient;
+import com.yeepay.g3.sdk.yop.client.YopConstants;
+import com.yeepay.g3.sdk.yop.client.YopResponse;
 import com.yeepay.g3.sdk.yop.enums.HttpMethodType;
 import com.yeepay.g3.sdk.yop.unmarshaller.YopMarshallerUtils;
 import org.apache.log4j.Logger;
@@ -18,9 +21,9 @@ import java.io.UnsupportedEncodingException;
  * @author wang.bao
  * @version 1.0
  */
-public class YopClient2 extends YopBaseClient {
+public class YopBasicClient extends YopBaseClient {
 
-    protected static final Logger logger = Logger.getLogger(YopClient2.class);
+    protected static final Logger logger = Logger.getLogger(YopBasicClient.class);
 
     /**
      * 发起post请求，以YopResponse对象返回
@@ -29,7 +32,7 @@ public class YopClient2 extends YopBaseClient {
      * @param request     客户端请求对象
      * @return 响应对象
      */
-    public static YopResponse postBasic(String methodOrUri, YopRequest request) {
+    public static YopResponse postBasic(String methodOrUri, YopBasicRequest request) {
         String content = postBasicForString(methodOrUri, request);
         YopResponse response = YopMarshallerUtils.unmarshal(content, request.getFormat(), YopResponse.class);
         return response;
@@ -42,7 +45,7 @@ public class YopClient2 extends YopBaseClient {
      * @param request     客户端请求对象
      * @return 字符串形式的响应
      */
-    public static String postBasicForString(String methodOrUri, YopRequest request) {
+    public static String postBasicForString(String methodOrUri, YopBasicRequest request) {
         String serverUrl = richRequest(HttpMethodType.POST, methodOrUri, request);
         logger.info("signature:" + request.getParamValue(YopConstants.SIGN));
         request.setAbsoluteURL(serverUrl);
@@ -58,6 +61,7 @@ public class YopClient2 extends YopBaseClient {
         }
 
         headers.add("Authorization", "Basic " + authorizationHeader);
+        headers.add("X-YOP-AppKey", request.getAppKey());
 
         HttpEntity<MultiValueMap<String, String>> httpEntity = new HttpEntity<MultiValueMap<String, String>>(request.getParams(), headers);
 

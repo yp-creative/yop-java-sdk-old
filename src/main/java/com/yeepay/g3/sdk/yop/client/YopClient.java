@@ -271,8 +271,8 @@ public class YopClient extends YopBaseClient {
         return StringUtils.join(list, ",");
     }
 
-    protected static void handleResult(YopRequest request,
-                                       YopResponse response, String content) {
+    protected static String handleResult(YopRequest request,
+                                         YopResponse response, String content) {
         response.setFormat(request.getFormat());
         String ziped = StringUtils.EMPTY;
         if (response.isSuccess()) {
@@ -300,6 +300,8 @@ public class YopClient extends YopBaseClient {
         } else {
             response.setValidSign(true);
         }
+
+        return ziped;
     }
 
     /**
