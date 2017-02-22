@@ -304,8 +304,17 @@ public class YopRequest {
         return appKey;
     }
 
+    public void setAppKey(String appKey) {
+        this.appKey = appKey;
+        paramMap.set(YopConstants.APP_KEY, appKey);
+    }
+
     public String getSecretKey() {
         return secretKey;
+    }
+
+    public void setSecretKey(String secretKey) {
+        this.secretKey = secretKey;
     }
 
     public void setServerRoot(String serverRoot) {
