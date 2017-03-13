@@ -192,7 +192,6 @@ public class YopRSAClient extends YopBaseClient {
                                           YopResponse response, String content) {
         // 再验签
         String signStr = handleResult(request, response, content);
-        ;
         isValidResult(signStr, response.getSign());
     }
 
