@@ -55,7 +55,7 @@ public class YopBasicClient extends YopBaseClient {
 
         String authorizationHeader = "";
         try {
-            authorizationHeader = Encodes.encodeBase64(("yop-boss:" + request.getSecretKey()).getBytes("utf-8")).trim();
+            authorizationHeader = Encodes.encodeBase64((request.getAppKey() + ":" + request.getSecretKey()).getBytes("utf-8")).trim();
         } catch (UnsupportedEncodingException e) {
             logger.warn("", e);
         }
