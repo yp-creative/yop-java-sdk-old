@@ -19,10 +19,12 @@ import com.yeepay.g3.sdk.yop.utils.DateUtils;
 import com.yeepay.g3.sdk.yop.utils.InternalConfig;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
+import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
+import java.net.URI;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.spec.InvalidKeySpecException;
@@ -79,10 +81,16 @@ public class YopClient3 extends YopBaseClient {
      */
     public static String postRsaString(String methodOrUri, YopRequest request) {
         logger.debug(request.toQueryString());
-        String serverUrl = richRequest(HttpMethodType.POST, methodOrUri,
-                request);
+        String serverUrl = richRequest(HttpMethodType.POST, methodOrUri, request);
         request.setAbsoluteURL(serverUrl);
+        String content = getRestTemplate(request).postForObject(serverUrl, signAndEncrypt(methodOrUri, request), String.class);
+        if (logger.isDebugEnabled()) {
+            logger.debug("response:\n" + content);
+        }
+        return content;
+    }
 
+    private static HttpEntity<MultiValueMap<String, String>> signAndEncrypt(String methodOrUri, YopRequest request) {
         String appKey = request.getAppKey();
         String timestamp = DateUtils.formatCompressedIso8601Timestamp(new Date().getTime());
         InternalConfig internalConfig = InternalConfig.Factory.getInternalConfig();
@@ -95,8 +103,7 @@ public class YopClient3 extends YopBaseClient {
         headers.add("x-yop-request-id", requestId);
         headers.add("x-yop-date", timestamp);
 
-        String authString = protocolVersion + "/" + appKey + "/"
-                + timestamp + "/" + EXPIRED_SECONDS;
+        String authString = protocolVersion + "/" + appKey + "/" + timestamp + "/" + EXPIRED_SECONDS;
 
         Set<String> headersToSignSet = new HashSet<String>();
         headersToSignSet.add("x-yop-request-id");
@@ -128,7 +135,7 @@ public class YopClient3 extends YopBaseClient {
 
         // Signing the canonical request using key with sha-256 algorithm.
 
-        PrivateKey isvPrivateKey = null;
+        PrivateKey isvPrivateKey;
         if (StringUtils.isNotBlank(request.getSecretKey())) {
             try {
                 isvPrivateKey = RSAKeyUtils.string2PrivateKey(request.getSecretKey());
@@ -154,11 +161,59 @@ public class YopClient3 extends YopBaseClient {
 
         request.encoding();
 
-        HttpEntity<MultiValueMap<String, String>> httpEntity = new HttpEntity<MultiValueMap<String, String>>(request.getParams(), headers);
+        return new HttpEntity<MultiValueMap<String, String>>(request.getParams(), headers);
+    }
 
-        String content = getRestTemplate(request).postForObject(serverUrl, httpEntity, String.class);
+    /**
+     * 上传文件
+     *
+     * @param methodOrUri 目标地址或命名模式的method
+     * @param request     客户端请求对象
+     * @return 响应对象
+     */
+    public static YopResponse uploadRsa(String methodOrUri, YopRequest request) {
+        String content = uploadRsaForString(methodOrUri, request);
+        YopResponse response = YopMarshallerUtils.unmarshal(content, request.getFormat(), YopResponse.class);
+        handleRsaResult(request, response, content);
+        return response;
+    }
+
+    /**
+     * 发起文件上传请求，以字符串返回
+     *
+     * @param methodOrUri 目标地址或命名模式的method
+     * @param request     客户端请求对象
+     * @return 字符串形式的响应
+     */
+    public static String uploadRsaForString(String methodOrUri, YopRequest request) {
+        String serverUrl = richRequest(HttpMethodType.POST, methodOrUri, request);
+        request.setAbsoluteURL(serverUrl);
+
+        MultiValueMap<String, String> original = request.getParams();
+        MultiValueMap<String, Object> alternate = new LinkedMultiValueMap<String, Object>();
+        List<String> uploadFiles = request.getParam("_file");
+        request.removeParam("_file");
+        if (null == uploadFiles || uploadFiles.size() == 0) {
+            throw new RuntimeException("上传文件时参数_file不能为空!");
+        }
+        for (String uploadFile : uploadFiles) {
+            try {
+                alternate.add("_file", new UrlResource(new URI(uploadFile)));
+            } catch (Exception e) {
+                logger.debug("_file upload error.", e);
+            }
+        }
+
+        HttpEntity<MultiValueMap<String, String>> originalHttpEntity = signAndEncrypt(methodOrUri, request);
+
+        for (String key : originalHttpEntity.getBody().keySet()) {
+            alternate.put(key, new ArrayList<Object>(original.get(key)));
+        }
+
+        HttpEntity<MultiValueMap<String, Object>> alternateHttpEntity = new HttpEntity<MultiValueMap<String, Object>>(alternate, originalHttpEntity.getHeaders());
+        String content = getRestTemplate(request).postForObject(serverUrl, alternateHttpEntity, String.class);
         if (logger.isDebugEnabled()) {
-            logger.debug("requestId:" + requestId + ", response:\n" + content);
+            logger.debug("response:\n" + content);
         }
         return content;
     }

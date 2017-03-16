@@ -313,8 +313,7 @@ public class YopClient extends YopBaseClient {
         String serverUrl = richRequest(HttpMethodType.GET, methodOrUri, request);
         signAndEncrypt(request);
         request.encoding();
-        serverUrl += serverUrl.contains("?") ? "&" : "?"
-                + request.toQueryString();
+        serverUrl += serverUrl.contains("?") ? "&" : "?" + request.toQueryString();
         return serverUrl;
     }
 
