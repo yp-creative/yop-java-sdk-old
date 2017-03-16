@@ -183,4 +183,28 @@ public class LocalDemo {
         YopResponse response = YopRSAClient.postRsa("/rest/v2.0/opr/queryorder", request);
         AssertUtils.assertYopResponse(response);
     }
+
+    @Test
+    public void testRsaUploadFile() {
+        String secretKey = "MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCVA77l9L7bU8HIYZimhqPTV0eGT/Gvfy7wtp84x9FsRCY+ELheKUFn/aeM5tGX4ZwW4lt+XzS0Q2Rk8tUA/R9OMjWptEaMZ+iBADE2sMJwxkYmqNAzM9E44ofi7KjZNHVPvaSOTDVhQS2XF2y5AmzWl4Y4Ft9WdzZJ9OAhYhyd6rRawO4MhOvwCOJxD6DYUhYtyV//lW9PFYkPpDsXfxRKjLpo0HqGOm5sUUotfV5kce55P9slIV/twrvwzoKb2EsRX+oZc1dXl/3q/muPba0FZZSQt6/VMGoMlkqyq3WGHgSasxTFDL7vK+EzPEWAPhEaULAu9ad/p+r4n+MGleqPAgMBAAECggEAWEYSxRiaI0VXq0OdcTCbRewTM86R5puaDACzC6jbN56bZPL0tNsNovPRWJe3m5iLpcbL2m29w/eUNnTfl6la7TCzN2fSzwQS6LBbdwF4/eOG1Qn15A8TJvaS9uupDpqTz/wQyjb8/DLnNfUrc+Gq5eh3Gyz5erg+EcudJkl/mE/wwhkrSMDKTkqa0671GGyOb4xmPFNRybypsfFunj3Yi3mr+1fARd5hWlwYIjqdzWkjxawCKs0FUjMNidqFu7s3noaPU+bmhJNEtbQg/8NB5TouIAeYNPgi564PZhV4RRBG2sG8uefWB173qk5ImulLUMXiN4lRHHsnNjuiPIbtYQKBgQDrO+BCTa/BuyN3NP4b+tmZ9nddqWH9IMDMvNE/3F12tddUQUBQbSB2HyETL9rqOfzw3A0YthDAl7OGbMLVjHWoW+wpPZRuJFTHVaY3Yw5VEzCmzkujnYwmCAhzJ17fwePvZz29iNXmydl1t1roWqXDDeuJtXKc0R5lfqdSj9i4MQKBgQCiK1+wa86H6EEdW3UafouYe+frUZucdHZNkPPGwFIwRrF1mrCn4ATrmmbG8xDln16YnVM0BGsf6WTY8V4cVtoJt0BLZXkzrTolAP4+UM8xl5CR+30Xe5qjpUb0pIP+CM0alN444p/BeWH2NRFAEo8DLDrSwrwsumQ6QyzzZkrevwKBgCs4GA72iQk2IeEACoQHhb1k7C94NHm2b9XuByANk9qAtGxVhMSCGEm7lG8bBsSsHM4AECPvJ4rLFH/pMa7cnK1vHifBmajW4gCxutVITNTSrsim9Hy+MIa4SR0nKaZA0Gkm9dAB+RLrGRoosvon1XbN8u2dOc6YGVaae5GOvkmxAoGAfyGDnXmWamMAEPSuw/tqkjqooIjUdf2y9LHq+eexRtlUqz5+uMxc7xqW8eaBW5HphbjoDkJcfKLqhUwLHCpWOgGn7LN7JbDqgTHbHp0ZIOaR1m+SLEOhAiNCke0a8J6Ts//6ihvXY8Q1sN7/S/yAktssrictf98LTcV1ysZpcV8CgYBqqncsNbn3Q9fIgRIUkqNsE+IBZaxfd4mQK67qJVCnZbnv9M7uF5QS31qXmagZrnoRzzOxdhzUOannmihe6l/qKYajyoioss3GKtePCmz4/GZ6ffbJ6ejQvOq89FZ7f0xtL/wG23ZlDwX95BynleZ6INh/z0zenWI6JZr+F4kjTQ==";
+        String appKey = "yop-boss";
+        YopRequest request = new YopRequest(appKey, secretKey, "http://localhost:8064/yop-center/");
+        request.addParam("fileType", "IMAGE");
+        request.addParam("_file", "file:/Users/zhangwenkang/Desktop/tomcat-lifecycle.png");
+        YopResponse response = YopRSAClient.uploadRsa("/rest/v1.0/file/upload", request);
+        AssertUtils.assertYopResponse(response);
+    }
+
+    @Test
+    public void testUpLoadFile() {
+        YopRequest request = new YopRequest(APP_KEYS[0], APP_SECRETS[0], "http://localhost:8064/yop-center/");
+        request.setEncrypt(true);
+        request.setSignRet(true);
+        request.addParam("appKey", APP_KEYS[0]);
+        request.addParam("fileType", "IMAGE");
+        request.addParam("_file", "file:/Users/zhangwenkang/Desktop/tomcat-lifecycle.png");
+        System.out.println(request.toQueryString());
+        YopResponse response = YopClient.upload("/rest/v1.0/file/upload", request);
+        System.out.println(response.toString());
+    }
 }
