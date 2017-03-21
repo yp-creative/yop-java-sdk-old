@@ -60,6 +60,8 @@ public class YopConstants {
     public static final String ALG_AES = "AES";
     public static final String ALG_SHA = "SHA";
     public static final String ALG_SHA1 = "SHA1";
+    public static final String ALG_SHA256 = "SHA-256";
+    public static final String ALG_SHA512 = "SHA-512";
 
     /**
      * 判断是否为保护参数
