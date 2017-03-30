@@ -26,6 +26,8 @@ import java.util.regex.Pattern;
  */
 public class YopBaseClient {
 
+    protected static RestTemplate restTemplate = new YopRestTemplate();
+
     protected static Map<String, List<String>> uriTemplateCache = new HashMap<String, List<String>>();
 
     protected static RestTemplate getRestTemplate(YopRequest request) {
@@ -34,7 +36,7 @@ public class YopBaseClient {
             int readTimeout = getValueIfNotNull(request.getReadTimeout(), YopConfig.getReadTimeout());
             return new YopRestTemplate(connectTimeout, readTimeout);
         } else {
-            return YopRestTemplate.getRestTemplate();
+            return restTemplate;
         }
     }
 

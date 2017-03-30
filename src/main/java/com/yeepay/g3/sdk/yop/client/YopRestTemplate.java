@@ -1,10 +1,8 @@
 package com.yeepay.g3.sdk.yop.client;
 
-import com.yeepay.g3.frame.yop.ca.utils.Exceptions;
-import com.yeepay.g3.sdk.yop.http.HttpClientUtils;
-import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
 /**
@@ -19,36 +17,21 @@ import org.springframework.web.client.RestTemplate;
  */
 public class YopRestTemplate extends RestTemplate {
 
-    private static YopRestTemplate INSTANCE = null;
-
     public YopRestTemplate() {
         this(YopConfig.getConnectTimeout(), YopConfig.getReadTimeout());
     }
 
     public YopRestTemplate(int connectTimeout, int readTimeout) {
-        super(YopRestTemplate.getClientHttpRequestFactory(connectTimeout, readTimeout));
-    }
-
-    public static ClientHttpRequestFactory getClientHttpRequestFactory(int connectTimeout, int readTimeout) {
-        HttpComponentsClientHttpRequestFactory clientHttpRequestFactory = null;
-        try {
-            CloseableHttpClient httpClient = HttpClientUtils.acceptsUntrustedCertsHttpClient(connectTimeout, readTimeout);
-            clientHttpRequestFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
-        } catch (Exception e) {
-            throw Exceptions.unchecked(e);
+        ClientHttpRequestFactory requestFactory = getRequestFactory();
+        if (requestFactory instanceof SimpleClientHttpRequestFactory) {
+            SimpleClientHttpRequestFactory simpleClientHttpRequestFactory = (SimpleClientHttpRequestFactory) requestFactory;
+            simpleClientHttpRequestFactory.setConnectTimeout(connectTimeout);
+            simpleClientHttpRequestFactory.setReadTimeout(readTimeout);
+        } else if (requestFactory instanceof HttpComponentsClientHttpRequestFactory) {
+            HttpComponentsClientHttpRequestFactory httpComponentsClientHttpRequestFactory = (HttpComponentsClientHttpRequestFactory) requestFactory;
+//            httpComponentsClientHttpRequestFactory.setConnectTimeout(connectTimeout);
+//            httpComponentsClientHttpRequestFactory.setReadTimeout(readTimeout);
         }
-        return clientHttpRequestFactory;
-    }
-
-    public static YopRestTemplate getRestTemplate() {
-        synchronized (YopRestTemplate.class) {
-            if (null == INSTANCE) {
-                synchronized (YopRestTemplate.class) {
-                    INSTANCE = new YopRestTemplate();
-                }
-            }
-        }
-        return INSTANCE;
     }
 
 }
