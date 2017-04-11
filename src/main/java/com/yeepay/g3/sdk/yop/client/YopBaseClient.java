@@ -1,6 +1,5 @@
 package com.yeepay.g3.sdk.yop.client;
 
-import com.yeepay.g3.sdk.yop.enums.FormatType;
 import com.yeepay.g3.sdk.yop.enums.HttpMethodType;
 import com.yeepay.g3.sdk.yop.exception.YopClientException;
 import com.yeepay.g3.sdk.yop.utils.Assert;
@@ -111,23 +110,16 @@ public class YopBaseClient {
     /**
      * 从完整返回结果中获取业务结果，主要用于验证返回结果签名
      */
-    protected static String getBizResult(String content, FormatType format) {
+    protected static String getBizResult(String content) {
         if (StringUtils.isBlank(content)) {
             return content;
         }
-        switch (format) {
-            case json:
-                String jsonStr = StringUtils.substringAfter(content,
-                        "\"result\" : ");
-                jsonStr = StringUtils.substringBeforeLast(jsonStr, "\"ts\"");
-                // 去除逗号
-                jsonStr = StringUtils.substringBeforeLast(jsonStr, ",");
-                return jsonStr;
-            default:
-                String xmlStr = StringUtils.substringAfter(content, "</state>");
-                xmlStr = StringUtils.substringBeforeLast(xmlStr, "<ts>");
-                return xmlStr;
-        }
+        String jsonStr = StringUtils.substringAfter(content, "\"result\" : ");
+        jsonStr = StringUtils.substringBeforeLast(jsonStr, "\"ts\"");
+        // 去除逗号
+        jsonStr = StringUtils.substringBeforeLast(jsonStr, ",");
+        return jsonStr;
+
     }
 
 }

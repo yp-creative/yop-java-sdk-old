@@ -14,7 +14,7 @@ import com.yeepay.g3.sdk.yop.enums.HttpMethodType;
 import com.yeepay.g3.sdk.yop.exception.YopClientException;
 import com.yeepay.g3.sdk.yop.http.Headers;
 import com.yeepay.g3.sdk.yop.http.HttpUtils;
-import com.yeepay.g3.sdk.yop.unmarshaller.YopMarshallerUtils;
+import com.yeepay.g3.sdk.yop.unmarshaller.JacksonJsonMarshaller;
 import com.yeepay.g3.sdk.yop.utils.DateUtils;
 import com.yeepay.g3.sdk.yop.utils.InternalConfig;
 import org.apache.commons.lang3.StringUtils;
@@ -40,6 +40,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * @author wang.bao
  * @version 1.0
  */
+@Deprecated
 public class YopClient3 extends YopBaseClient {
 
     protected static final Logger logger = Logger.getLogger(YopClient3.class);
@@ -66,8 +67,7 @@ public class YopClient3 extends YopBaseClient {
      */
     public static YopResponse postRsa(String methodOrUri, YopRequest request) {
         String content = postRsaString(methodOrUri, request);
-        YopResponse response = YopMarshallerUtils.unmarshal(content,
-                request.getFormat(), YopResponse.class);
+        YopResponse response = JacksonJsonMarshaller.unmarshal(content,YopResponse.class);
         handleRsaResult(request, response, content);
         return response;
     }
@@ -173,7 +173,7 @@ public class YopClient3 extends YopBaseClient {
      */
     public static YopResponse uploadRsa(String methodOrUri, YopRequest request) {
         String content = uploadRsaForString(methodOrUri, request);
-        YopResponse response = YopMarshallerUtils.unmarshal(content, request.getFormat(), YopResponse.class);
+        YopResponse response = JacksonJsonMarshaller.unmarshal(content, YopResponse.class);
         handleRsaResult(request, response, content);
         return response;
     }
@@ -243,10 +243,9 @@ public class YopClient3 extends YopBaseClient {
 
     protected static void handleRsaResult(YopRequest request,
                                           YopResponse response, String content) {
-        response.setFormat(request.getFormat());
         String ziped = StringUtils.EMPTY;
         if (response.isSuccess()) {
-            String strResult = getBizResult(content, request.getFormat());
+            String strResult = getBizResult(content);
             ziped = strResult.replaceAll("[ \t\n]", "");
             // 先解密，极端情况可能业务正常，但返回前处理（如加密）出错，所以要判断是否有error
             if (StringUtils.isNotBlank(strResult)

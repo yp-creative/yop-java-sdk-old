@@ -1,6 +1,5 @@
 package com.yeepay.g3.sdk.yop.client;
 
-import com.yeepay.g3.sdk.yop.enums.FormatType;
 import com.yeepay.g3.sdk.yop.utils.Assert;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -23,9 +22,8 @@ import java.util.List;
  * @version 1.0
  */
 public class YopRequest {
-    private Logger logger = Logger.getLogger(getClass());
 
-    private FormatType format = FormatType.json;
+    private Logger logger = Logger.getLogger(getClass());
 
     private String method;
 
@@ -94,11 +92,9 @@ public class YopRequest {
         this.secretKey = YopConfig.getSecret();
         this.serverRoot = YopConfig.getServerRoot();
         paramMap.set(YopConstants.APP_KEY, YopConfig.getAppKey());
-        paramMap.set(YopConstants.FORMAT, format.name());
         paramMap.set(YopConstants.VERSION, version);
         paramMap.set(YopConstants.LOCALE, locale);
-        paramMap.set(YopConstants.TIMESTAMP,
-                String.valueOf(System.currentTimeMillis()));
+        paramMap.set(YopConstants.TIMESTAMP, String.valueOf(System.currentTimeMillis()));
     }
 
     /**
@@ -205,12 +201,6 @@ public class YopRequest {
         return ignoreSignParams;
     }
 
-    public void setFormat(FormatType format) {
-        Assert.notNull(format);
-        this.format = format;
-        paramMap.set(YopConstants.FORMAT, this.format.name());
-    }
-
     public void setLocale(String locale) {
         this.locale = locale;
         paramMap.set(YopConstants.LOCALE, this.locale);
@@ -228,10 +218,6 @@ public class YopRequest {
 
     public String getMethod() {
         return method;
-    }
-
-    public FormatType getFormat() {
-        return format;
     }
 
     public String getLocale() {

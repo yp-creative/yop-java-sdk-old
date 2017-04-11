@@ -16,8 +16,6 @@ public class YopConstants {
 
     public static final String SUCCESS = "SUCCESS";
 
-    public static final String CALLBACK = "callback";
-
     // 方法的默认参数名
     public static final String METHOD = "method";
 

@@ -2,7 +2,7 @@ package com.yeepay.g3.sdk.yop.client;
 
 import com.yeepay.g3.frame.yop.ca.utils.Encodes;
 import com.yeepay.g3.sdk.yop.enums.HttpMethodType;
-import com.yeepay.g3.sdk.yop.unmarshaller.YopMarshallerUtils;
+import com.yeepay.g3.sdk.yop.unmarshaller.JacksonJsonMarshaller;
 import org.apache.log4j.Logger;
 import org.springframework.http.HttpEntity;
 import org.springframework.util.LinkedMultiValueMap;
@@ -18,6 +18,7 @@ import java.io.UnsupportedEncodingException;
  * @author wang.bao
  * @version 1.0
  */
+@Deprecated
 public class YopClient2 extends YopBaseClient {
 
     protected static final Logger logger = Logger.getLogger(YopClient2.class);
@@ -31,7 +32,7 @@ public class YopClient2 extends YopBaseClient {
      */
     public static YopResponse postBasic(String methodOrUri, YopRequest request) {
         String content = postBasicForString(methodOrUri, request);
-        YopResponse response = YopMarshallerUtils.unmarshal(content, request.getFormat(), YopResponse.class);
+        YopResponse response = JacksonJsonMarshaller.unmarshal(content, YopResponse.class);
         return response;
     }
 

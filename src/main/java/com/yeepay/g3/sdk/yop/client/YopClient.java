@@ -1,11 +1,11 @@
 package com.yeepay.g3.sdk.yop.client;
 
 import com.yeepay.g3.sdk.yop.encrypt.AESEncrypter;
-import com.yeepay.g3.sdk.yop.encrypt.BlowfishEncrypter;
+import com.yeepay.g3.sdk.yop.encrypt.BlowfishCipher;
 import com.yeepay.g3.sdk.yop.encrypt.Digest;
 import com.yeepay.g3.sdk.yop.encrypt.YopSignUtils;
 import com.yeepay.g3.sdk.yop.enums.HttpMethodType;
-import com.yeepay.g3.sdk.yop.unmarshaller.YopMarshallerUtils;
+import com.yeepay.g3.sdk.yop.unmarshaller.JacksonJsonMarshaller;
 import com.yeepay.g3.sdk.yop.utils.Assert;
 import com.yeepay.g3.sdk.yop.utils.JsonUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -26,6 +26,7 @@ import java.util.*;
  * @author wang.bao
  * @version 1.0
  */
+@Deprecated
 public class YopClient extends YopBaseClient {
 
     protected static final Logger logger = Logger.getLogger(YopClient.class);
@@ -39,8 +40,7 @@ public class YopClient extends YopBaseClient {
      */
     public static YopResponse post(String methodOrUri, YopRequest request) {
         String content = postForString(methodOrUri, request);
-        YopResponse response = YopMarshallerUtils.unmarshal(content,
-                request.getFormat(), YopResponse.class);
+        YopResponse response = JacksonJsonMarshaller.unmarshal(content, YopResponse.class);
         handleResult(request, response, content);
         return response;
     }
@@ -54,8 +54,7 @@ public class YopClient extends YopBaseClient {
      */
     public static YopResponse get(String methodOrUri, YopRequest request) {
         String content = getForString(methodOrUri, request);
-        YopResponse response = YopMarshallerUtils.unmarshal(content,
-                request.getFormat(), YopResponse.class);
+        YopResponse response = JacksonJsonMarshaller.unmarshal(content, YopResponse.class);
         handleResult(request, response, content);
         return response;
     }
@@ -69,8 +68,7 @@ public class YopClient extends YopBaseClient {
      */
     public static YopResponse upload(String methodOrUri, YopRequest request) {
         String content = uploadForString(methodOrUri, request);
-        YopResponse response = YopMarshallerUtils.unmarshal(content,
-                request.getFormat(), YopResponse.class);
+        YopResponse response = JacksonJsonMarshaller.unmarshal(content, YopResponse.class);
         handleResult(request, response, content);
         return response;
     }
@@ -227,7 +225,7 @@ public class YopClient extends YopBaseClient {
                 request.addParam(YopConstants.ENCRYPT, encrypt);
             } else {
                 // 商户身份调用使用Blowfish加密
-                String encrypt = BlowfishEncrypter.encrypt(encryptBody,
+                String encrypt = BlowfishCipher.encrypt(encryptBody,
                         request.getSecretKey());
                 request.addParam(YopConstants.ENCRYPT, encrypt);
             }
@@ -241,7 +239,7 @@ public class YopClient extends YopBaseClient {
                 strResult = AESEncrypter.decrypt(strResult,
                         request.getSecretKey());
             } else {
-                strResult = BlowfishEncrypter.decrypt(strResult,
+                strResult = BlowfishCipher.decrypt(strResult,
                         request.getSecretKey());
             }
         }
@@ -273,10 +271,9 @@ public class YopClient extends YopBaseClient {
 
     protected static void handleResult(YopRequest request,
                                        YopResponse response, String content) {
-        response.setFormat(request.getFormat());
         String ziped = StringUtils.EMPTY;
         if (response.isSuccess()) {
-            String strResult = getBizResult(content, request.getFormat());
+            String strResult = getBizResult(content);
             ziped = strResult.replaceAll("[ \t\n]", "");
             // 先解密，极端情况可能业务正常，但返回前处理（如加密）出错，所以要判断是否有error
             if (StringUtils.isNotBlank(strResult)
@@ -345,8 +342,6 @@ public class YopClient extends YopBaseClient {
         Map map = JsonUtils.fromJsonString(response, Map.class);
         //是否加密
         boolean doEncryption = Boolean.valueOf(map.get("doEncryption").toString());
-        //是否签名
-        boolean doSignature = Boolean.valueOf(map.get("doSignature").toString());
         //内容
         String encryption = map.get("encryption").toString();
         //签名
@@ -358,16 +353,15 @@ public class YopClient extends YopBaseClient {
 
         //如果加密，解密
         if (doEncryption) {
-            encryption = encryptionAlg.equals("BLOWFISH") ? BlowfishEncrypter.decrypt(encryption, key) : AESEncrypter
+            encryption = encryptionAlg.equals("BLOWFISH") ? BlowfishCipher.decrypt(encryption, key) : AESEncrypter
                     .decrypt(encryption, key);
         }
 
-        if (doSignature) {
-            String localSignature = Digest.digest(key + encryption + key, signatureAlg);
-            //验签失败...
-            if (!localSignature.equals(signature)) {
-                return null;
-            }
+        //签名是必须的...
+        String localSignature = Digest.digest(key + encryption + key, signatureAlg);
+        //验签失败...
+        if (!localSignature.equals(signature)) {
+            return null;
         }
         return encryption;
     }

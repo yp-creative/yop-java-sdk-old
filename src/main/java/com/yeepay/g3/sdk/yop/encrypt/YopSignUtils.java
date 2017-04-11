@@ -23,33 +23,6 @@ public class YopSignUtils {
 	private static final Logger logger = Logger.getLogger(YopSignUtils.class);
 
 	/**
-	 * 使用<code>secret</code>对paramValues按以下算法进行签名： <br/>
-	 * uppercase(hex(sha1(secretkey1value1key2value2...secret))
-	 *
-	 * @param paramValues
-	 *            参数列表
-	 * @param secret
-	 * @return
-	 */
-	public static String sign(Map<String, String> paramValues, String secret) {
-		return sign(paramValues, null, secret, YopConstants.ALG_SHA);
-	}
-
-	/**
-	 * 使用<code>secret</code>对paramValues按以下算法进行签名： <br/>
-	 * uppercase(hex(sha1(secretkey1value1key2value2...secret))
-	 *
-	 * @param paramValues
-	 *            参数列表
-	 * @param secret
-	 * @return
-	 */
-	public static String sign(Map<String, String> paramValues, String secret,
-			String algName) {
-		return sign(paramValues, null, secret, algName);
-	}
-
-	/**
 	 * 对paramValues进行签名，其中ignoreParamNames这些参数不参与签名
 	 *
 	 * @param paramValues

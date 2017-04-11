@@ -23,15 +23,7 @@ import java.security.SecureRandom;
  * @version:
  */
 public class AESEncrypter {
-	/**
-	 * 加密
-	 *
-	 * @param content
-	 *            需要加密的内容
-	 * @param password
-	 *            加密密码
-	 * @return
-	 */
+
 	public static byte[] encrypt(byte[] data, byte[] key) {
 		Assert.notNull(data, "data");
 		Assert.notNull(key, "key");
@@ -54,15 +46,6 @@ public class AESEncrypter {
 		}
 	}
 
-	/**
-	 * 解密
-	 *
-	 * @param content
-	 *            待解密内容
-	 * @param password
-	 *            解密密钥
-	 * @return
-	 */
 	public static byte[] decrypt(byte[] data, byte[] key) {
 		Assert.notNull(data, "data");
 		Assert.notNull(key, "key");
