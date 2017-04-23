@@ -10,7 +10,7 @@ import com.yeepay.g3.facade.yop.ca.enums.DigestAlgEnum;
 import com.yeepay.g3.frame.yop.ca.DigitalEnvelopeUtils;
 import com.yeepay.g3.frame.yop.ca.rsa.RSAKeyUtils;
 import com.yeepay.g3.frame.yop.ca.utils.Exceptions;
-import com.yeepay.g3.sdk.yop.enums.HttpMethodType;
+import com.yeepay.g3.sdk.yop.annotations.Exposed;
 import com.yeepay.g3.sdk.yop.exception.YopClientException;
 import com.yeepay.g3.sdk.yop.http.Headers;
 import com.yeepay.g3.sdk.yop.http.HttpUtils;
@@ -40,6 +40,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * @author wang.bao
  * @version 1.0
  */
+@Exposed(exposedTo = {"opr"})
 @Deprecated
 public class YopClient3 extends YopBaseClient {
 
@@ -81,8 +82,7 @@ public class YopClient3 extends YopBaseClient {
      */
     public static String postRsaString(String methodOrUri, YopRequest request) {
         logger.debug(request.toQueryString());
-        String serverUrl = richRequest(HttpMethodType.POST, methodOrUri, request);
-        request.setAbsoluteURL(serverUrl);
+        String serverUrl = richRequest(methodOrUri, request);
         String content = getRestTemplate(request).postForObject(serverUrl, signAndEncrypt(methodOrUri, request), String.class);
         if (logger.isDebugEnabled()) {
             logger.debug("response:\n" + content);
@@ -93,8 +93,6 @@ public class YopClient3 extends YopBaseClient {
     private static HttpEntity<MultiValueMap<String, String>> signAndEncrypt(String methodOrUri, YopRequest request) {
         String appKey = request.getAppKey();
         String timestamp = DateUtils.formatCompressedIso8601Timestamp(new Date().getTime());
-        InternalConfig internalConfig = InternalConfig.Factory.getInternalConfig();
-        String protocolVersion = internalConfig.getProtocolVersion();
 
 //        authorization  yop-auth-v2/openSmsApi/2016-02-25T08:57:48Z/1800/host/a57365cb4bf6cd83c91dfae214c1404aa0cc74f2ade95f121530fcb9c91f3c9d
 
@@ -103,7 +101,7 @@ public class YopClient3 extends YopBaseClient {
         headers.add("x-yop-request-id", requestId);
         headers.add("x-yop-date", timestamp);
 
-        String authString = protocolVersion + "/" + appKey + "/" + timestamp + "/" + EXPIRED_SECONDS;
+        String authString = InternalConfig.PROTOCOL_VERSION + "/" + appKey + "/" + timestamp + "/" + EXPIRED_SECONDS;
 
         Set<String> headersToSignSet = new HashSet<String>();
         headersToSignSet.add("x-yop-request-id");
@@ -145,7 +143,7 @@ public class YopClient3 extends YopBaseClient {
                 throw Exceptions.unchecked(e);
             }
         } else {
-            isvPrivateKey = internalConfig.getISVPrivateKey(CertTypeEnum.RSA2048);
+            isvPrivateKey = InternalConfig.getISVPrivateKey(CertTypeEnum.RSA2048);
         }
         if (null == isvPrivateKey) {
             throw new YopClientException("Can't init ISV private key!");
@@ -157,7 +155,7 @@ public class YopClient3 extends YopBaseClient {
         digitalSignatureDTO.setDigestAlg(DigestAlgEnum.SHA256);
         digitalSignatureDTO = DigitalEnvelopeUtils.sign(digitalSignatureDTO, isvPrivateKey);
 
-        headers.add("Authorization", "YOP-RSA2048-SHA256 " + protocolVersion + "/" + appKey + "/" + timestamp + "/" + EXPIRED_SECONDS + "/" + signedHeaders + "/" + digitalSignatureDTO.getSignature());
+        headers.add("Authorization", "YOP-RSA2048-SHA256 " + InternalConfig.PROTOCOL_VERSION + "/" + appKey + "/" + timestamp + "/" + EXPIRED_SECONDS + "/" + signedHeaders + "/" + digitalSignatureDTO.getSignature());
 
         request.encoding();
 
@@ -186,8 +184,7 @@ public class YopClient3 extends YopBaseClient {
      * @return 字符串形式的响应
      */
     public static String uploadRsaForString(String methodOrUri, YopRequest request) {
-        String serverUrl = richRequest(HttpMethodType.POST, methodOrUri, request);
-        request.setAbsoluteURL(serverUrl);
+        String serverUrl = richRequest(methodOrUri, request);
 
         MultiValueMap<String, String> original = request.getParams();
         MultiValueMap<String, Object> alternate = new LinkedMultiValueMap<String, Object>();
@@ -274,8 +271,7 @@ public class YopClient3 extends YopBaseClient {
         digitalSignatureDTO.setSignature(sign);
         digitalSignatureDTO.setPlainText(sb.toString());
 
-        InternalConfig internalConfig = InternalConfig.Factory.getInternalConfig();
-        DigitalEnvelopeUtils.verify(digitalSignatureDTO, internalConfig.getYopPublicKey(CertTypeEnum.RSA2048));
+        DigitalEnvelopeUtils.verify(digitalSignatureDTO, InternalConfig.getYopPublicKey(CertTypeEnum.RSA2048));
         return true;
     }
 

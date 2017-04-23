@@ -9,6 +9,7 @@ package com.yeepay.g3.sdk.yop.client;
  * @author wang.bao
  * @version 1.0
  */
+@Deprecated
 public class YopConfig {
 
     private static String serverRoot = "https://open.yeepay.com/yop-center";

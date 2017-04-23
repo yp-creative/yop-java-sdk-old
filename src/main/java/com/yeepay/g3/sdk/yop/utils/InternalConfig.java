@@ -14,17 +14,17 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.*;
-import java.security.cert.CertificateException;
-import java.security.spec.InvalidKeySpecException;
+import java.security.KeyStore;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.util.Enumeration;
 import java.util.Map;
 
 /**
- * title: <br/>
- * description:描述<br/>
- * Copyright: Copyright (c)2011<br/>
- * Company: 易宝支付(YeePay)<br/>
+ * title: <br>
+ * description:描述<br>
+ * Copyright: Copyright (c)2011<br>
+ * Company: 易宝支付(YeePay)<br>
  *
  * @author dreambt
  * @version 1.0.0
@@ -35,80 +35,50 @@ public final class InternalConfig {
     private static final String SP_SDK_CONFIG_FILE = "yop.sdk.config.file";
 
     private static final String DEFAULT_SDK_CONFIG_FILE = "/yop_sdk_config_default.json";
-    private static final String DEFAULT_PROTOCOL_VERSION = "yop-auth-v2";
-    private static final String DEFAULT_SDK_VERSION = "20170104.2103";
 
-    private String protocolVersion;
+    public static final String PROTOCOL_VERSION = "yop-auth-v2";
+    public static final String SDK_VERSION = "20170104.2103";
 
-    private String sdkVersion;
+    private static Map<CertTypeEnum, PublicKey> yopPublicKeyMap;
 
-    private PublicKey isvPublicKey;
+    private static Map<CertTypeEnum, PrivateKey> isvPrivateKeyMap;
 
-    private Map<CertTypeEnum, PublicKey> yopPublicKeyMap = Maps.newEnumMap(CertTypeEnum.class);
-
-    private Map<CertTypeEnum, PrivateKey> isvPrivateKeyMap = Maps.newEnumMap(CertTypeEnum.class);
-
-    public String getProtocolVersion() {
-        return protocolVersion;
+    private InternalConfig() {
+        /*forbid instantiate*/
     }
 
-    public String getSdkVersion() {
-        return sdkVersion;
-    }
+    static {
+        yopPublicKeyMap = Maps.newEnumMap(CertTypeEnum.class);
+        isvPrivateKeyMap = Maps.newEnumMap(CertTypeEnum.class);
 
-    public PublicKey getISVPublicKey() {
-        return isvPublicKey;
-    }
+        try {
+            // 允许在 VM arguments 中指定配置文件名 -Dyop.sdk.config.file=/yop_sdk_config_override.json
+            SDKConfig config = load(System.getProperty(SP_SDK_CONFIG_FILE, DEFAULT_SDK_CONFIG_FILE));
 
-    public PublicKey getYopPublicKey(CertTypeEnum certType) {
-        return yopPublicKeyMap.get(certType);
-    }
-
-    public PrivateKey getISVPrivateKey(CertTypeEnum certType) {
-        return isvPrivateKeyMap.get(certType);
-    }
-
-    static InternalConfig load() throws IOException, InvalidKeySpecException, NoSuchAlgorithmException, UnrecoverableKeyException, KeyStoreException, CertificateException, NoSuchProviderException {
-        // 允许在 VM arguments 中指定配置文件名 -Dyop.sdk.config.file=/yop_sdk_config_override.json
-        String configFile = System.getProperty(SP_SDK_CONFIG_FILE);
-        if (StringUtils.isBlank(configFile)) {
-            configFile = DEFAULT_SDK_CONFIG_FILE;
-        }
-
-        SDKConfig config = load(configFile);
-        InternalConfig internalConfig = new InternalConfig();
-        if (StringUtils.isNotBlank(config.getDefaultProtocolVersion())) {
-            internalConfig.protocolVersion = config.getDefaultProtocolVersion();
-        } else {
-            internalConfig.protocolVersion = DEFAULT_PROTOCOL_VERSION;
-        }
-
-        if (StringUtils.isNotBlank(config.getSdkVersion())) {
-            internalConfig.sdkVersion = config.getSdkVersion();
-        } else {
-            internalConfig.sdkVersion = DEFAULT_SDK_VERSION;
-        }
-
-        if (null == config.getYopPublicKey()) {
-            throw new YopClientException("Can't init YOP public key!");
-        }
-        if (config.getYopPublicKey().length > 0) {
+            if (null == config.getYopPublicKey() || config.getYopPublicKey().length == 0) {
+                throw new YopClientException("Can't init YOP public key!");
+            }
             for (CertConfig certConfig : config.getYopPublicKey()) {
-                internalConfig.yopPublicKeyMap.put(certConfig.getCertType(), loadPublicKey(certConfig));
+                yopPublicKeyMap.put(certConfig.getCertType(), loadPublicKey(certConfig));
             }
-        }
 
-        if (null != config.getIsvPrivateKey() && config.getIsvPrivateKey().length > 0) {
-            for (CertConfig certConfig : config.getIsvPrivateKey()) {
-                internalConfig.isvPrivateKeyMap.put(certConfig.getCertType(), loadPrivateKey(certConfig));
+            if (null == config.getIsvPrivateKey() || config.getIsvPrivateKey().length == 0) {
+                throw new YopClientException("Can't init isv private key!");
             }
+
+            for (CertConfig certConfig : config.getIsvPrivateKey()) {
+                isvPrivateKeyMap.put(certConfig.getCertType(), loadPrivateKey(certConfig));
+            }
+        } catch (RuntimeException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw new IllegalStateException("Fatal: Failed to load the internal config for YOP Java SDK", ex);
         }
-        return internalConfig;
     }
 
     static SDKConfig load(String configFile) {
         InputStream fis = null;
-        SDKConfig config = null;
+        SDKConfig config;
         try {
             fis = getInputStream(configFile);
             config = JsonUtils.loadFrom(fis, SDKConfig.class);
@@ -128,7 +98,7 @@ public final class InternalConfig {
     }
 
     private static PublicKey loadPublicKey(CertConfig certConfig) {
-        PublicKey publicKey = null;
+        PublicKey publicKey;
         if (null == certConfig.getStoreType()) {
             throw new YopClientException("Can't init YOP public key! Store type is error.");
         }
@@ -163,7 +133,7 @@ public final class InternalConfig {
             case FILE_P12:
                 try {
                     char[] password = certConfig.getPassword().toCharArray();
-                    KeyStore keystore = null;
+                    KeyStore keystore;
                     keystore = KeyStore.getInstance(KeyStoreTypeEnum.PKCS12.getValue());
                     keystore.load(InternalConfig.class.getResourceAsStream(certConfig.getValue()), password);
 //                privateKey = (PrivateKey) keystore.getKey(certConfig.getCertType().getValue(), password);
@@ -187,7 +157,7 @@ public final class InternalConfig {
     }
 
     private static InputStream getInputStream(String location) throws FileNotFoundException {
-        InputStream fis = null;
+        InputStream fis;
         if (StringUtils.startsWith(location, "file://")) {
             fis = new FileInputStream(StringUtils.substring(location, 6));
         } else {
@@ -196,25 +166,11 @@ public final class InternalConfig {
         return fis;
     }
 
-    public static class Factory {
-
-        private static final InternalConfig SINGELTON;
-
-        static {
-            InternalConfig config = null;
-            try {
-                config = InternalConfig.load();
-            } catch (RuntimeException ex) {
-                throw ex;
-            } catch (Exception ex) {
-                throw new IllegalStateException("Fatal: Failed to load the internal config for YOP Java SDK", ex);
-            }
-            SINGELTON = config;
-        }
-
-        public static InternalConfig getInternalConfig() {
-            return SINGELTON;
-        }
+    public static PublicKey getYopPublicKey(CertTypeEnum certType) {
+        return yopPublicKeyMap.get(certType);
     }
 
+    public static PrivateKey getISVPrivateKey(CertTypeEnum certType) {
+        return isvPrivateKeyMap.get(certType);
+    }
 }

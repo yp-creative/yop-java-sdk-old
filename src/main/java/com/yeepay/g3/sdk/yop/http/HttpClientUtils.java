@@ -25,10 +25,10 @@ import java.security.cert.X509Certificate;
 import java.util.concurrent.TimeUnit;
 
 /**
- * title: <br/>
- * description:描述<br/>
- * Copyright: Copyright (c)2011<br/>
- * Company: 易宝支付(YeePay)<br/>
+ * title: <br>
+ * description:描述<br>
+ * Copyright: Copyright (c)2011<br>
+ * Company: 易宝支付(YeePay)<br>
  *
  * @author dreambt
  * @version 1.0.0

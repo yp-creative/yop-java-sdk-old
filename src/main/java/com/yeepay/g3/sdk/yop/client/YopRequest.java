@@ -25,8 +25,6 @@ public class YopRequest {
 
     private Logger logger = Logger.getLogger(getClass());
 
-    private String method;
-
     private String locale = "zh_CN";
 
     private String version = "1.0";
@@ -63,11 +61,6 @@ public class YopRequest {
     private Integer readTimeout;
 
     /**
-     * 临时变量，避免多次判断
-     */
-    private transient boolean isRest = true;
-
-    /**
      * 可支持不同请求使用不同的appKey及secretKey
      */
     private String appKey;
@@ -82,17 +75,11 @@ public class YopRequest {
      */
     private String serverRoot;
 
-    /**
-     * 临时变量，请求绝对路径
-     */
-    private String absoluteURL;
-
     public YopRequest() {
         this.appKey = YopConfig.getAppKey();
         this.secretKey = YopConfig.getSecret();
         this.serverRoot = YopConfig.getServerRoot();
         paramMap.set(YopConstants.APP_KEY, YopConfig.getAppKey());
-        paramMap.set(YopConstants.VERSION, version);
         paramMap.set(YopConstants.LOCALE, locale);
         paramMap.set(YopConstants.TIMESTAMP, String.valueOf(System.currentTimeMillis()));
     }
@@ -211,15 +198,6 @@ public class YopRequest {
         paramMap.set(YopConstants.VERSION, this.version);
     }
 
-    public void setMethod(String method) {
-        this.method = method;
-        paramMap.set(YopConstants.METHOD, this.method);
-    }
-
-    public String getMethod() {
-        return method;
-    }
-
     public String getLocale() {
         return locale;
     }
@@ -260,14 +238,6 @@ public class YopRequest {
     public void setSignRet(boolean signRet) {
         this.signRet = signRet;
         paramMap.set(YopConstants.SIGN_RETURN, String.valueOf(this.signRet));
-    }
-
-    public boolean isRest() {
-        return isRest;
-    }
-
-    public void setRest(boolean isRest) {
-        this.isRest = isRest;
     }
 
     public Integer getReadTimeout() {
@@ -322,14 +292,6 @@ public class YopRequest {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public String getAbsoluteURL() {
-        return absoluteURL;
-    }
-
-    public void setAbsoluteURL(String absoluteURL) {
-        this.absoluteURL = absoluteURL;
     }
 
     /**

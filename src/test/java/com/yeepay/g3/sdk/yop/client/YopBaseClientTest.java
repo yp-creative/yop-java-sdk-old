@@ -1,15 +1,14 @@
 package com.yeepay.g3.sdk.yop.client;
 
-import com.yeepay.g3.sdk.yop.enums.HttpMethodType;
 import org.junit.Test;
 
 import static junit.framework.TestCase.assertEquals;
 
 /**
- * title: <br/>
- * description:描述<br/>
- * Copyright: Copyright (c)2011<br/>
- * Company: 易宝支付(YeePay)<br/>
+ * title: <br>
+ * description:描述<br>
+ * Copyright: Copyright (c)2011<br>
+ * Company: 易宝支付(YeePay)<br>
  *
  * @author dreambt
  * @version 1.0.0
@@ -28,12 +27,8 @@ public class YopBaseClientTest {
         request.addParam("idCardNumber", "370982199101186691111");
 
         String methodOrUri = "/rest/v1.2/auth/idcard";
-        String serverUrl = YopBaseClient.richRequest(HttpMethodType.POST, methodOrUri, request);
+        String serverUrl = YopBaseClient.richRequest(methodOrUri, request);
         assertEquals(YopConfig.getServerRoot() + "/rest/v1.2/auth/idcard", serverUrl);
-
-        methodOrUri = "/rest/v1.2/auth/idcard/{name}";
-        serverUrl = YopBaseClient.richRequest(HttpMethodType.POST, methodOrUri, request);
-        assertEquals(YopConfig.getServerRoot() + "/rest/v1.2/auth/idcard/张三", serverUrl);
     }
 
 }

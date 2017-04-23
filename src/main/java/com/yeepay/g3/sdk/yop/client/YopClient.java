@@ -1,10 +1,10 @@
 package com.yeepay.g3.sdk.yop.client;
 
+import com.yeepay.g3.sdk.yop.annotations.Exposed;
 import com.yeepay.g3.sdk.yop.encrypt.AESEncrypter;
 import com.yeepay.g3.sdk.yop.encrypt.BlowfishCipher;
 import com.yeepay.g3.sdk.yop.encrypt.Digest;
 import com.yeepay.g3.sdk.yop.encrypt.YopSignUtils;
-import com.yeepay.g3.sdk.yop.enums.HttpMethodType;
 import com.yeepay.g3.sdk.yop.unmarshaller.JacksonJsonMarshaller;
 import com.yeepay.g3.sdk.yop.utils.Assert;
 import com.yeepay.g3.sdk.yop.utils.JsonUtils;
@@ -26,6 +26,7 @@ import java.util.*;
  * @author wang.bao
  * @version 1.0
  */
+@Exposed(exposedTo = {"all"})
 @Deprecated
 public class YopClient extends YopBaseClient {
 
@@ -81,11 +82,9 @@ public class YopClient extends YopBaseClient {
      * @return 字符串形式的响应
      */
     public static String postForString(String methodOrUri, YopRequest request) {
-        String serverUrl = richRequest(HttpMethodType.POST, methodOrUri,
-                request);
+        String serverUrl = richRequest(methodOrUri, request);
         signAndEncrypt(request);
         logger.info("signature:" + request.getParamValue(YopConstants.SIGN));
-        request.setAbsoluteURL(serverUrl);
         request.encoding();
 
         String content = getRestTemplate(request).postForObject(serverUrl,
@@ -105,7 +104,6 @@ public class YopClient extends YopBaseClient {
      */
     public static String getForString(String methodOrUri, YopRequest request) {
         String serverUrl = buildURL(methodOrUri, request);
-        request.setAbsoluteURL(serverUrl);
         String content = getRestTemplate(request).getForObject(serverUrl, String.class);
         if (logger.isDebugEnabled()) {
             logger.debug("response:\n" + content);
@@ -121,7 +119,7 @@ public class YopClient extends YopBaseClient {
      * @return 字符串形式的响应
      */
     public static String uploadForString(String methodOrUri, YopRequest request) {
-        String serverUrl = richRequest(HttpMethodType.POST, methodOrUri, request);
+        String serverUrl = richRequest(methodOrUri, request);
 
         MultiValueMap<String, String> original = request.getParams();
         MultiValueMap<String, Object> alternate = new LinkedMultiValueMap<String, Object>();
@@ -138,7 +136,6 @@ public class YopClient extends YopBaseClient {
         }
 
         signAndEncrypt(request);
-        request.setAbsoluteURL(serverUrl);
         request.encoding();
 
         for (String key : original.keySet()) {
@@ -156,7 +153,6 @@ public class YopClient extends YopBaseClient {
      * 简单校验及请求签名
      */
     public static void signAndEncrypt(YopRequest request) {
-        Assert.notNull(request.getMethod(), "method must be specified");
         Assert.notNull(request.getSecretKey(), "secretKey must be specified");
         String appKey = request.getParamValue(YopConstants.APP_KEY);
         if (StringUtils.isBlank(appKey)) {
@@ -168,10 +164,9 @@ public class YopClient extends YopBaseClient {
                 request.getIgnoreSignParams(), request.getSecretKey(),
                 request.getSignAlg());
         request.addParam(YopConstants.SIGN, signValue);
-        if (request.isRest()) {
-            request.removeParam(YopConstants.METHOD);
-            request.removeParam(YopConstants.VERSION);
-        }
+
+        //TODO why is here?
+        request.removeParam(YopConstants.VERSION);
 
         // 签名之后再加密
         if (request.isEncrypt()) {
@@ -186,7 +181,8 @@ public class YopClient extends YopBaseClient {
     /**
      * 请求加密，使用AES算法，要求secret为正常的AESkey
      *
-     * @throws Exception
+     * @param request 请求参数
+     * @throws Exception 加密异常
      */
     protected static void encrypt(YopRequest request) throws Exception {
         StringBuilder builder = new StringBuilder();
@@ -258,8 +254,8 @@ public class YopClient extends YopBaseClient {
     /**
      * 数组、列表按值排序后逗号拼接
      *
-     * @param list
-     * @return
+     * @param list 参数列表
+     * @return 拼接结果
      */
     protected static String listAsString(List<String> list) {
         if (list == null || list.isEmpty()) {
@@ -307,7 +303,7 @@ public class YopClient extends YopBaseClient {
      * @return
      */
     public static String buildURL(String methodOrUri, YopRequest request) {
-        String serverUrl = richRequest(HttpMethodType.GET, methodOrUri, request);
+        String serverUrl = richRequest(methodOrUri, request);
         signAndEncrypt(request);
         request.encoding();
         serverUrl += serverUrl.contains("?") ? "&" : "?" + request.toQueryString();
@@ -322,7 +318,7 @@ public class YopClient extends YopBaseClient {
      * @return 签名结果
      */
     public static String getSign(String methodOrUri, YopRequest request) {
-        richRequest(HttpMethodType.GET, methodOrUri, request);
+        richRequest(methodOrUri, request);
         signAndEncrypt(request);
         return request.getParamValue(YopConstants.SIGN);
     }

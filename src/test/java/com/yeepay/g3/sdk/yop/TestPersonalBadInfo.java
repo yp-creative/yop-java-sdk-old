@@ -7,10 +7,10 @@ import com.yeepay.g3.sdk.yop.client.YopResponse;
 import org.junit.Test;
 
 /**
- * title: <br/>
- * description:描述<br/>
- * Copyright: Copyright (c)2016<br/>
- * Company: 易宝支付(YeePay)<br/>
+ * title: <br>
+ * description:描述<br>
+ * Copyright: Copyright (c)2016<br>
+ * Company: 易宝支付(YeePay)<br>
  *
  * @author yp-tc-m-2645
  * @version 1.0.0ß

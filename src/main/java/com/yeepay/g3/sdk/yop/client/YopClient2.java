@@ -1,7 +1,7 @@
 package com.yeepay.g3.sdk.yop.client;
 
 import com.yeepay.g3.frame.yop.ca.utils.Encodes;
-import com.yeepay.g3.sdk.yop.enums.HttpMethodType;
+import com.yeepay.g3.sdk.yop.annotations.Exposed;
 import com.yeepay.g3.sdk.yop.unmarshaller.JacksonJsonMarshaller;
 import org.apache.log4j.Logger;
 import org.springframework.http.HttpEntity;
@@ -44,9 +44,8 @@ public class YopClient2 extends YopBaseClient {
      * @return 字符串形式的响应
      */
     public static String postBasicForString(String methodOrUri, YopRequest request) {
-        String serverUrl = richRequest(HttpMethodType.POST, methodOrUri, request);
+        String serverUrl = richRequest(methodOrUri, request);
         logger.info("signature:" + request.getParamValue(YopConstants.SIGN));
-        request.setAbsoluteURL(serverUrl);
         request.encoding();
 
         MultiValueMap<String, String> headers = new LinkedMultiValueMap<String, String>();

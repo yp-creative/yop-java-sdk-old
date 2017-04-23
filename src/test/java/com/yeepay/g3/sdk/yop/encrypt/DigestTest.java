@@ -6,10 +6,10 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 /**
- * title: <br/>
- * description: 描述<br/>
- * Copyright: Copyright (c)2014<br/>
- * Company: 易宝支付(YeePay)<br/>
+ * title: <br>
+ * description: 描述<br>
+ * Copyright: Copyright (c)2014<br>
+ * Company: 易宝支付(YeePay)<br>
  *
  * @author baitao.ji
  * @version 1.0.0
