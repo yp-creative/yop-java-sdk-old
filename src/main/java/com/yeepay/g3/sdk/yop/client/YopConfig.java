@@ -9,7 +9,7 @@ package com.yeepay.g3.sdk.yop.client;
  * @author wang.bao
  * @version 1.0
  */
-@Deprecated
+@Deprecated/*It is recommended to use custom yop_sdk_config_default.json */
 public class YopConfig {
 
     private static String serverRoot = "https://open.yeepay.com/yop-center";
@@ -35,12 +35,12 @@ public class YopConfig {
     /**
      * 连接超时时间
      */
-    private static int connectTimeout = 10000;
+    private static int connectTimeout = -1;
 
     /**
      * 读取返回结果超时
      */
-    private static int readTimeout = 30000;
+    private static int readTimeout = -1;
 
     public static String getAppKey() {
         return appKey;

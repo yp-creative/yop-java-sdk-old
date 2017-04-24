@@ -1,7 +1,6 @@
 package com.yeepay.g3.sdk.yop.client;
 
 import com.yeepay.g3.frame.yop.ca.utils.Encodes;
-import com.yeepay.g3.sdk.yop.annotations.Exposed;
 import com.yeepay.g3.sdk.yop.unmarshaller.JacksonJsonMarshaller;
 import org.apache.log4j.Logger;
 import org.springframework.http.HttpEntity;
@@ -19,7 +18,7 @@ import java.io.UnsupportedEncodingException;
  * @version 1.0
  */
 @Deprecated
-public class YopClient2 extends YopBaseClient {
+public class YopClient2 extends AbstractClient {
 
     protected static final Logger logger = Logger.getLogger(YopClient2.class);
 

@@ -56,6 +56,7 @@ public class DevDemo {
         YopRequest request = new YopRequest(null, APP_SECRETS[i], BASE_URL);
         request.setEncrypt(true);
         request.setSignRet(true);
+        request.setUseCFCA(true);
         request.addParam("appKey", APP_KEYS[i]);//这个写YOP就可以了
         request.addParam("corpName", "安徽四创电子股份有限公司青海分公司");//企业名称
         request.addParam("regNo", "630104063035716");//工商注册号

@@ -2,6 +2,7 @@ package com.yeepay.g3.sdk.yop.http;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
+import com.yeepay.g3.sdk.yop.annotations.Exposed;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.StatusLine;
@@ -30,6 +31,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * @version 1.0.0
  * @since 16/2/18 16:45
  */
+@Exposed(exposedTo = "yop-center")
 public final class HttpUtils {
 
     private static final Logger LOGGER = Logger.getLogger(HttpUtils.class);

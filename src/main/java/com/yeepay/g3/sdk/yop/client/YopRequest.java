@@ -1,6 +1,7 @@
 package com.yeepay.g3.sdk.yop.client;
 
 import com.yeepay.g3.sdk.yop.utils.Assert;
+import com.yeepay.g3.sdk.yop.utils.InternalConfig;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.util.LinkedMultiValueMap;
@@ -27,8 +28,6 @@ public class YopRequest {
 
     private String locale = "zh_CN";
 
-    private String version = "1.0";
-
     private String signAlg = YopConstants.ALG_SHA1;
 
     /**
@@ -51,16 +50,6 @@ public class YopRequest {
     private boolean signRet = false;
 
     /**
-     * 连接超时时间, default: 30,000
-     */
-    private Integer connectTimeout;
-
-    /**
-     * 读取返回结果超时, default: 60,000
-     */
-    private Integer readTimeout;
-
-    /**
      * 可支持不同请求使用不同的appKey及secretKey
      */
     private String appKey;
@@ -75,9 +64,22 @@ public class YopRequest {
      */
     private String serverRoot;
 
+    private Boolean useCFCA = false;
+
+    /*配置的覆盖原则：
+    * 构造方法 >> YopConfig >> yop_sdk_config_default.json配置文件
+    */
     public YopRequest() {
-        this.appKey = YopConfig.getAppKey();
-        this.secretKey = YopConfig.getSecret();
+        this.appKey = InternalConfig.APP_KEY;
+        if (StringUtils.isNotBlank(YopConfig.getAppKey())) {
+            this.appKey = YopConfig.getAppKey();
+        }
+
+        this.secretKey = InternalConfig.SECRET_KEY;
+        if (StringUtils.isNotBlank(YopConfig.getSecret())) {
+            this.secretKey = YopConfig.getSecret();
+        }
+
         this.serverRoot = YopConfig.getServerRoot();
         paramMap.set(YopConstants.APP_KEY, YopConfig.getAppKey());
         paramMap.set(YopConstants.LOCALE, locale);
@@ -127,15 +129,11 @@ public class YopRequest {
      * @param ignoreSign 是否忽略签名
      * @return
      */
-    public YopRequest addParam(String paramName, Object paramValue,
-                               boolean ignoreSign) {
+    public YopRequest addParam(String paramName, Object paramValue, boolean ignoreSign) {
         Assert.hasText(paramName, "参数名不能为空");
-        if (paramValue == null
-                || ((paramValue instanceof String) && StringUtils
-                .isBlank((String) paramValue))
-                || ((paramValue instanceof Collection<?>) && ((Collection<?>) paramValue)
-                .isEmpty())) {
-            logger.warn("参数" + paramName + "为空，忽略");
+        if (paramValue == null || ((paramValue instanceof String) && StringUtils.isBlank((String) paramValue))
+                || ((paramValue instanceof Collection<?>) && ((Collection<?>) paramValue).isEmpty())) {
+            logger.warn("param " + paramName + "is null or empty，ignore it");
             return this;
         }
         if (YopConstants.isProtectedKey(paramName)) {
@@ -193,17 +191,8 @@ public class YopRequest {
         paramMap.set(YopConstants.LOCALE, this.locale);
     }
 
-    public void setVersion(String version) {
-        this.version = version;
-        paramMap.set(YopConstants.VERSION, this.version);
-    }
-
     public String getLocale() {
         return locale;
-    }
-
-    public String getVersion() {
-        return version;
     }
 
     public String getSignAlg() {
@@ -238,22 +227,6 @@ public class YopRequest {
     public void setSignRet(boolean signRet) {
         this.signRet = signRet;
         paramMap.set(YopConstants.SIGN_RETURN, String.valueOf(this.signRet));
-    }
-
-    public Integer getReadTimeout() {
-        return readTimeout;
-    }
-
-    public void setReadTimeout(Integer readTimeout) {
-        this.readTimeout = readTimeout;
-    }
-
-    public Integer getConnectTimeout() {
-        return connectTimeout;
-    }
-
-    public void setConnectTimeout(Integer connectTimeout) {
-        this.connectTimeout = connectTimeout;
     }
 
     public String getAppKey() {
@@ -311,5 +284,16 @@ public class YopRequest {
             }
         }
         return builder.toString();
+    }
+
+    public Boolean getUseCFCA() {
+        return useCFCA;
+    }
+
+    public void setUseCFCA(Boolean useCFCA) {
+        if (useCFCA) {
+            serverRoot = InternalConfig.CFCA_SERVER_ROOT;
+        }
+        this.useCFCA = useCFCA;
     }
 }

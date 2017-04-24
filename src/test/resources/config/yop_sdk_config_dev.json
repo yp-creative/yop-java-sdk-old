@@ -2,8 +2,8 @@
   "app_key": "",
   "aes_secret_key": "",
   "hmac_secret_key": "",
-  "server_root": "https://open.yeepay.com/yop-center",
-  "cfca_server_root": "https://security.open.yeepay.com/yop-center",
+  "server_root": "http://172.17.102.173:8064/yop-center",
+  "cfca_server_root": "https://172.17.102.174/yop-center",
   "yop_public_key": [
     {
       "store_type": "string",
@@ -18,6 +18,11 @@
       "value": "<Your RSA2048 private key>"
     }
   ],
+  "trust_certificates": ["/cer/server.jks"],
+  "client_certificate": {
+    "password": "cfca1234",
+    "path": "/cer/cfca_client_test.pfx"
+  },
   "connect_timeout": 1000,
   "read_timeout": 3000
 }

@@ -7,6 +7,7 @@ import com.yeepay.g3.frame.yop.ca.rsa.RSAKeyUtils;
 import com.yeepay.g3.frame.yop.ca.utils.Exceptions;
 import com.yeepay.g3.sdk.yop.exception.YopClientException;
 import com.yeepay.g3.sdk.yop.utils.config.CertConfig;
+import com.yeepay.g3.sdk.yop.utils.config.CertificateConfig;
 import com.yeepay.g3.sdk.yop.utils.config.SDKConfig;
 import org.apache.commons.lang3.StringUtils;
 
@@ -34,10 +35,26 @@ public final class InternalConfig {
 
     private static final String SP_SDK_CONFIG_FILE = "yop.sdk.config.file";
 
-    private static final String DEFAULT_SDK_CONFIG_FILE = "/yop_sdk_config_default.json";
+    /*
+    1.如果配置file://开头，则是系统绝对路径
+    2.如果是/开头，则是classpath下相对路径
+    */
+    private static final String DEFAULT_SDK_CONFIG_FILE = "/config/yop_sdk_config_default.json";
 
     public static final String PROTOCOL_VERSION = "yop-auth-v2";
     public static final String SDK_VERSION = "20170104.2103";
+
+    public static final String APP_KEY;
+    public static final String SECRET_KEY;
+
+    public static final String SERVER_ROOT;
+    public static final String CFCA_SERVER_ROOT;
+
+    public static int CONNECT_TIMEOUT = 30000;
+    public static int READ_TIMEOUT = 60000;
+
+    public static final CertificateConfig TRUST_CERTIFICATE;
+    public static final CertificateConfig CLIENT_CERTIFICATE;
 
     private static Map<CertTypeEnum, PublicKey> yopPublicKeyMap;
 
@@ -55,20 +72,36 @@ public final class InternalConfig {
             // 允许在 VM arguments 中指定配置文件名 -Dyop.sdk.config.file=/yop_sdk_config_override.json
             SDKConfig config = load(System.getProperty(SP_SDK_CONFIG_FILE, DEFAULT_SDK_CONFIG_FILE));
 
-            if (null == config.getYopPublicKey() || config.getYopPublicKey().length == 0) {
-                throw new YopClientException("Can't init YOP public key!");
+            SERVER_ROOT = config.getServerRoot();
+            CFCA_SERVER_ROOT = config.getCfcaServerRoot();
+
+            APP_KEY = config.getAppKey();
+
+            String hmacSecretKey = config.getHmacSecretKey();
+            String aesSecretKey = config.getAesSecretKey();
+            SECRET_KEY = StringUtils.isBlank(aesSecretKey) ? hmacSecretKey : aesSecretKey;
+
+            if (config.getConnectTimeout() != null && config.getConnectTimeout() >= 0) {
+                CONNECT_TIMEOUT = config.getConnectTimeout();
             }
-            for (CertConfig certConfig : config.getYopPublicKey()) {
-                yopPublicKeyMap.put(certConfig.getCertType(), loadPublicKey(certConfig));
+            if (config.getReadTimeout() != null && config.getReadTimeout() >= 0) {
+                READ_TIMEOUT = config.getReadTimeout();
             }
 
-            if (null == config.getIsvPrivateKey() || config.getIsvPrivateKey().length == 0) {
-                throw new YopClientException("Can't init isv private key!");
+            if (null != config.getYopPublicKey()) {
+                for (CertConfig certConfig : config.getYopPublicKey()) {
+                    yopPublicKeyMap.put(certConfig.getCertType(), loadPublicKey(certConfig));
+                }
             }
 
-            for (CertConfig certConfig : config.getIsvPrivateKey()) {
-                isvPrivateKeyMap.put(certConfig.getCertType(), loadPrivateKey(certConfig));
+            if (null != config.getIsvPrivateKey()) {
+                for (CertConfig certConfig : config.getIsvPrivateKey()) {
+                    isvPrivateKeyMap.put(certConfig.getCertType(), loadPrivateKey(certConfig));
+                }
             }
+
+            TRUST_CERTIFICATE = config.getTrustCertificate();
+            CLIENT_CERTIFICATE = config.getClientCertificate();
         } catch (RuntimeException ex) {
             throw ex;
         } catch (Exception ex) {
@@ -156,7 +189,7 @@ public final class InternalConfig {
         return privateKey;
     }
 
-    private static InputStream getInputStream(String location) throws FileNotFoundException {
+    public static InputStream getInputStream(String location) throws FileNotFoundException {
         InputStream fis;
         if (StringUtils.startsWith(location, "file://")) {
             fis = new FileInputStream(StringUtils.substring(location, 6));

@@ -27,7 +27,7 @@ public class YopBaseClientTest {
         request.addParam("idCardNumber", "370982199101186691111");
 
         String methodOrUri = "/rest/v1.2/auth/idcard";
-        String serverUrl = YopBaseClient.richRequest(methodOrUri, request);
+        String serverUrl = AbstractClient.richRequest(methodOrUri, request);
         assertEquals(YopConfig.getServerRoot() + "/rest/v1.2/auth/idcard", serverUrl);
     }
 

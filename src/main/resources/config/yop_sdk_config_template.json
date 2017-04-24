@@ -1,7 +1,7 @@
 {
-  "app_key": "",
-  "aes_secret_key": "",
-  "hmac_secret_key": "",
+  "app_key": "<Your appKey>;覆盖优先级：YopRequest >> YopConfig >> this",
+  "aes_secret_key": "<Your appSecretKey>;覆盖优先级：YopRequest >> YopConfig >> this",
+  "hmac_secret_key": "<Your hmac_secret_key>;覆盖优先级：YopRequest >> YopConfig >> this",
   "server_root": "https://open.yeepay.com/yop-center",
   "cfca_server_root": "https://security.open.yeepay.com/yop-center",
   "yop_public_key": [
@@ -18,6 +18,13 @@
       "value": "<Your RSA2048 private key>"
     }
   ],
+  "trust_certificates": [
+    "trust.ca"
+  ],
+  "client_certificate": {
+    "password": "p",
+    "path": "file:///usr/local/test.pfx"
+  },
   "connect_timeout": 1000,
   "read_timeout": 3000
 }

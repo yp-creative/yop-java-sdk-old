@@ -42,7 +42,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 @Exposed(exposedTo = {"opr"})
 @Deprecated
-public class YopClient3 extends YopBaseClient {
+public class YopClient3 extends AbstractClient {
 
     protected static final Logger logger = Logger.getLogger(YopClient3.class);
 

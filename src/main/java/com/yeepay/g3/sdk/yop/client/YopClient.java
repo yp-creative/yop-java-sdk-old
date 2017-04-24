@@ -28,7 +28,7 @@ import java.util.*;
  */
 @Exposed(exposedTo = {"all"})
 @Deprecated
-public class YopClient extends YopBaseClient {
+public class YopClient extends AbstractClient {
 
     protected static final Logger logger = Logger.getLogger(YopClient.class);
 
@@ -87,8 +87,7 @@ public class YopClient extends YopBaseClient {
         logger.info("signature:" + request.getParamValue(YopConstants.SIGN));
         request.encoding();
 
-        String content = getRestTemplate(request).postForObject(serverUrl,
-                request.getParams(), String.class);
+        String content = getRestTemplate(request).postForObject(serverUrl, request.getParams(), String.class);
         if (logger.isDebugEnabled()) {
             logger.debug("response:\n" + content);
         }
