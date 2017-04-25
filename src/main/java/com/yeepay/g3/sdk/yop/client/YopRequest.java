@@ -30,11 +30,6 @@ public class YopRequest {
 
     private String signAlg = YopConstants.ALG_SHA1;
 
-    /**
-     * 商户编号，易宝商户可不注册开放应用(获取appKey)也可直接调用API
-     */
-    private String customerNo;
-
     private MultiValueMap<String, String> paramMap = new LinkedMultiValueMap<String, String>();
 
     private List<String> ignoreSignParams = new ArrayList<String>(Arrays.asList(YopConstants.SIGN));
@@ -67,21 +62,13 @@ public class YopRequest {
     private Boolean useCFCA = false;
 
     /*配置的覆盖原则：
-    * 构造方法 >> YopConfig >> yop_sdk_config_default.json配置文件
+    * 构造方法 >> yop_sdk_config_default.json配置文件
     */
     public YopRequest() {
         this.appKey = InternalConfig.APP_KEY;
-        if (StringUtils.isNotBlank(YopConfig.getAppKey())) {
-            this.appKey = YopConfig.getAppKey();
-        }
-
         this.secretKey = InternalConfig.SECRET_KEY;
-        if (StringUtils.isNotBlank(YopConfig.getSecret())) {
-            this.secretKey = YopConfig.getSecret();
-        }
-
-        this.serverRoot = YopConfig.getServerRoot();
-        paramMap.set(YopConstants.APP_KEY, YopConfig.getAppKey());
+        this.serverRoot = InternalConfig.SERVER_ROOT;
+        paramMap.set(YopConstants.APP_KEY, this.appKey);
         paramMap.set(YopConstants.LOCALE, locale);
         paramMap.set(YopConstants.TIMESTAMP, String.valueOf(System.currentTimeMillis()));
     }
@@ -96,23 +83,11 @@ public class YopRequest {
         paramMap.set(YopConstants.APP_KEY, appKey);
     }
 
-    public YopRequest(String appKey, String secretKey, boolean androidMode) {
-        this(appKey, secretKey);
-
-        if (!androidMode) {
-            this.customerNo = appKey;
-        }
-    }
-
     /**
      * 同一个工程内部可支持多个开放应用发起调用，且支持调不同的服务器
      */
     public YopRequest(String appKey, String secretKey, String serverRoot) {
-        this(appKey, secretKey, serverRoot, true);
-    }
-
-    public YopRequest(String appKey, String secretKey, String serverRoot, boolean androidMode) {
-        this(appKey, secretKey, androidMode);
+        this(appKey, secretKey);
         this.serverRoot = serverRoot;
     }
 
@@ -203,15 +178,6 @@ public class YopRequest {
         this.signAlg = signAlg;
     }
 
-    public String getCustomerNo() {
-        return customerNo;
-    }
-
-    public void setCustomerNo(String customerNo) {
-        this.customerNo = customerNo;
-        paramMap.set(YopConstants.CUSTOMER_NO, this.customerNo);
-    }
-
     public boolean isEncrypt() {
         return encrypt;
     }
@@ -242,9 +208,6 @@ public class YopRequest {
     }
 
     public String getServerRoot() {
-        if (StringUtils.isBlank(serverRoot)) {
-            serverRoot = YopConfig.getServerRoot();
-        }
         return serverRoot;
     }
 

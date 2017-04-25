@@ -179,8 +179,6 @@
                 <artifactId>maven-jar-plugin</artifactId>
                 <configuration>
                     <excludes>
-                        <exclude>certificate.p12</exclude>
-                        <exclude>yop_sdk_config*.json</exclude>
                         <exclude>config/</exclude>
                     </excludes>
                 </configuration>

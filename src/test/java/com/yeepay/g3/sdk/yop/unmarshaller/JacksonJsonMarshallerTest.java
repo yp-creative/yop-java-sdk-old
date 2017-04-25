@@ -1,7 +1,6 @@
 package com.yeepay.g3.sdk.yop.unmarshaller;
 
 import com.yeepay.g3.sdk.yop.client.YopClient;
-import com.yeepay.g3.sdk.yop.client.YopConfig;
 import com.yeepay.g3.sdk.yop.client.YopRequest;
 import com.yeepay.g3.sdk.yop.client.YopResponse;
 import org.junit.Test;
@@ -91,11 +90,7 @@ public class JacksonJsonMarshallerTest {
 
 //            String response = YopClient.post("/rest/v1.0/merchant/queryPayOrder", request).toString();
 
-            YopConfig.setAppKey("TestAppKey002");//yop应用
-            YopConfig.setAesSecretKey("Zj4xyBkgjd");//yop应用密钥，需要和短信通知应用的密钥保持一致才行，否则验证签名不通过
-//      YopConfig.setServerRoot("https://open.yeepay.com/yop-center/");//生产环境
-            YopConfig.setServerRoot("http://127.0.0.1:8008/yop-center");
-            YopRequest request = new YopRequest();
+            YopRequest request = new YopRequest("TestAppKey002","Zj4xyBkgjd","http://127.0.0.1:8008/yop-center");
             request.setSignAlg("SHA1");
 //            request.setSignAlg("MD5");//具体看api签名算法而定
             //request.setEncrypt(true);

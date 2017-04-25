@@ -24,18 +24,17 @@ public class ProductiveDemo {
     private static final String[] APP_KEYS = {"yop-boss", "jinkela", "k1242692364"};
     private static final String[] APP_SECRETS = {"NWNZQslh36xJP2a5rodX1Q==", "T7aoGzBJrPDCL3qoo1ij/g==", "/7tTqP3OJr6A6j3mAUEFoQ=="};
 
+    final String BASE_URL = "https://open.yeepay.com/yop-center/";
+
     @BeforeClass
     public static void setUp() throws Exception {
         TrustAllHttpsCertificates.setTrue();
-
-        final String BASE_URL = "https://open.yeepay.com/yop-center/";
-        YopConfig.setServerRoot(BASE_URL);
     }
 
     @Test
     public void testIdCard() throws Exception {
         int i = 2;
-        YopRequest request = new YopRequest(APP_KEYS[i], APP_SECRETS[i]);
+        YopRequest request = new YopRequest(APP_KEYS[i], APP_SECRETS[i], BASE_URL);
         request.setEncrypt(true);
         request.setSignRet(true);
 //        request.setSignAlg("sha-256");
@@ -50,7 +49,7 @@ public class ProductiveDemo {
     @Test
     public void testQueryMemberAccount() throws Exception {
         YopRequest request = new YopRequest(null,
-                "8intulgnqibv77f1t8q9j0hhlkiy6ei6c82sknv63vib3zhgyzl8uif9ky7a");
+                "8intulgnqibv77f1t8q9j0hhlkiy6ei6c82sknv63vib3zhgyzl8uif9ky7a", BASE_URL);
         request.setEncrypt(true);
         request.setSignRet(true);
         request.addParam("customerNo", "10040011444");
@@ -63,7 +62,7 @@ public class ProductiveDemo {
 
     @Test
     public void v() {
-        YopRequest request = new YopRequest(null, "8intulgnqibv77f1t8q9j0hhlkiy6ei6c82sknv63vib3zhgyzl8uif9ky7a");
+        YopRequest request = new YopRequest(null, "8intulgnqibv77f1t8q9j0hhlkiy6ei6c82sknv63vib3zhgyzl8uif9ky7a", BASE_URL);
         request.setEncrypt(true);
         request.setSignRet(true);
         request.addParam("customerNo", "10040011444");
@@ -76,7 +75,7 @@ public class ProductiveDemo {
 
     @Test
     public void testEnterprise() throws Exception {
-        YopRequest request = new YopRequest("yop-boss", "QFdODaBYBiVuLpP+sbyH+g==");
+        YopRequest request = new YopRequest("yop-boss", "QFdODaBYBiVuLpP+sbyH+g==", BASE_URL);
         request.setEncrypt(false);
         request.setSignRet(true);
         request.addParam("appKey", "yop-boss");//这个写YOP就可以了
@@ -94,7 +93,7 @@ public class ProductiveDemo {
     @Test
     public void testName1() throws Exception {
         YopRequest request = new YopRequest(null,
-                "8intulgnqibv77f1t8q9j0hhlkiy6ei6c82sknv63vib3zhgyzl8uif9ky7a");
+                "8intulgnqibv77f1t8q9j0hhlkiy6ei6c82sknv63vib3zhgyzl8uif9ky7a", BASE_URL);
         request.setEncrypt(true);
         request.setSignRet(true);
         request.addParam("customerNo", "10040011444");
@@ -110,7 +109,7 @@ public class ProductiveDemo {
     @Test
     public void testName2() throws Exception {
         YopRequest request = new YopRequest(null,
-                "8intulgnqibv77f1t8q9j0hhlkiy6ei6c82sknv63vib3zhgyzl8uif9ky7a");
+                "8intulgnqibv77f1t8q9j0hhlkiy6ei6c82sknv63vib3zhgyzl8uif9ky7a", BASE_URL);
         request.setEncrypt(true);
         request.setSignRet(true);
         request.addParam("customerNo", "10040011444");
@@ -133,7 +132,7 @@ public class ProductiveDemo {
     @Test
     public void test1() {
         YopRequest request = new YopRequest(null,
-                "s5KI8r0920SQ339oVlFE6eWJ0yk019SD7015nw39iaXJp10856z0C1d7JV5l");
+                "s5KI8r0920SQ339oVlFE6eWJ0yk019SD7015nw39iaXJp10856z0C1d7JV5l", BASE_URL);
         request.setEncrypt(true);
         request.setSignRet(true);
         request.addParam("customerNo", "10011830665");
@@ -151,9 +150,7 @@ public class ProductiveDemo {
 
     @Test//发送短信接口
     public void testSendSms() {
-        YopConfig.setAppKey("TestAppKey002");//yop应用
-        YopConfig.setAesSecretKey("TestAppSecret002");//yop应用密钥，需要和短信通知应用的密钥保持一致才行，否则验证签名不通过
-        YopRequest request = new YopRequest();
+        YopRequest request = new YopRequest("TestAppKey002", "TestAppSecret002", BASE_URL);
         // request.setSignAlg("SHA1");
         request.setSignAlg("MD5");//具体看api签名算法而定
         //request.setEncrypt(true);
@@ -175,9 +172,7 @@ public class ProductiveDemo {
 
     @Test
     public void testSendSmsQa() {
-        YopConfig.setAppKey("openSmsApi");//yop应用
-        YopConfig.setAesSecretKey("1234554321");//yop应用密钥，需要和短信通知应用的密钥保持一致才行，否则验证签名不通过
-        YopRequest request = new YopRequest();
+        YopRequest request = new YopRequest("openSmsApi", "1234554321", BASE_URL);
         request.setSignAlg("MD5");//具体看api签名算法而定
         //request.setEncrypt(true);
         String notifyRule = "商户结算短信通知";//通知规则
@@ -198,9 +193,7 @@ public class ProductiveDemo {
 
     @Test
     public void testSendSmsProduct() {
-        YopConfig.setAppKey("ypo2o");//yop应用
-        YopConfig.setAesSecretKey("tpcY6k2RSpEod7hsJIp33Q==");//yop应用密钥，需要和短信通知应用的密钥保持一致才行，否则验证签名不通过
-        YopRequest request = new YopRequest();
+        YopRequest request = new YopRequest("ypo2o", "tpcY6k2RSpEod7hsJIp33Q==", BASE_URL);
         request.setSignAlg("MD5");//具体看api签名算法而定
         // request.setEncrypt(true);
         String notifyRule = "EGOU_VERIFY";//通知规则
@@ -222,8 +215,7 @@ public class ProductiveDemo {
 
     @Test
     public void testValidate() {
-        YopRequest request = new YopRequest(null,
-                "cGB2CeC3YmwSWGoVz0kAvQ==");
+        YopRequest request = new YopRequest(null, "cGB2CeC3YmwSWGoVz0kAvQ==", BASE_URL);
         request.setEncrypt(false);
         request.setSignRet(true);
         request.setSignAlg("sha-256");
@@ -245,7 +237,7 @@ public class ProductiveDemo {
 
     @Test
     public void testWhiteList() throws Exception {
-        YopRequest request = new YopRequest(null, "cGB2CeC3YmwSWGoVz0kAvQ==");
+        YopRequest request = new YopRequest(null, "cGB2CeC3YmwSWGoVz0kAvQ==", BASE_URL);
         request.setEncrypt(false);
         request.setSignRet(true);
         request.addParam("appKey", "yop-boss");
@@ -260,7 +252,7 @@ public class ProductiveDemo {
 
     @Test
     public void testCreateToken() {
-        YopRequest request = new YopRequest(null, "cGB2CeC3YmwSWGoVz0kAvQ==");
+        YopRequest request = new YopRequest(null, "cGB2CeC3YmwSWGoVz0kAvQ==", BASE_URL);
         request.setEncrypt(true);
         request.setSignRet(true);
 //        request.setSignAlg("SHA1");
@@ -278,7 +270,7 @@ public class ProductiveDemo {
 
     @Test
     public void testAmount() {
-        YopRequest request = new YopRequest(null, "cGB2CeC3YmwSWGoVz0kAvQ==");
+        YopRequest request = new YopRequest(null, "cGB2CeC3YmwSWGoVz0kAvQ==", BASE_URL);
         request.setEncrypt(true);
         request.setSignRet(true);
 //        request.setSignAlg("SHA1");
@@ -295,7 +287,7 @@ public class ProductiveDemo {
     @Test
     public void testJvmCollect() {
         int i = 0;
-        YopRequest request = new YopRequest(APP_KEYS[i], APP_SECRETS[i]);
+        YopRequest request = new YopRequest(APP_KEYS[i], APP_SECRETS[i], BASE_URL);
         request.setEncrypt(false);
         request.setSignRet(true);
         request.setSignAlg("sha-256");
@@ -306,7 +298,7 @@ public class ProductiveDemo {
 
     @Test
     public void testLaike() {
-        YopRequest request = new YopRequest(APP_KEYS[0], APP_SECRETS[0]);
+        YopRequest request = new YopRequest(APP_KEYS[0], APP_SECRETS[0], BASE_URL);
         request.setEncrypt(false);
         request.setSignRet(true);
         request.setSignAlg("sha-256");
@@ -325,7 +317,7 @@ public class ProductiveDemo {
     @Test
     public void testLaikeToken() {
         int i = 0;
-        YopRequest request = new YopRequest(APP_KEYS[i], APP_SECRETS[i]);
+        YopRequest request = new YopRequest(APP_KEYS[i], APP_SECRETS[i], BASE_URL);
         request.setEncrypt(true);
         request.setSignRet(true);
         request.setSignAlg("sha-256");
@@ -349,7 +341,7 @@ public class ProductiveDemo {
 //        YopConfig.setReadTimeout(1);
 
         String appKey = "OPR:10012481831";
-        YopRequest request = new YopRequest(appKey, null);
+        YopRequest request = new YopRequest(appKey, null, BASE_URL);
         // YopRequest request = new YopRequest(appKey, "");
 
         request.addParam("customerNo", "10012481831");

@@ -2,7 +2,6 @@ package com.yeepay.g3.sdk.yop;
 
 import com.TrustAllHttpsCertificates;
 import com.yeepay.g3.sdk.yop.client.YopClient;
-import com.yeepay.g3.sdk.yop.client.YopConfig;
 import com.yeepay.g3.sdk.yop.client.YopRequest;
 import com.yeepay.g3.sdk.yop.client.YopResponse;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -162,10 +161,7 @@ public class Demo {
 
     @Test//发送短信接口
     public void testSendSms() {
-        YopConfig.setAppKey("TestAppKey002");//yop应用
-        YopConfig.setAesSecretKey("TestAppSecret002");//yop应用密钥，需要和短信通知应用的密钥保持一致才行，否则验证签名不通过
-        YopConfig.setServerRoot("http://open.yeepay.com:8064/yop-center");
-        YopRequest request = new YopRequest();
+        YopRequest request = new YopRequest("TestAppKey002", "TestAppSecret002", "http://open.yeepay.com:8064/yop-center");
         // request.setSignAlg("SHA1");
         request.setSignAlg("MD5");//具体看api签名算法而定
         //request.setEncrypt(true);
@@ -186,10 +182,7 @@ public class Demo {
 
     @Test
     public void testSendSmsQa() {
-        YopConfig.setAppKey("openSmsApi");//yop应用
-        YopConfig.setAesSecretKey("1234554321");//yop应用密钥，需要和短信通知应用的密钥保持一致才行，否则验证签名不通过
-        YopConfig.setServerRoot("http://open.yeepay.com:8064/yop-center/");
-        YopRequest request = new YopRequest();
+        YopRequest request = new YopRequest("openSmsApi","1234554321","http://open.yeepay.com:8064/yop-center/");
         request.setSignAlg("MD5");//具体看api签名算法而定
         //request.setEncrypt(true);
         String notifyRule = "商户结算短信通知";//通知规则
@@ -214,13 +207,8 @@ public class Demo {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        YopConfig.setAppKey("ypo2o");//yop应用
-        YopConfig.setAesSecretKey("tpcY6k2RSpEod7hsJIp33Q==");//yop应用密钥，需要和短信通知应用的密钥保持一致才行，否则验证签名不通过
-        YopConfig.setServerRoot("https://open.yeepay.com:8064/yop-center");//生产环境
-        //   YopConfig.setServerRoot("http://50.1.1.14:8064/yop-center");
-        YopRequest request = new YopRequest();
+        YopRequest request = new YopRequest("ypo2o","tpcY6k2RSpEod7hsJIp33Q==","https://open.yeepay.com:8064/yop-center");
         request.setSignAlg("MD5");//具体看api签名算法而定
-        // request.setEncrypt(true);
         String notifyRule = "EGOU_VERIFY";//通知规则
         List recipients = new ArrayList();//接收人
         recipients.add(0, "18519193582");

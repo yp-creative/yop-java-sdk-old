@@ -1,25 +1,9 @@
 package com.yeepay.g3.sdk.yop.http;
 
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
 import com.yeepay.g3.sdk.yop.annotations.Exposed;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.http.Header;
-import org.apache.http.StatusLine;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.log4j.Logger;
 
 import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.BitSet;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * title: Http Utils<br>
@@ -34,16 +18,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 @Exposed(exposedTo = "yop-center")
 public final class HttpUtils {
 
-    private static final Logger LOGGER = Logger.getLogger(HttpUtils.class);
-
     private static BitSet URI_UNRESERVED_CHARACTERS = new BitSet();
     private static String[] PERCENT_ENCODED_STRINGS = new String[256];
-
-    private static final Joiner queryStringJoiner = Joiner.on('&');
-    private static boolean HTTP_VERBOSE = Boolean.parseBoolean(System.getProperty("yop.sdk.http", "false"));
-
-    private static final int PORT_LOWER_BOUND = 1;
-    private static final int PORT_UPPER_BOUND = 65535;
 
     private HttpUtils() {
         // do nothing
@@ -127,43 +103,6 @@ public final class HttpUtils {
         }
     }
 
-    /**
-     * Returns a host header according to the specified URI. The host header is generated with the same logic used by
-     * apache http client, that is, append the port to hostname only if it is not the default port.
-     *
-     * @param uri the URI
-     * @return a host header according to the specified URI.
-     */
-    public static String generateHostHeader(URI uri) {
-        String host = uri.getHost();
-        if (isUsingNonDefaultPort(uri)) {
-            host += ":" + uri.getPort();
-        }
-        return host;
-    }
-
-    /**
-     * Returns true if the specified URI is using a non-standard port (i.e. any port other than 80 for HTTP URIs or any
-     * port other than 443 for HTTPS URIs).
-     *
-     * @param uri the URI
-     * @return True if the specified URI is using a non-standard port, otherwise false.
-     */
-    public static boolean isUsingNonDefaultPort(URI uri) {
-        String scheme = uri.getScheme().toLowerCase();
-        int port = uri.getPort();
-        if (port < PORT_LOWER_BOUND || port > PORT_UPPER_BOUND) {
-            return false;
-        }
-        if (scheme.equals(Protocol.HTTP.toString())) {
-            return port != Protocol.HTTP.getDefaultPort();
-        }
-        if (scheme.equals(Protocol.HTTPS.toString())) {
-            return port != Protocol.HTTPS.getDefaultPort();
-        }
-        return false;
-    }
-
     public static String getCanonicalURIPath(String path) {
         if (path == null) {
             return "/";
@@ -173,105 +112,4 @@ public final class HttpUtils {
             return "/" + normalizePath(path);
         }
     }
-
-    public static String getCanonicalQueryString(Map<String, String[]> parameters, boolean forSignature) {
-        if (parameters.isEmpty()) {
-            return "";
-        }
-
-        List<String> parameterStrings = Lists.newArrayList();
-        for (Map.Entry<String, String[]> entry : parameters.entrySet()) {
-            String key = entry.getKey();
-            checkNotNull(key, "parameter key should not be null");
-
-            if (forSignature && Headers.AUTHORIZATION.equalsIgnoreCase(key)) {
-                continue;
-            }
-
-            String[] value = entry.getValue();
-            if (value.length == 0) {
-                if (forSignature) {
-                    parameterStrings.add(normalize(key) + '=');
-                } else {
-                    parameterStrings.add(normalize(key));
-                }
-            } else {
-                for (String item : value) {
-                    parameterStrings.add(normalize(key) + '=' + normalize(item));
-                }
-            }
-        }
-        Collections.sort(parameterStrings);
-
-        return queryStringJoiner.join(parameterStrings);
-    }
-
-    /**
-     * Append the given path to the given baseUri.
-     * <p>
-     * <p>
-     * This method will encode the given path but not the given baseUri.
-     *
-     * @param baseUri
-     * @param pathComponents
-     */
-    public static URI appendUri(URI baseUri, String... pathComponents) {
-        StringBuilder builder = new StringBuilder(baseUri.toASCIIString());
-        for (String path : pathComponents) {
-            if (StringUtils.isNotEmpty(path)) {
-                path = normalizePath(path);
-                if (path.startsWith("/")) {
-                    if (builder.charAt(builder.length() - 1) == '/') {
-                        builder.setLength(builder.length() - 1);
-                    }
-                } else {
-                    if (builder.charAt(builder.length() - 1) != '/') {
-                        builder.append('/');
-                    }
-                }
-                builder.append(path);
-            }
-        }
-        try {
-            return new URI(builder.toString());
-        } catch (URISyntaxException e) {
-            throw new RuntimeException("Unexpected error", e);
-        }
-    }
-
-    public static void printRequest(HttpRequestBase request) {
-        if (!HTTP_VERBOSE) {
-            return;
-        }
-        LOGGER.debug("\n-------------> ");
-        LOGGER.debug(request.getRequestLine());
-        for (Header h : request.getAllHeaders()) {
-            LOGGER.debug(h.getName() + " : " + h.getValue());
-        }
-        RequestConfig config = request.getConfig();
-        if (config != null) {
-            LOGGER.debug("getConnectionRequestTimeout: "
-                    + config.getConnectionRequestTimeout());
-            LOGGER.debug("getConnectTimeout: "
-                    + config.getConnectTimeout());
-            LOGGER.debug("getCookieSpec: " + config.getCookieSpec());
-            LOGGER.debug("getLocalAddress: " + config.getLocalAddress());
-
-        }
-    }
-
-    public static void printResponse(CloseableHttpResponse response) {
-        if (!HTTP_VERBOSE) {
-            return;
-        }
-        LOGGER.debug("\n<------------- ");
-        StatusLine status = response.getStatusLine();
-        LOGGER.debug(status.getStatusCode() + " - "
-                + status.getReasonPhrase());
-        Header[] heads = response.getAllHeaders();
-        for (Header h : heads) {
-            LOGGER.debug(h.getName() + " : " + h.getValue());
-        }
-    }
-
 }

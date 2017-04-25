@@ -2,7 +2,6 @@ package com.yeepay.g3.sdk.yop.client;
 
 import com.yeepay.g3.sdk.yop.annotations.Exposed;
 import com.yeepay.g3.sdk.yop.encrypt.AESEncrypter;
-import com.yeepay.g3.sdk.yop.encrypt.BlowfishCipher;
 import com.yeepay.g3.sdk.yop.encrypt.Digest;
 import com.yeepay.g3.sdk.yop.encrypt.YopSignUtils;
 import com.yeepay.g3.sdk.yop.unmarshaller.JacksonJsonMarshaller;
@@ -154,11 +153,7 @@ public class YopClient extends AbstractClient {
     public static void signAndEncrypt(YopRequest request) {
         Assert.notNull(request.getSecretKey(), "secretKey must be specified");
         String appKey = request.getParamValue(YopConstants.APP_KEY);
-        if (StringUtils.isBlank(appKey)) {
-            appKey = StringUtils.trimToNull(request
-                    .getParamValue(YopConstants.CUSTOMER_NO));
-        }
-        Assert.notNull(appKey, "appKey 与 customerNo 不能同时为空");
+
         String signValue = YopSignUtils.sign(toSimpleMap(request.getParams()),
                 request.getIgnoreSignParams(), request.getSecretKey(),
                 request.getSignAlg());
@@ -212,31 +207,16 @@ public class YopClient extends AbstractClient {
             // 没有需加密的参数，则只标识响应需加密
             request.addParam(YopConstants.ENCRYPT, true);
         } else {
-            if (StringUtils.isNotBlank(request
-                    .getParamValue(YopConstants.APP_KEY))) {
-                // 开放应用使用AES加密
-                String encrypt = AESEncrypter.encrypt(encryptBody,
-                        request.getSecretKey());
-                request.addParam(YopConstants.ENCRYPT, encrypt);
-            } else {
-                // 商户身份调用使用Blowfish加密
-                String encrypt = BlowfishCipher.encrypt(encryptBody,
-                        request.getSecretKey());
-                request.addParam(YopConstants.ENCRYPT, encrypt);
-            }
+            // 开放应用使用AES加密
+            String encrypt = AESEncrypter.encrypt(encryptBody, request.getSecretKey());
+            request.addParam(YopConstants.ENCRYPT, encrypt);
+
         }
     }
 
     protected static String decrypt(YopRequest request, String strResult) {
         if (request.isEncrypt() && StringUtils.isNotBlank(strResult)) {
-            if (StringUtils.isNotBlank(request
-                    .getParamValue(YopConstants.APP_KEY))) {
-                strResult = AESEncrypter.decrypt(strResult,
-                        request.getSecretKey());
-            } else {
-                strResult = BlowfishCipher.decrypt(strResult,
-                        request.getSecretKey());
-            }
+            strResult = AESEncrypter.decrypt(strResult, request.getSecretKey());
         }
         return strResult;
     }
@@ -309,19 +289,6 @@ public class YopClient extends AbstractClient {
         return serverUrl;
     }
 
-    /**
-     * 帮助方法，对request签名并返回签名结果
-     *
-     * @param methodOrUri
-     * @param request
-     * @return 签名结果
-     */
-    public static String getSign(String methodOrUri, YopRequest request) {
-        richRequest(methodOrUri, request);
-        signAndEncrypt(request);
-        return request.getParamValue(YopConstants.SIGN);
-    }
-
     public static String acceptNotificationAsJson(String key, String response) {
         return validateAndDecryptNotification(key, response);
     }
@@ -348,8 +315,7 @@ public class YopClient extends AbstractClient {
 
         //如果加密，解密
         if (doEncryption) {
-            encryption = encryptionAlg.equals("BLOWFISH") ? BlowfishCipher.decrypt(encryption, key) : AESEncrypter
-                    .decrypt(encryption, key);
+            encryption = AESEncrypter.decrypt(encryption, key);
         }
 
         //签名是必须的...

@@ -68,7 +68,7 @@ public class YopClient3 extends AbstractClient {
      */
     public static YopResponse postRsa(String methodOrUri, YopRequest request) {
         String content = postRsaString(methodOrUri, request);
-        YopResponse response = JacksonJsonMarshaller.unmarshal(content,YopResponse.class);
+        YopResponse response = JacksonJsonMarshaller.unmarshal(content, YopResponse.class);
         handleRsaResult(request, response, content);
         return response;
     }
@@ -84,9 +84,6 @@ public class YopClient3 extends AbstractClient {
         logger.debug(request.toQueryString());
         String serverUrl = richRequest(methodOrUri, request);
         String content = getRestTemplate(request).postForObject(serverUrl, signAndEncrypt(methodOrUri, request), String.class);
-        if (logger.isDebugEnabled()) {
-            logger.debug("response:\n" + content);
-        }
         return content;
     }
 
@@ -107,13 +104,8 @@ public class YopClient3 extends AbstractClient {
         headersToSignSet.add("x-yop-request-id");
         headersToSignSet.add("x-yop-date");
 
-        if (StringUtils.isBlank(request.getCustomerNo())) {
-            headers.add("x-yop-appkey", appKey);
-            headersToSignSet.add("x-yop-appkey");
-        } else {
-            headers.add("x-yop-customerid", appKey);
-            headersToSignSet.add("x-yop-customerid");
-        }
+        headers.add("x-yop-appkey", appKey);
+        headersToSignSet.add("x-yop-appkey");
 
         // Formatting the URL with signing protocol.
         String canonicalURI = HttpUtils.getCanonicalURIPath(methodOrUri);
@@ -197,7 +189,7 @@ public class YopClient3 extends AbstractClient {
             try {
                 alternate.add("_file", new UrlResource(new URI(uploadFile)));
             } catch (Exception e) {
-                logger.debug("_file upload error.", e);
+                logger.error("_file upload error.", e);
             }
         }
 
@@ -209,9 +201,6 @@ public class YopClient3 extends AbstractClient {
 
         HttpEntity<MultiValueMap<String, Object>> alternateHttpEntity = new HttpEntity<MultiValueMap<String, Object>>(alternate, originalHttpEntity.getHeaders());
         String content = getRestTemplate(request).postForObject(serverUrl, alternateHttpEntity, String.class);
-        if (logger.isDebugEnabled()) {
-            logger.debug("response:\n" + content);
-        }
         return content;
     }
 

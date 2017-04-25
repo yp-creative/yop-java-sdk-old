@@ -76,10 +76,7 @@ public final class InternalConfig {
             CFCA_SERVER_ROOT = config.getCfcaServerRoot();
 
             APP_KEY = config.getAppKey();
-
-            String hmacSecretKey = config.getHmacSecretKey();
-            String aesSecretKey = config.getAesSecretKey();
-            SECRET_KEY = StringUtils.isBlank(aesSecretKey) ? hmacSecretKey : aesSecretKey;
+            SECRET_KEY = config.getAesSecretKey();
 
             if (config.getConnectTimeout() != null && config.getConnectTimeout() >= 0) {
                 CONNECT_TIMEOUT = config.getConnectTimeout();
@@ -166,12 +163,9 @@ public final class InternalConfig {
             case FILE_P12:
                 try {
                     char[] password = certConfig.getPassword().toCharArray();
-                    KeyStore keystore;
-                    keystore = KeyStore.getInstance(KeyStoreTypeEnum.PKCS12.getValue());
+                    KeyStore keystore = KeyStore.getInstance(KeyStoreTypeEnum.PKCS12.getValue());
                     keystore.load(InternalConfig.class.getResourceAsStream(certConfig.getValue()), password);
-//                privateKey = (PrivateKey) keystore.getKey(certConfig.getCertType().getValue(), password);
 
-                    // magic, amazing!
                     Enumeration aliases = keystore.aliases();
                     String keyAlias = "";
                     while (aliases.hasMoreElements()) {

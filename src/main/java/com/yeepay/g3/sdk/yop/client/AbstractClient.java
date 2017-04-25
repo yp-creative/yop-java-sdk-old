@@ -37,16 +37,10 @@ public class AbstractClient {
         if (InternalConfig.CONNECT_TIMEOUT >= 0) {
             connectTimeout = InternalConfig.CONNECT_TIMEOUT;
         }
-        if (YopConfig.getConnectTimeout() >= 0) {
-            connectTimeout = YopConfig.getConnectTimeout();
-        }
 
         /*initialize read timeout: YopConfig >> yop_sdk_config.json >> 30000*/
         if (InternalConfig.READ_TIMEOUT >= 0) {
             readTimeout = InternalConfig.READ_TIMEOUT;
-        }
-        if (YopConfig.getReadTimeout() >= 0) {
-            readTimeout = YopConfig.getReadTimeout();
         }
 
         /*--------------------initialize the normal restTemplate start------------------------------*/
@@ -67,7 +61,7 @@ public class AbstractClient {
                 clientKeyStore.load(InternalConfig.getInputStream(InternalConfig.CLIENT_CERTIFICATE.getPath()), InternalConfig.CLIENT_CERTIFICATE.getPassword().toCharArray());
                 sslContextBuilder.loadKeyMaterial(clientKeyStore, InternalConfig.CLIENT_CERTIFICATE.getPassword().toCharArray());
             } catch (Exception e) {
-                LOGGER.error("error loading client cert", e);
+                LOGGER.error("error happen when loading client certificate", e);
                 return;
             }
         }

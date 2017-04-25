@@ -26,9 +26,6 @@ public final class SDKConfig implements Serializable {
     @JsonProperty("aes_secret_key")
     private String aesSecretKey;
 
-    @JsonProperty("hmac_secret_key")
-    private String hmacSecretKey;
-
     @JsonProperty("server_root")
     private String serverRoot;
 
@@ -119,14 +116,6 @@ public final class SDKConfig implements Serializable {
 
     public void setAesSecretKey(String aesSecretKey) {
         this.aesSecretKey = aesSecretKey;
-    }
-
-    public String getHmacSecretKey() {
-        return hmacSecretKey;
-    }
-
-    public void setHmacSecretKey(String hmacSecretKey) {
-        this.hmacSecretKey = hmacSecretKey;
     }
 
     public CertificateConfig getTrustCertificate() {
