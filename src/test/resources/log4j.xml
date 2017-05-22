@@ -28,7 +28,7 @@
     </logger>
 
     <root>
-        <priority value="debug"/>
+        <priority value="DEBUG"/>
         <appender-ref ref="CONSOLE"/>
     </root>
 

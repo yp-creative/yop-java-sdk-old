@@ -198,6 +198,11 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                            <artifactSet>
+                                <excludes>
+                                    <exclude>log4j:log4j:jar:</exclude>
+                                </excludes>
+                            </artifactSet>
                             <relocations>
                                 <relocation>
                                     <pattern>com.fasterxml</pattern>
@@ -208,8 +213,12 @@
                                     <shadedPattern>com.yeepay.shade.com.google.common</shadedPattern>
                                 </relocation>
                                 <relocation>
-                                    <pattern>org.apache</pattern>
-                                    <shadedPattern>com.yeepay.shade.org.apache</shadedPattern>
+                                    <pattern>org.apache.commons</pattern>
+                                    <shadedPattern>com.yeepay.shade.org.apache.commons</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.apache.http</pattern>
+                                    <shadedPattern>com.yeepay.shade.org.apache.http</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>org.codehaus</pattern>

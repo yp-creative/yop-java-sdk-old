@@ -242,6 +242,7 @@ public class YopClient3 extends AbstractClient {
         // 再验签
         String signStr = ziped;
         isValidResult(signStr, response.getSign());
+        response.setValidSign(true);
     }
 
     /**

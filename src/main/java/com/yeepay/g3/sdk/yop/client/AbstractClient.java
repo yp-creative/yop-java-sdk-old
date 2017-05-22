@@ -5,6 +5,7 @@ import com.yeepay.g3.sdk.yop.utils.Assert;
 import com.yeepay.g3.sdk.yop.utils.InternalConfig;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLContextBuilder;
 import org.apache.http.conn.ssl.SSLContexts;
@@ -21,8 +22,10 @@ public class AbstractClient {
 
     private static final Logger LOGGER = Logger.getLogger(AbstractClient.class);
 
-    protected static RestTemplate restTemplate;
+    /*normal rest template to be used to send normal request*/
+    protected static RestTemplate normalRestTemplate;
 
+    /*cfca rest template to be used to send special request which cfca client certificate is needed*/
     protected static RestTemplate cfcaRestTemplate;
 
     static {
@@ -33,12 +36,10 @@ public class AbstractClient {
         int connectTimeout = 30000;
         int readTimeout = 60000;
 
-        /*initialize connect timeout: YopConfig >> yop_sdk_config.json >> 10000*/
         if (InternalConfig.CONNECT_TIMEOUT >= 0) {
             connectTimeout = InternalConfig.CONNECT_TIMEOUT;
         }
 
-        /*initialize read timeout: YopConfig >> yop_sdk_config.json >> 30000*/
         if (InternalConfig.READ_TIMEOUT >= 0) {
             readTimeout = InternalConfig.READ_TIMEOUT;
         }
@@ -47,7 +48,7 @@ public class AbstractClient {
         HttpComponentsClientHttpRequestFactory normalRequestFactory = new HttpComponentsClientHttpRequestFactory();
         normalRequestFactory.setConnectTimeout(connectTimeout);
         normalRequestFactory.setReadTimeout(readTimeout);
-        restTemplate = new RestTemplate(normalRequestFactory);
+        normalRestTemplate = new RestTemplate(normalRequestFactory);
         /*--------------------initialize the normal restTemplate end--------------------------------*/
 
 
@@ -83,21 +84,20 @@ public class AbstractClient {
             LOGGER.error("error create ssl connection socket factory", e);
             return;
         }
-        HttpClient cfcaHttpClient = HttpClients.custom().setSSLSocketFactory(sslsf).build();
+
+        HttpClient cfcaHttpClient = HttpClients.custom().setSSLSocketFactory(sslsf)
+                .setDefaultRequestConfig(RequestConfig.custom().setConnectTimeout(connectTimeout).setSocketTimeout(readTimeout).build()).build();
         HttpComponentsClientHttpRequestFactory cfcaRequestFactory = new HttpComponentsClientHttpRequestFactory(cfcaHttpClient);
-        //TODO fix this
-//        cfcaRequestFactory.setConnectTimeout(connectTimeout);
-//        cfcaRequestFactory.setReadTimeout(readTimeout);
         cfcaRestTemplate = new RestTemplate(cfcaRequestFactory);
-
-
        /*--------------------initialize the cfca restTemplate end-----------------------------------*/
     }
+
+    private static final String PKCS12 = "pkcs12";
 
     private static KeyStore getKeyStore(boolean pkcs12) {
         final KeyStore keystore;
         try {
-            keystore = KeyStore.getInstance(pkcs12 ? "pkcs12" : KeyStore.getDefaultType());
+            keystore = KeyStore.getInstance(pkcs12 ? PKCS12 : KeyStore.getDefaultType());
             return keystore;
         } catch (KeyStoreException e) {
             /*should not be here*/
@@ -113,7 +113,11 @@ public class AbstractClient {
      * @return restTemplate
      */
     protected static RestTemplate getRestTemplate(YopRequest request) {
-        return request.getUseCFCA() ? cfcaRestTemplate : restTemplate;
+        RestTemplate template = request.getUseCFCA() ? cfcaRestTemplate : normalRestTemplate;
+        if (template == null) {
+            throw new IllegalStateException("restTemplate is not initialized!");
+        }
+        return template;
     }
 
 

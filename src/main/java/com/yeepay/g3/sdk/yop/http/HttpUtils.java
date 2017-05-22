@@ -1,9 +1,16 @@
 package com.yeepay.g3.sdk.yop.http;
 
+import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
 import com.yeepay.g3.sdk.yop.annotations.Exposed;
 
 import java.io.UnsupportedEncodingException;
 import java.util.BitSet;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * title: Http Utils<br>
@@ -20,6 +27,8 @@ public final class HttpUtils {
 
     private static BitSet URI_UNRESERVED_CHARACTERS = new BitSet();
     private static String[] PERCENT_ENCODED_STRINGS = new String[256];
+
+    private static final Joiner queryStringJoiner = Joiner.on('&');
 
     private HttpUtils() {
         // do nothing
@@ -111,5 +120,38 @@ public final class HttpUtils {
         } else {
             return "/" + normalizePath(path);
         }
+    }
+
+    @Exposed(exposedTo = "yop-center")
+    public static String getCanonicalQueryString(Map<String, String[]> parameters, boolean forSignature) {
+        if (parameters.isEmpty()) {
+            return "";
+        }
+
+        List<String> parameterStrings = Lists.newArrayList();
+        for (Map.Entry<String, String[]> entry : parameters.entrySet()) {
+            String key = entry.getKey();
+            checkNotNull(key, "parameter key should not be null");
+
+            if (forSignature && Headers.AUTHORIZATION.equalsIgnoreCase(key)) {
+                continue;
+            }
+
+            String[] value = entry.getValue();
+            if (value.length == 0) {
+                if (forSignature) {
+                    parameterStrings.add(normalize(key) + '=');
+                } else {
+                    parameterStrings.add(normalize(key));
+                }
+            } else {
+                for (String item : value) {
+                    parameterStrings.add(normalize(key) + '=' + normalize(item));
+                }
+            }
+        }
+        Collections.sort(parameterStrings);
+
+        return queryStringJoiner.join(parameterStrings);
     }
 }

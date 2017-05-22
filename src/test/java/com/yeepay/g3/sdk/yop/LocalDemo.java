@@ -4,6 +4,8 @@ import com.yeepay.g3.sdk.yop.client.*;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Test;
 
+import java.util.concurrent.CountDownLatch;
+
 /**
  * title: <br>
  * description: 描述<br>
@@ -32,14 +34,16 @@ public class LocalDemo {
         request.addParam("idCardNumber", "370982199101186692");
 
         YopResponse response = YopClient.post("/rest/v2.0/auth/idcard", request);
-        AssertUtils.assertYopResponse(response);
+        System.out.println(response.toString());
+        System.out.println(response.isValidSign());
+//        AssertUtils.assertYopResponse(response);
     }
 
     @Test
     public void testEnterprise() throws Exception {
         int i = 0;
         YopRequest request = new YopRequest(null, APP_SECRETS[i], BASE_URL);
-        request.setEncrypt(false);
+        request.setEncrypt(true);
         request.setSignRet(true);
         request.addParam("appKey", APP_KEYS[i]);//这个写YOP就可以了
         request.addParam("corpName", "安徽四创电子股份有限公司青海分公司");//企业名称
@@ -49,7 +53,9 @@ public class LocalDemo {
         request.addParam("requestIdentification", "wenkang.zhang");//请求者标识
 
         YopResponse response = YopClient.post("/rest/v2.2/auth/enterprise", request);
-        AssertUtils.assertYopResponse(response);
+        System.out.println(response);
+        System.out.println(response.isValidSign());
+//        AssertUtils.assertYopResponse(response);
     }
 
     @Test
@@ -165,7 +171,8 @@ public class LocalDemo {
         request.addParam("requestFlowId", "test-" + System.currentTimeMillis() + RandomStringUtils.randomNumeric(3));//请求流水标识
         request.addParam("requestIdentification", "wenkang.zhang");//请求者标识
 
-        YopResponse response = YopClient3.uploadRsa("/rest/v1.0/file/upload", request);
+        YopResponse response = YopClient3.postRsa("/rest/v2.2/auth/enterprise", request);
+        System.out.println(response);
         AssertUtils.assertYopResponse(response);
     }
 
@@ -191,5 +198,31 @@ public class LocalDemo {
         System.out.println(request.toQueryString());
         YopResponse response = YopClient.upload("/rest/v1.0/file/upload", request);
         System.out.println(response.toString());
+    }
+
+    @Test
+    public void testQueryAccount() throws InterruptedException {
+        int i = 0;
+        final YopRequest request = new YopRequest(null, "1", BASE_URL);
+        request.setEncrypt(true);
+        request.setSignRet(true);
+
+        request.addParam("customerNo", "10012481831");
+        request.addParam("customerNdso", "10012481831");
+
+        int N = 1;
+        final CountDownLatch latch = new CountDownLatch(N);
+        for (i = 0; i < N; i++) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    YopResponse response = YopClient.post("/rest/v1.0/member/queryAccount", request);
+                    System.out.println(response.toString());
+                    latch.countDown();
+                }
+            }).start();
+        }
+        latch.await();
+//        AssertUtils.assertYopResponse(response);
     }
 }
