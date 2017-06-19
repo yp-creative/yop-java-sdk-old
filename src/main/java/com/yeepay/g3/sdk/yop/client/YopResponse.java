@@ -2,7 +2,9 @@ package com.yeepay.g3.sdk.yop.client;
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import com.yeepay.g3.sdk.yop.error.YopError;
-import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import com.yeepay.g3.sdk.yop.unmarshaller.JacksonJsonMarshaller;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -124,10 +126,18 @@ public class YopResponse {
         return YopConstants.SUCCESS.equalsIgnoreCase(state);
     }
 
+    /**
+     * 将业务结果转换为自定义对象（参数映射）
+     */
+    public <T> T unmarshal(Class<T> objectType) {
+        if (objectType != null && StringUtils.isNotBlank(stringResult)) {
+            return JacksonJsonMarshaller.unmarshal(stringResult, objectType);
+        }
+        return null;
+    }
+
     public String toString() {
-        String[] excludeFieldNames = new String[]{"stringResult"};
-        return new ReflectionToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .setExcludeFieldNames(excludeFieldNames)
-                .toString();
+        return ToStringBuilder.reflectionToString(this,
+                ToStringStyle.SHORT_PREFIX_STYLE);
     }
 }

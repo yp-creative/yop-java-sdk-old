@@ -1,7 +1,12 @@
 package com.yeepay.g3.sdk.yop;
 
 import com.TrustAllHttpsCertificates;
+import com.yeepay.g3.facade.yop.ca.dto.DigitalEnvelopeDTO;
+import com.yeepay.g3.facade.yop.ca.enums.CertTypeEnum;
+import com.yeepay.g3.frame.yop.ca.DigitalEnvelopeUtils;
+import com.yeepay.g3.frame.yop.ca.rsa.RSAKeyUtils;
 import com.yeepay.g3.sdk.yop.client.*;
+import com.yeepay.g3.sdk.yop.utils.InternalConfig;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -34,7 +39,7 @@ public class ProductiveDemo {
     @Test
     public void testIdCard() throws Exception {
         int i = 2;
-        YopRequest request = new YopRequest(APP_KEYS[i], APP_SECRETS[i], BASE_URL);
+        YopRequest request = new YopRequest(APP_KEYS[i], APP_SECRETS[i], "https://remit.yeepay.com/yop-center");
         request.setEncrypt(true);
         request.setSignRet(true);
 //        request.setSignAlg("sha-256");
@@ -43,7 +48,7 @@ public class ProductiveDemo {
         request.addParam("idCardNumber", "370982199101186691111");
 
         YopResponse response = YopClient.post("/rest/v2.0/auth/idcard", request);
-        AssertUtils.assertYopResponse(response);
+//        AssertUtils.assertYopResponse(response);
     }
 
     @Test
@@ -121,9 +126,6 @@ public class ProductiveDemo {
         request.addParam("bankid", "");
         request.addParam("callbackurl", "http://50.1.1.24:8018/fundtrans-hessian/");
         request.addParam("webcallbackurl", "http://localhost:8080/reciver/page");
-
-        String requestUri = YopClient.buildURL("/rest/v1.0/member/gatewayDeposit", request);
-        System.out.println(requestUri);
 
         YopResponse response = YopClient.get("/rest/v1.0/member/gatewayDeposit", request);
         AssertUtils.assertYopResponse(response);
@@ -350,6 +352,32 @@ public class ProductiveDemo {
         request.addParam("uniqueOrderNo", "1001201611290000000000000808");
         YopResponse response = YopClient3.postRsa("/rest/v2.0/opr/queryorder", request);
         AssertUtils.assertYopResponse(response);
+    }
+
+    @Test
+    public void testSongJinFeng() {
+        String first = "mWNFrb3YuBTGpp_sIn9bRr_ZJSpvX-XbM_AaUiARsj28wgBGkir-CcnDDR1EtGTH15f4jgmmQDyhDbh3vgyF8X0BK-qzIVCyqLkolb9ba-LAJVO5NZ51kAXgAYtyi7kfM_Tpq1N3zHyJoWJ8lRFQboEBHX2w6IcLSOjm6DDoxkXtDTKw4VuzxUXRogXtnRRg2rfUDDWleVBhBxwZr8zNJhlEJiBmzdBZeSdvLoY1-ZH-9fW0YOQAgujUji_Va1F2kSeM3hO2T2NQyB0kZHfy92CNKWGqq343m0-vjcDHGTV-cPOLxi-v6jptHMtL22MULkWTMNls4-HiBKURqnGEHA$6denU1K5dafYu9VcCyVqr0BTIb3pViukGstIHoxuB2o32z9ULe5ZdY6NP2XCQhGNVOmelgey2A6-VdgvSNqhehQ4j3ZvuhB4ijDaoHeQOKnbJl6ltjxp1cxL-A3myVcD__tFy2uXgb5CABo5YeXsWf8kivmIcI5tHCvAJm6HqXq-Y1glAcQtRPA1BAziPwVFpDvquJhTNDgHSRtHhaKNy-fObsMK4L7jgj2xN97nrLPZW5kvAKHYd3RxeJB8ic4qjxDRVNXb4ht0i9Y1PkDPYr_rD3r_IuWRfAbX-PNh2aKQx2L1sHtASWBL8V5Ya0XgUl06HhG58nWkMVOZvjRhxCf5lQjJD9f7QHL3J-pK7n9MBEtfU0iui3mJqUGFBrIP2omXTxWN2e91v6LaK5g2QXv-RD53K-3yw2MzNSVjjkTfQC-irR8Z5EJvRCq1nYUweLez9mULoaFLULip1wvHeLG33pNeHaJcwJRdnmDDM1g-psdxz-8RfFeMGMGCj-nRLNUGzseBCtWeIjYYNgzZajGMQ136lZ2qSrTZeI-ERHd6LachIwmLdOcA05-h6MI8egSBb9JGTWFSs8vwgLHdtiUtMVcBXA58qmTArkXua4SkbJ1oEMY4q9u7tIyELsEdUo5eChm3dtxxzIQxvnNR-CvaDJdPz3UJl3S42iAn68XblMh8iUZF-rA6LM1D376dKWQaVmv0fS6COT8qbfmQSVz2PeJb9fRCIGu-1HxKZiabhn_W5Bnok36hdyy_syVhtkLM3JVM2l5glAkpbDvrwBYmgJ1d6jbNwaMhWDuzVTnE8QJwWOdNzeTjAdjKw8aE$AES$SHA256";
+        String second = "Y9NUh84mMMr0hZxyrpRX1_ruASlWhNI9F0to—VtsqWnDTImu-Hs6uyGY3CORmQdFm2aH8CqdfyebImrdFWHivsfwxoHY1RNTV84KU-jyyq7Ip12CUhriru09wXxfqG373yKI1zjDEYHTSkiNlagoUNZd2M26YqjGaaJiLe2a12nw7dYJn_JGh3sScCzR8W7MJbOoCGh-9hmLnx-v0QaJuJvG0RkgkxHUk6EOZRNjuIUWZ404FHJWispE5_j-cCZAeoi2mf6JvkTAKb756mujB3vTqJZwsAfh3qsQlliA9VERkVnmSMv7pQjDjbcU3-5MKZxOKEGN7pwZvZw_GUCAQ$p-7sWz1XkrNuRJnFGSSxdAM2iNIiPWZagVwuYkaDr64LCmiIBCY24_p8onO3Jh5pWZLZDgYfdCBik1kAP_RhX-suf6hFKl3WLoV9Lyu6FQcNcvHpW6Yz5l5vwcjqY5rknUdQ_HNQa8oZgA_zgw-6FxoXPw7UT33hbA9LBfLEYobjjutm5ep95NcnBWlqHLULS64IuqN3Fm4-dMxCeLp-Mfgd1bqwxw9RNgXXoA3xq_DaibxuyWAeWts5iP5Ad9GD01sJmmdc9e8q8U60KINPUWgUXVt4Uo_6KLHuK3mRGJeQCXEEh2-2K1iGpiqqoOiD8QwOR8B7V1cpaOORbF-LFXzs0SzQsAObq3QNk-CT3eCmsfpiJlzPMvjpdBOJP1Mlj9fZd5P1bi5I83Nnqm85IBB-NayNU5jg_tquvqgXqCsZRw1za2ifEh_dxNu0Akry4oyRbj4SF2AYqNW70FRjpj5zjiiHGPdVAW3YAjd9YAt_qPkL4kj9CsTy7w-nJoZqa9KqJTz6H5eeXyxwQA6nA3v_SeH28dLUen6LJawrlVnXl0ivZusze8ECOK0eAzKNKas9EF_tsCtBzorw5iDESwcirhHRfyQy-ibqwzdQG7vE66mp_F3WwZmXyc3TUjgCgS6P2uStoV4F3CubtfoaCVtXgBwicmQHxkkEva-SFA-Pz3A92GAFE6e9EIUHIcHNSOSJ8NSqFX2eusQ1ZVj_TNj7X_KSUMp207GikGE8U4pzBo1Stlmso4tXdu4SSA1kVv-FUkS3J230hNFM_QnPRhplugbt8r_sHBGW0jkzjYLJ1M2MNBL0jLVseQuwG3Oa$AES$SHA256";
+
+        DigitalEnvelopeDTO dto = new DigitalEnvelopeDTO();
+        dto.setCipherText(second);
+        DigitalEnvelopeUtils.decrypt(dto, InternalConfig.getISVPrivateKey(CertTypeEnum.RSA2048), InternalConfig.getYopPublicKey(CertTypeEnum.RSA2048));
+
+        System.out.println(RSAKeyUtils.key2String(InternalConfig.getISVPrivateKey(CertTypeEnum.RSA2048)));
+    }
+
+    @Test
+    public void testCfca() {
+        int i = 2;
+        YopRequest request = new YopRequest(APP_KEYS[i], APP_SECRETS[i], "https://remit.yeepay.com/yop-center");
+        request.setEncrypt(true);
+        request.setSignRet(true);
+        request.setSignAlg("sha-256");
+        request.addParam("request_flow_id", "test123456");//请求流水标识
+        request.addParam("name", "张文康");
+        request.addParam("id_card_number", "370982199101186691");
+        YopResponse response = YopClient.post("/rest/v1.0/test/cfca", request);
+        System.out.println(response);
     }
 
 }

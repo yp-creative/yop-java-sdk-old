@@ -5,10 +5,11 @@ import com.yeepay.g3.facade.yop.ca.enums.CertTypeEnum;
 import com.yeepay.g3.facade.yop.ca.enums.KeyStoreTypeEnum;
 import com.yeepay.g3.frame.yop.ca.rsa.RSAKeyUtils;
 import com.yeepay.g3.frame.yop.ca.utils.Exceptions;
+import com.yeepay.g3.sdk.yop.config.ApiConfig;
+import com.yeepay.g3.sdk.yop.config.CertConfig;
+import com.yeepay.g3.sdk.yop.config.CertificateConfig;
+import com.yeepay.g3.sdk.yop.config.SDKConfig;
 import com.yeepay.g3.sdk.yop.exception.YopClientException;
-import com.yeepay.g3.sdk.yop.utils.config.CertConfig;
-import com.yeepay.g3.sdk.yop.utils.config.CertificateConfig;
-import com.yeepay.g3.sdk.yop.utils.config.SDKConfig;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.FileInputStream;
@@ -19,6 +20,7 @@ import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -48,7 +50,6 @@ public final class InternalConfig {
     public static final String SECRET_KEY;
 
     public static final String SERVER_ROOT;
-    public static final String CFCA_SERVER_ROOT;
 
     public static int CONNECT_TIMEOUT = 30000;
     public static int READ_TIMEOUT = 60000;
@@ -59,6 +60,8 @@ public final class InternalConfig {
     private static Map<CertTypeEnum, PublicKey> yopPublicKeyMap;
 
     private static Map<CertTypeEnum, PrivateKey> isvPrivateKeyMap;
+
+    private static Map<String, ApiConfig> apiConfigMap;
 
     private InternalConfig() {
         /*forbid instantiate*/
@@ -72,8 +75,9 @@ public final class InternalConfig {
             // 允许在 VM arguments 中指定配置文件名 -Dyop.sdk.config.file=/yop_sdk_config_override.json
             SDKConfig config = load(System.getProperty(SP_SDK_CONFIG_FILE, DEFAULT_SDK_CONFIG_FILE));
 
+            apiConfigMap = config.getApiConfig() == null ? new HashMap<String, ApiConfig>() : config.getApiConfig();
+
             SERVER_ROOT = config.getServerRoot();
-            CFCA_SERVER_ROOT = config.getCfcaServerRoot();
 
             APP_KEY = config.getAppKey();
             SECRET_KEY = config.getAesSecretKey();
@@ -199,5 +203,9 @@ public final class InternalConfig {
 
     public static PrivateKey getISVPrivateKey(CertTypeEnum certType) {
         return isvPrivateKeyMap.get(certType);
+    }
+
+    public static ApiConfig getApiConfig(String apiUri) {
+        return apiConfigMap.get(apiUri);
     }
 }

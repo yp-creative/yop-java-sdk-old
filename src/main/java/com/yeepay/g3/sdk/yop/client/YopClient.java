@@ -1,11 +1,12 @@
 package com.yeepay.g3.sdk.yop.client;
 
-import com.yeepay.g3.sdk.yop.annotations.Exposed;
+import com.yeepay.g3.sdk.yop.config.ApiConfig;
 import com.yeepay.g3.sdk.yop.encrypt.AESEncrypter;
 import com.yeepay.g3.sdk.yop.encrypt.Digest;
 import com.yeepay.g3.sdk.yop.encrypt.YopSignUtils;
 import com.yeepay.g3.sdk.yop.unmarshaller.JacksonJsonMarshaller;
 import com.yeepay.g3.sdk.yop.utils.Assert;
+import com.yeepay.g3.sdk.yop.utils.InternalConfig;
 import com.yeepay.g3.sdk.yop.utils.JsonUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -25,8 +26,6 @@ import java.util.*;
  * @author wang.bao
  * @version 1.0
  */
-@Exposed(exposedTo = {"all"})
-@Deprecated
 public class YopClient extends AbstractClient {
 
     protected static final Logger logger = Logger.getLogger(YopClient.class);
@@ -34,12 +33,12 @@ public class YopClient extends AbstractClient {
     /**
      * 发起post请求，以YopResponse对象返回
      *
-     * @param methodOrUri 目标地址或命名模式的method
-     * @param request     客户端请求对象
+     * @param apiUri  目标地址
+     * @param request 客户端请求对象
      * @return 响应对象
      */
-    public static YopResponse post(String methodOrUri, YopRequest request) {
-        String content = postForString(methodOrUri, request);
+    public static YopResponse post(String apiUri, YopRequest request) {
+        String content = postForString(apiUri, request, useCFCA(apiUri));
         YopResponse response = JacksonJsonMarshaller.unmarshal(content, YopResponse.class);
         handleResult(request, response, content);
         return response;
@@ -48,12 +47,12 @@ public class YopClient extends AbstractClient {
     /**
      * 发起get请求，以YopResponse对象返回
      *
-     * @param methodOrUri 目标地址或命名模式的method
-     * @param request     客户端请求对象
+     * @param apiUri  目标地址
+     * @param request 客户端请求对象
      * @return 响应对象
      */
-    public static YopResponse get(String methodOrUri, YopRequest request) {
-        String content = getForString(methodOrUri, request);
+    public static YopResponse get(String apiUri, YopRequest request) {
+        String content = getForString(apiUri, request, useCFCA(apiUri));
         YopResponse response = JacksonJsonMarshaller.unmarshal(content, YopResponse.class);
         handleResult(request, response, content);
         return response;
@@ -62,12 +61,12 @@ public class YopClient extends AbstractClient {
     /**
      * 发起get请求，以YopResponse对象返回
      *
-     * @param methodOrUri 目标地址或命名模式的method
-     * @param request     客户端请求对象
+     * @param apiUri  目标地址
+     * @param request 客户端请求对象
      * @return 响应对象
      */
-    public static YopResponse upload(String methodOrUri, YopRequest request) {
-        String content = uploadForString(methodOrUri, request);
+    public static YopResponse upload(String apiUri, YopRequest request) {
+        String content = uploadForString(apiUri, request);
         YopResponse response = JacksonJsonMarshaller.unmarshal(content, YopResponse.class);
         handleResult(request, response, content);
         return response;
@@ -76,17 +75,17 @@ public class YopClient extends AbstractClient {
     /**
      * 发起post请求，以字符串返回
      *
-     * @param methodOrUri 目标地址或命名模式的method
-     * @param request     客户端请求对象
+     * @param apiUri  目标地址
+     * @param request 客户端请求对象
      * @return 字符串形式的响应
      */
-    public static String postForString(String methodOrUri, YopRequest request) {
-        String serverUrl = richRequest(methodOrUri, request);
+    public static String postForString(String apiUri, YopRequest request, boolean cfca) {
+        String serverUrl = richRequest(apiUri, request, cfca);
         signAndEncrypt(request);
         logger.info("signature:" + request.getParamValue(YopConstants.SIGN));
         request.encoding();
 
-        String content = getRestTemplate(request).postForObject(serverUrl, request.getParams(), String.class);
+        String content = getRestTemplate(cfca).postForObject(serverUrl, request.getParams(), String.class);
         if (logger.isDebugEnabled()) {
             logger.debug("response:\n" + content);
         }
@@ -96,13 +95,13 @@ public class YopClient extends AbstractClient {
     /**
      * 发起get请求，以字符串返回
      *
-     * @param methodOrUri 目标地址或命名模式的method
-     * @param request     客户端请求对象
+     * @param apiUri  目标地址或命名模式的method
+     * @param request 客户端请求对象
      * @return 字符串形式的响应
      */
-    public static String getForString(String methodOrUri, YopRequest request) {
-        String serverUrl = buildURL(methodOrUri, request);
-        String content = getRestTemplate(request).getForObject(serverUrl, String.class);
+    public static String getForString(String apiUri, YopRequest request, boolean cfca) {
+        String serverUrl = buildURL(apiUri, request, cfca);
+        String content = getRestTemplate(cfca).getForObject(serverUrl, String.class);
         if (logger.isDebugEnabled()) {
             logger.debug("response:\n" + content);
         }
@@ -112,12 +111,12 @@ public class YopClient extends AbstractClient {
     /**
      * 发起文件上传请求，以字符串返回
      *
-     * @param methodOrUri 目标地址或命名模式的method
-     * @param request     客户端请求对象
+     * @param apiUri  目标地址或命名模式的method
+     * @param request 客户端请求对象
      * @return 字符串形式的响应
      */
-    public static String uploadForString(String methodOrUri, YopRequest request) {
-        String serverUrl = richRequest(methodOrUri, request);
+    public static String uploadForString(String apiUri, YopRequest request) {
+        String serverUrl = richRequest(apiUri, request, false);
 
         MultiValueMap<String, String> original = request.getParams();
         MultiValueMap<String, Object> alternate = new LinkedMultiValueMap<String, Object>();
@@ -140,7 +139,7 @@ public class YopClient extends AbstractClient {
             alternate.put(key, new ArrayList<Object>(original.get(key)));
         }
 
-        String content = getRestTemplate(request).postForObject(serverUrl, alternate, String.class);
+        String content = getRestTemplate(false).postForObject(serverUrl, alternate, String.class);
         if (logger.isDebugEnabled()) {
             logger.debug("response:\n" + content);
         }
@@ -281,8 +280,8 @@ public class YopClient extends AbstractClient {
      * @param request
      * @return
      */
-    public static String buildURL(String methodOrUri, YopRequest request) {
-        String serverUrl = richRequest(methodOrUri, request);
+    public static String buildURL(String methodOrUri, YopRequest request, boolean cfca) {
+        String serverUrl = richRequest(methodOrUri, request, cfca);
         signAndEncrypt(request);
         request.encoding();
         serverUrl += serverUrl.contains("?") ? "&" : "?" + request.toQueryString();

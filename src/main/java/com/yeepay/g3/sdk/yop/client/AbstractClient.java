@@ -1,15 +1,13 @@
 package com.yeepay.g3.sdk.yop.client;
 
+import com.yeepay.g3.sdk.yop.config.ApiConfig;
 import com.yeepay.g3.sdk.yop.exception.YopClientException;
 import com.yeepay.g3.sdk.yop.utils.Assert;
 import com.yeepay.g3.sdk.yop.utils.InternalConfig;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.SSLContextBuilder;
-import org.apache.http.conn.ssl.SSLContexts;
-import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.conn.ssl.*;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.log4j.Logger;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
@@ -17,6 +15,8 @@ import org.springframework.web.client.RestTemplate;
 
 import java.security.KeyStore;
 import java.security.KeyStoreException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 
 public class AbstractClient {
 
@@ -67,14 +67,16 @@ public class AbstractClient {
             }
         }
 
-        if (InternalConfig.TRUST_CERTIFICATE != null) {
-            try {
-                trustStore.load(InternalConfig.getInputStream(InternalConfig.TRUST_CERTIFICATE.getPath()), InternalConfig.TRUST_CERTIFICATE.getPassword().toCharArray());
-                sslContextBuilder.loadTrustMaterial(trustStore);
-            } catch (Exception e) {
-                LOGGER.error("error happen when loading trust certificate", e);
-                return;
-            }
+        try {
+            sslContextBuilder.loadTrustMaterial(null, new TrustStrategy() {
+                @Override
+                public boolean isTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+                    return true;
+                }
+            });
+        } catch (Exception e) {
+            LOGGER.error("error happen when loading trust certificate", e);
+            return;
         }
 
         SSLConnectionSocketFactory sslsf;
@@ -84,6 +86,7 @@ public class AbstractClient {
             LOGGER.error("error create ssl connection socket factory", e);
             return;
         }
+
 
         HttpClient cfcaHttpClient = HttpClients.custom().setSSLSocketFactory(sslsf)
                 .setDefaultRequestConfig(RequestConfig.custom().setConnectTimeout(connectTimeout).setSocketTimeout(readTimeout).build()).build();
@@ -109,11 +112,10 @@ public class AbstractClient {
     /**
      * return the normal restTemplate or cfca restTemplate according to request.getUseCFCA()
      *
-     * @param request
      * @return restTemplate
      */
-    protected static RestTemplate getRestTemplate(YopRequest request) {
-        RestTemplate template = request.getUseCFCA() ? cfcaRestTemplate : normalRestTemplate;
+    protected static RestTemplate getRestTemplate(boolean cfca) {
+        RestTemplate template = cfca ? cfcaRestTemplate : normalRestTemplate;
         if (template == null) {
             throw new IllegalStateException("restTemplate is not initialized!");
         }
@@ -128,10 +130,11 @@ public class AbstractClient {
      * @param request     请求对象
      * @return 请求地址
      */
-    protected static String richRequest(String methodOrUri, YopRequest request) {
+    protected static String richRequest(String methodOrUri, YopRequest request, boolean cfca) {
         Assert.hasText(methodOrUri, "method name or rest uri");
 
-        String serverUrl = request.getServerRoot();
+        String serverUrl = cfca ? "https://remit.yeepay.com/yop-center" : request.getServerRoot();
+
         if (StringUtils.endsWith(serverUrl, "/")) {
             serverUrl = StringUtils.substring(serverUrl, 0, -1);
         }
@@ -168,5 +171,16 @@ public class AbstractClient {
         // 去除逗号
         jsonStr = StringUtils.substringBeforeLast(jsonStr, ",");
         return jsonStr;
+    }
+
+    /**
+     * apiUri是否使用cfca
+     *
+     * @param apiUri
+     * @return
+     */
+    protected static boolean useCFCA(String apiUri) {
+        ApiConfig apiConfig = InternalConfig.getApiConfig(apiUri);
+        return apiConfig == null ? false : apiConfig.getCfca();
     }
 }

@@ -10,7 +10,6 @@ import com.yeepay.g3.facade.yop.ca.enums.DigestAlgEnum;
 import com.yeepay.g3.frame.yop.ca.DigitalEnvelopeUtils;
 import com.yeepay.g3.frame.yop.ca.rsa.RSAKeyUtils;
 import com.yeepay.g3.frame.yop.ca.utils.Exceptions;
-import com.yeepay.g3.sdk.yop.annotations.Exposed;
 import com.yeepay.g3.sdk.yop.exception.YopClientException;
 import com.yeepay.g3.sdk.yop.http.Headers;
 import com.yeepay.g3.sdk.yop.http.HttpUtils;
@@ -40,8 +39,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * @author wang.bao
  * @version 1.0
  */
-@Exposed(exposedTo = {"opr"})
-@Deprecated
 public class YopClient3 extends AbstractClient {
 
     protected static final Logger logger = Logger.getLogger(YopClient3.class);
@@ -62,12 +59,12 @@ public class YopClient3 extends AbstractClient {
     /**
      * 发起post请求，以YopResponse对象返回
      *
-     * @param methodOrUri 目标地址或命名模式的method
-     * @param request     客户端请求对象
+     * @param apiUri  目标地址或命名模式的method
+     * @param request 客户端请求对象
      * @return 响应对象
      */
-    public static YopResponse postRsa(String methodOrUri, YopRequest request) {
-        String content = postRsaString(methodOrUri, request);
+    public static YopResponse postRsa(String apiUri, YopRequest request) {
+        String content = postRsaString(apiUri, request);
         YopResponse response = JacksonJsonMarshaller.unmarshal(content, YopResponse.class);
         handleRsaResult(request, response, content);
         return response;
@@ -76,18 +73,19 @@ public class YopClient3 extends AbstractClient {
     /**
      * 发起post请求，以字符串返回
      *
-     * @param methodOrUri 目标地址或命名模式的method
-     * @param request     客户端请求对象
+     * @param apiUri  目标地址或命名模式的method
+     * @param request 客户端请求对象
      * @return 字符串形式的响应
      */
-    public static String postRsaString(String methodOrUri, YopRequest request) {
+    public static String postRsaString(String apiUri, YopRequest request) {
         logger.debug(request.toQueryString());
-        String serverUrl = richRequest(methodOrUri, request);
-        String content = getRestTemplate(request).postForObject(serverUrl, signAndEncrypt(methodOrUri, request), String.class);
+        boolean cfca = useCFCA(apiUri);
+        String serverUrl = richRequest(apiUri, request, cfca);
+        String content = getRestTemplate(cfca).postForObject(serverUrl, signAndEncrypt(apiUri, request), String.class);
         return content;
     }
 
-    private static HttpEntity<MultiValueMap<String, String>> signAndEncrypt(String methodOrUri, YopRequest request) {
+    private static HttpEntity<MultiValueMap<String, String>> signAndEncrypt(String apiUri, YopRequest request) {
         String appKey = request.getAppKey();
         String timestamp = DateUtils.formatCompressedIso8601Timestamp(new Date().getTime());
 
@@ -108,7 +106,7 @@ public class YopClient3 extends AbstractClient {
         headersToSignSet.add("x-yop-appkey");
 
         // Formatting the URL with signing protocol.
-        String canonicalURI = HttpUtils.getCanonicalURIPath(methodOrUri);
+        String canonicalURI = HttpUtils.getCanonicalURIPath(apiUri);
         // Formatting the query string with signing protocol.
         String canonicalQueryString = getCanonicalQueryString(request.getParams().toSingleValueMap(), true);
         // Sorted the headers should be signed from the request.
@@ -157,12 +155,12 @@ public class YopClient3 extends AbstractClient {
     /**
      * 上传文件
      *
-     * @param methodOrUri 目标地址或命名模式的method
-     * @param request     客户端请求对象
+     * @param apiUri  目标地址或命名模式的method
+     * @param request 客户端请求对象
      * @return 响应对象
      */
-    public static YopResponse uploadRsa(String methodOrUri, YopRequest request) {
-        String content = uploadRsaForString(methodOrUri, request);
+    public static YopResponse uploadRsa(String apiUri, YopRequest request) {
+        String content = uploadRsaForString(apiUri, request);
         YopResponse response = JacksonJsonMarshaller.unmarshal(content, YopResponse.class);
         handleRsaResult(request, response, content);
         return response;
@@ -171,12 +169,12 @@ public class YopClient3 extends AbstractClient {
     /**
      * 发起文件上传请求，以字符串返回
      *
-     * @param methodOrUri 目标地址或命名模式的method
-     * @param request     客户端请求对象
+     * @param apiUri  目标地址或命名模式的method
+     * @param request 客户端请求对象
      * @return 字符串形式的响应
      */
-    public static String uploadRsaForString(String methodOrUri, YopRequest request) {
-        String serverUrl = richRequest(methodOrUri, request);
+    public static String uploadRsaForString(String apiUri, YopRequest request) {
+        String serverUrl = richRequest(apiUri, request, false);
 
         MultiValueMap<String, String> original = request.getParams();
         MultiValueMap<String, Object> alternate = new LinkedMultiValueMap<String, Object>();
@@ -193,14 +191,14 @@ public class YopClient3 extends AbstractClient {
             }
         }
 
-        HttpEntity<MultiValueMap<String, String>> originalHttpEntity = signAndEncrypt(methodOrUri, request);
+        HttpEntity<MultiValueMap<String, String>> originalHttpEntity = signAndEncrypt(apiUri, request);
 
         for (String key : originalHttpEntity.getBody().keySet()) {
             alternate.put(key, new ArrayList<Object>(original.get(key)));
         }
 
         HttpEntity<MultiValueMap<String, Object>> alternateHttpEntity = new HttpEntity<MultiValueMap<String, Object>>(alternate, originalHttpEntity.getHeaders());
-        String content = getRestTemplate(request).postForObject(serverUrl, alternateHttpEntity, String.class);
+        String content = getRestTemplate(false).postForObject(serverUrl, alternateHttpEntity, String.class);
         return content;
     }
 

@@ -1,4 +1,4 @@
-package com.yeepay.g3.sdk.yop.utils.config;
+package com.yeepay.g3.sdk.yop.config;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

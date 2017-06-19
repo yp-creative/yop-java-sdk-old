@@ -248,15 +248,4 @@ public class YopRequest {
         }
         return builder.toString();
     }
-
-    public Boolean getUseCFCA() {
-        return useCFCA;
-    }
-
-    public void setUseCFCA(Boolean useCFCA) {
-        if (useCFCA) {
-            serverRoot = InternalConfig.CFCA_SERVER_ROOT;
-        }
-        this.useCFCA = useCFCA;
-    }
 }

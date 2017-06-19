@@ -24,7 +24,7 @@ public class QaDemo {
 
     //    private static final String BASE_URL = "http://10.151.30.87:8064/yop-center/";
 //    private static final String BASE_URL = "http://10.151.30.88:8064/yop-center/";
-    private static final String BASE_URL = "http://172.17.102.175:8064/yop-center/";
+    private static final String BASE_URL = "http://10.151.30.87:8064/yop-center/";
 
     private static final String[] APP_KEYS = {"yop-boss", "jinkela"};
     private static final String[] APP_SECRETS = {"PdZ74F6sxapgOWJ31QKmYw==", "cAFj+DxhpeMo8afn7s0z5w=="};
@@ -36,18 +36,20 @@ public class QaDemo {
 
     @Test
     public void testIdCard() throws Exception {
-        int i = 1;
-        YopRequest request = new YopRequest(null, APP_SECRETS[i], BASE_URL);
-        request.setEncrypt(true);
-        request.setSignRet(true);
-        request.setSignAlg("sha-256");
-        request.addParam("appKey", APP_KEYS[i]);
-        request.addParam("requestFlowId", "test123456");//请求流水标识
-        request.addParam("name", "张文康");
-        request.addParam("idCardNumber", "370982199101186692");
-        System.out.println(request.toQueryString());
-        YopResponse response = YopClient.post("/rest/v2.0/auth/idcard", request);
-        System.out.println(response.toString());
+        for(int j=0;j<100;j++) {
+            int i = 0;
+            YopRequest request = new YopRequest(null, APP_SECRETS[i], BASE_URL);
+            request.setEncrypt(true);
+            request.setSignRet(true);
+//        request.setSignAlg("sha-256");
+            request.addParam("appKey", APP_KEYS[i]);
+            request.addParam("requestFlowId", "test123456");//请求流水标识
+            request.addParam("name", "张文康");
+            request.addParam("idCardNumber", "370982199101186692");
+            System.out.println(request.toQueryString());
+            YopResponse response = YopClient.post("/rest/v2.0/auth/idcard", request);
+            System.out.println(response.toString());
+        }
     }
 
     @Test
@@ -124,9 +126,6 @@ public class QaDemo {
         request.addParam("callbackurl", "http://50.1.1.24:8018/fundtrans-hessian/");
         request.addParam("webcallbackurl", "http://localhost:8080/reciver/page");
         System.out.println(request.toQueryString());
-
-        String requestUri = YopClient.buildURL("/rest/v1.0/member/gatewayDeposit", request);
-        System.out.println(requestUri);
 
         YopResponse yopResponse = YopClient.get("/rest/v1.0/member/gatewayDeposit", request);
         System.out.println(yopResponse);

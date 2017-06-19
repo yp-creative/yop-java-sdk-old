@@ -133,9 +133,6 @@ public class Demo {
         request.addParam("webcallbackurl", "http://localhost:8080/reciver/page");
         System.out.println(request.toQueryString());
 
-        String requestUri = YopClient.buildURL("/rest/v1.0/member/gatewayDeposit", request);
-        System.out.println(requestUri);
-
         YopResponse yopResponse = YopClient.get("/rest/v1.0/member/gatewayDeposit", request);
         System.out.println(yopResponse);
     }

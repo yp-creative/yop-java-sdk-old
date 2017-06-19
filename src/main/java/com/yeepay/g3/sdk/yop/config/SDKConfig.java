@@ -1,10 +1,11 @@
-package com.yeepay.g3.sdk.yop.utils.config;
+package com.yeepay.g3.sdk.yop.config;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import java.io.Serializable;
+import java.util.Map;
 
 /**
  * title: <br>
@@ -29,14 +30,14 @@ public final class SDKConfig implements Serializable {
     @JsonProperty("server_root")
     private String serverRoot;
 
-    @JsonProperty("cfca_server_root")
-    private String cfcaServerRoot;
-
     @JsonProperty("yop_public_key")
     private CertConfig[] yopPublicKey;
 
     @JsonProperty("isv_private_key")
     private CertConfig[] isvPrivateKey;
+
+    @JsonProperty("api")
+    private Map<String, ApiConfig> apiConfig;
 
     @JsonProperty("connect_timeout")
     private Integer connectTimeout;
@@ -94,14 +95,6 @@ public final class SDKConfig implements Serializable {
         this.serverRoot = serverRoot;
     }
 
-    public String getCfcaServerRoot() {
-        return cfcaServerRoot;
-    }
-
-    public void setCfcaServerRoot(String cfcaServerRoot) {
-        this.cfcaServerRoot = cfcaServerRoot;
-    }
-
     public String getAppKey() {
         return appKey;
     }
@@ -132,5 +125,13 @@ public final class SDKConfig implements Serializable {
 
     public void setClientCertificate(CertificateConfig clientCertificate) {
         this.clientCertificate = clientCertificate;
+    }
+
+    public Map<String, ApiConfig> getApiConfig() {
+        return apiConfig;
+    }
+
+    public void setApiConfig(Map<String, ApiConfig> apiConfig) {
+        this.apiConfig = apiConfig;
     }
 }
