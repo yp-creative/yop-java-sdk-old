@@ -4,6 +4,7 @@ import com.TrustAllHttpsCertificates;
 import com.yeepay.g3.sdk.yop.client.YopClient;
 import com.yeepay.g3.sdk.yop.client.YopRequest;
 import com.yeepay.g3.sdk.yop.client.YopResponse;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -179,7 +180,7 @@ public class Demo {
 
     @Test
     public void testSendSmsQa() {
-        YopRequest request = new YopRequest("openSmsApi","1234554321","http://open.yeepay.com:8064/yop-center/");
+        YopRequest request = new YopRequest("openSmsApi", "1234554321", "http://open.yeepay.com:8064/yop-center/");
         request.setSignAlg("MD5");//具体看api签名算法而定
         //request.setEncrypt(true);
         String notifyRule = "商户结算短信通知";//通知规则
@@ -204,7 +205,7 @@ public class Demo {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        YopRequest request = new YopRequest("ypo2o","tpcY6k2RSpEod7hsJIp33Q==","https://open.yeepay.com:8064/yop-center");
+        YopRequest request = new YopRequest("ypo2o", "tpcY6k2RSpEod7hsJIp33Q==", "https://open.yeepay.com:8064/yop-center");
         request.setSignAlg("MD5");//具体看api签名算法而定
         String notifyRule = "EGOU_VERIFY";//通知规则
         List recipients = new ArrayList();//接收人
@@ -493,5 +494,22 @@ public class Demo {
         request.addParam("merchantCategory", "042001");//商户一二级分类
         request.addParam("cashDepositType", "DELAYMONEY");//保证金缴纳方式：a滞留金（DELAYMONEY）；b线上充值（ONLINE）
         request.addParam("cashDepositAmount", "1000");//保证金金额
+    }
+
+    @Test
+    public void testBase64() {
+        String x = "+/dkjfdkjfs?kdjfkdjfkdjfkdjkdj";
+
+
+
+        String base64UrlSafe = Base64.encodeBase64URLSafeString(x.getBytes());
+        String base64 = "0/ZoyfKku0tunPunw7dbfA==";
+        System.out.println(base64UrlSafe);
+        System.out.println(base64);
+
+        System.out.println(new String(com.yeepay.g3.sdk.yop.encrypt.Base64.decode(base64UrlSafe)));
+        System.out.println(new String(com.yeepay.g3.sdk.yop.encrypt.Base64.decode(base64)));
+        System.out.println(new String(new Base64(true).decode(base64UrlSafe)));
+        System.out.println(new String(new Base64(true).decode(base64)));
     }
 }

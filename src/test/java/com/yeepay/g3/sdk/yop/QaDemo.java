@@ -36,7 +36,7 @@ public class QaDemo {
 
     @Test
     public void testIdCard() throws Exception {
-        for(int j=0;j<100;j++) {
+//        for(int j=0;j<100;j++) {
             int i = 0;
             YopRequest request = new YopRequest(null, APP_SECRETS[i], BASE_URL);
             request.setEncrypt(true);
@@ -49,7 +49,7 @@ public class QaDemo {
             System.out.println(request.toQueryString());
             YopResponse response = YopClient.post("/rest/v2.0/auth/idcard", request);
             System.out.println(response.toString());
-        }
+//        }
     }
 
     @Test
