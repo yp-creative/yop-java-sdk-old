@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>yop-sdk</artifactId>
-    <version>${yop-sdk.version}</version>
+    <version>1.2.0</version>
     <packaging>jar</packaging>
 
     <name>YOP :: SDK</name>

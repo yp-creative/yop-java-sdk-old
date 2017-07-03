@@ -1,8 +1,7 @@
 {
-  "app_key": "<Your appKey>;覆盖优先级：YopRequest >> YopConfig >> this",
-  "aes_secret_key": "<Your appSecretKey>;覆盖优先级：YopRequest >> YopConfig >> this",
+  "app_key": "<Your appKey>;覆盖优先级：YopRequest >> YopConfig >> 配置文件",
+  "aes_secret_key": "<Your appSecret>;覆盖优先级：YopRequest >> YopConfig >> 配置文件",
   "server_root": "https://open.yeepay.com/yop-center",
-  "cfca_server_root": "https://security.open.yeepay.com/yop-center",
   "yop_public_key": [
     {
       "store_type": "string",
