@@ -203,6 +203,14 @@
                                     <exclude>log4j:log4j:jar:</exclude>
                                 </excludes>
                             </artifactSet>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/services/*</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
                             <relocations>
                                 <relocation>
                                     <pattern>com.fasterxml</pattern>
@@ -239,5 +247,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>

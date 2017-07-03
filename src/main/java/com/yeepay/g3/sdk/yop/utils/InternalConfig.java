@@ -10,6 +10,8 @@ import com.yeepay.g3.sdk.yop.config.CertConfig;
 import com.yeepay.g3.sdk.yop.config.CertificateConfig;
 import com.yeepay.g3.sdk.yop.config.SDKConfig;
 import com.yeepay.g3.sdk.yop.exception.YopClientException;
+import com.yeepay.g3.utils.common.log.Logger;
+import com.yeepay.g3.utils.common.log.LoggerFactory;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.FileInputStream;
@@ -35,6 +37,8 @@ import java.util.Map;
  */
 public final class InternalConfig {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(InternalConfig.class);
+
     private static final String SP_SDK_CONFIG_FILE = "yop.sdk.config.file";
 
     /*
@@ -46,22 +50,22 @@ public final class InternalConfig {
     public static final String PROTOCOL_VERSION = "yop-auth-v2";
     public static final String SDK_VERSION = "20170104.2103";
 
-    public static final String APP_KEY;
-    public static final String SECRET_KEY;
+    public static String APP_KEY;
+    public static String SECRET_KEY;
 
-    public static final String SERVER_ROOT;
+    public static String SERVER_ROOT;
 
     public static int CONNECT_TIMEOUT = 30000;
     public static int READ_TIMEOUT = 60000;
 
-    public static final CertificateConfig TRUST_CERTIFICATE;
-    public static final CertificateConfig CLIENT_CERTIFICATE;
+    public static CertificateConfig TRUST_CERTIFICATE;
+    public static CertificateConfig CLIENT_CERTIFICATE;
 
     private static Map<CertTypeEnum, PublicKey> yopPublicKeyMap;
 
     private static Map<CertTypeEnum, PrivateKey> isvPrivateKeyMap;
 
-    private static Map<String, ApiConfig> apiConfigMap;
+    private static Map<String, ApiConfig> apiConfigMap = Maps.newHashMap();
 
     private InternalConfig() {
         /*forbid instantiate*/
@@ -103,10 +107,10 @@ public final class InternalConfig {
 
             TRUST_CERTIFICATE = config.getTrustCertificate();
             CLIENT_CERTIFICATE = config.getClientCertificate();
-        } catch (RuntimeException ex) {
-            throw ex;
         } catch (Exception ex) {
-            throw new IllegalStateException("Fatal: Failed to load the internal config for YOP Java SDK", ex);
+            LOGGER.error("yop sdk load config file error", ex);
+
+//            throw new IllegalStateException("Fatal: Failed to load the internal config for YOP Java SDK", ex);
         }
     }
 

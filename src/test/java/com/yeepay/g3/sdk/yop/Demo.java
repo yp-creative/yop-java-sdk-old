@@ -500,8 +500,6 @@ public class Demo {
     public void testBase64() {
         String x = "+/dkjfdkjfs?kdjfkdjfkdjfkdjkdj";
 
-
-
         String base64UrlSafe = Base64.encodeBase64URLSafeString(x.getBytes());
         String base64 = "0/ZoyfKku0tunPunw7dbfA==";
         System.out.println(base64UrlSafe);
