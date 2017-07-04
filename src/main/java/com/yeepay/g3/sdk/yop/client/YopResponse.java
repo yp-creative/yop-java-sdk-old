@@ -4,7 +4,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import com.yeepay.g3.sdk.yop.error.YopError;
 import com.yeepay.g3.sdk.yop.unmarshaller.JacksonJsonMarshaller;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -137,7 +137,9 @@ public class YopResponse {
     }
 
     public String toString() {
-        return ToStringBuilder.reflectionToString(this,
-                ToStringStyle.SHORT_PREFIX_STYLE);
+        String[] excludeFieldNames = new String[]{"stringResult"};
+        return new ReflectionToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .setExcludeFieldNames(excludeFieldNames)
+                .toString();
     }
 }
