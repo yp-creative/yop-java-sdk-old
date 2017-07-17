@@ -112,14 +112,14 @@ public class YopRequest {
             return this;
         }
         if (YopConstants.isProtectedKey(paramName)) {
-            paramMap.set(paramName, paramValue.toString().trim());
+            paramMap.set(paramName, paramValue.toString());
             return this;
         }
         if (paramValue instanceof Collection<?>) {
             // 集合类
             for (Object o : (Collection<?>) paramValue) {
                 if (o != null) {
-                    paramMap.add(paramName, o.toString().trim());
+                    paramMap.add(paramName, o.toString());
                 }
             }
         } else if (paramValue.getClass().isArray()) {
@@ -128,11 +128,11 @@ public class YopRequest {
             for (int i = 0; i < len; i++) {
                 Object o = Array.get(paramValue, i);
                 if (o != null) {
-                    paramMap.add(paramName, o.toString().trim());
+                    paramMap.add(paramName, o.toString());
                 }
             }
         } else {
-            paramMap.add(paramName, paramValue.toString().trim());
+            paramMap.add(paramName, paramValue.toString());
         }
 
         if (ignoreSign) {
