@@ -58,13 +58,13 @@ public class DevDemo {
             request.setEncrypt(true);
             request.setSignRet(true);
             request.addParam("appKey", APP_KEYS[i]);//这个写YOP就可以了
-            request.addParam("corpName", "安徽四创电子股份有限公司青海分公司");//企业名称
+            request.addParam("corpName", "安徽四创电子股份有限公司青海分公司1");//企业名称
             request.addParam("regNo", "630104063035716");//工商注册号
             request.addParam("requestCustomerId", "yop-boss");//子商户编号
             request.addParam("requestFlowId", "test-" + System.currentTimeMillis() + RandomStringUtils.randomNumeric(3));//请求流水标识
             request.addParam("requestIdentification", "wenkang.zhang");//请求者标识
             System.out.println(request.toQueryString());
-            YopResponse response = YopClient.post("/rest/v2.2/auth/enterprise", request);
+            YopResponse response = YopClient.get("/rest/v2.2/auth/enterprise", request);
             System.out.println(response.toString());
         }
     }

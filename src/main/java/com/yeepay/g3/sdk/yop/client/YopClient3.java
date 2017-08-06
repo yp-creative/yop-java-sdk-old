@@ -91,19 +91,21 @@ public class YopClient3 extends AbstractClient {
 
 //        authorization  yop-auth-v2/openSmsApi/2016-02-25T08:57:48Z/1800/host/a57365cb4bf6cd83c91dfae214c1404aa0cc74f2ade95f121530fcb9c91f3c9d
 
-        MultiValueMap<String, String> headers = new LinkedMultiValueMap<String, String>();
-        String requestId = UUID.randomUUID().toString();
-        headers.add("x-yop-request-id", requestId);
-        headers.add("x-yop-date", timestamp);
+        MultiValueMap<String, String> headers = request.headers;
+        if (!headers.containsKey(Headers.YOP_REQUEST_ID)) {
+            String requestId = UUID.randomUUID().toString();
+            headers.add(Headers.YOP_REQUEST_ID, requestId);
+        }
+        headers.add(Headers.YOP_DATE, timestamp);
 
         String authString = InternalConfig.PROTOCOL_VERSION + "/" + appKey + "/" + timestamp + "/" + EXPIRED_SECONDS;
 
         Set<String> headersToSignSet = new HashSet<String>();
-        headersToSignSet.add("x-yop-request-id");
-        headersToSignSet.add("x-yop-date");
+        headersToSignSet.add(Headers.YOP_REQUEST_ID);
+        headersToSignSet.add(Headers.YOP_DATE);
 
-        headers.add("x-yop-appkey", appKey);
-        headersToSignSet.add("x-yop-appkey");
+        headers.add(Headers.YOP_APP_KEY, appKey);
+        headersToSignSet.add(Headers.YOP_APP_KEY);
 
         // Formatting the URL with signing protocol.
         String canonicalURI = HttpUtils.getCanonicalURIPath(apiUri);
@@ -145,7 +147,7 @@ public class YopClient3 extends AbstractClient {
         digitalSignatureDTO.setDigestAlg(DigestAlgEnum.SHA256);
         digitalSignatureDTO = DigitalEnvelopeUtils.sign(digitalSignatureDTO, isvPrivateKey);
 
-        headers.add("Authorization", "YOP-RSA2048-SHA256 " + InternalConfig.PROTOCOL_VERSION + "/" + appKey + "/" + timestamp + "/" + EXPIRED_SECONDS + "/" + signedHeaders + "/" + digitalSignatureDTO.getSignature());
+        headers.add(Headers.AUTHORIZATION, "YOP-RSA2048-SHA256 " + InternalConfig.PROTOCOL_VERSION + "/" + appKey + "/" + timestamp + "/" + EXPIRED_SECONDS + "/" + signedHeaders + "/" + digitalSignatureDTO.getSignature());
 
         request.encoding();
 

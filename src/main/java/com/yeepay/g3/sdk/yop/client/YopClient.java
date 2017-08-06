@@ -1,16 +1,16 @@
 package com.yeepay.g3.sdk.yop.client;
 
-import com.yeepay.g3.sdk.yop.config.ApiConfig;
 import com.yeepay.g3.sdk.yop.encrypt.AESEncrypter;
 import com.yeepay.g3.sdk.yop.encrypt.Digest;
 import com.yeepay.g3.sdk.yop.encrypt.YopSignUtils;
 import com.yeepay.g3.sdk.yop.unmarshaller.JacksonJsonMarshaller;
 import com.yeepay.g3.sdk.yop.utils.Assert;
-import com.yeepay.g3.sdk.yop.utils.InternalConfig;
 import com.yeepay.g3.sdk.yop.utils.JsonUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
@@ -85,11 +85,7 @@ public class YopClient extends AbstractClient {
         logger.info("signature:" + request.getParamValue(YopConstants.SIGN));
         request.encoding();
 
-        String content = getRestTemplate(cfca).postForObject(serverUrl, request.getParams(), String.class);
-        if (logger.isDebugEnabled()) {
-            logger.debug("response:\n" + content);
-        }
-        return content;
+        return getRestTemplate(cfca).postForObject(serverUrl, new HttpEntity<MultiValueMap<String, String>>(request.getParams(), request.headers), String.class);
     }
 
     /**
@@ -101,11 +97,7 @@ public class YopClient extends AbstractClient {
      */
     public static String getForString(String apiUri, YopRequest request, boolean cfca) {
         String serverUrl = buildURL(apiUri, request, cfca);
-        String content = getRestTemplate(cfca).getForObject(serverUrl, String.class);
-        if (logger.isDebugEnabled()) {
-            logger.debug("response:\n" + content);
-        }
-        return content;
+        return getRestTemplate(cfca).exchange(serverUrl, HttpMethod.GET, new HttpEntity(request.headers), String.class).getBody();
     }
 
     /**
