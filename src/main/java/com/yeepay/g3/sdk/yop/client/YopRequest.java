@@ -1,5 +1,6 @@
 package com.yeepay.g3.sdk.yop.client;
 
+import com.yeepay.g3.sdk.yop.http.Headers;
 import com.yeepay.g3.sdk.yop.utils.Assert;
 import com.yeepay.g3.sdk.yop.utils.InternalConfig;
 import org.apache.commons.lang3.StringUtils;
@@ -32,6 +33,12 @@ public class YopRequest {
 
     private MultiValueMap<String, String> paramMap = new LinkedMultiValueMap<String, String>();
 
+    /*
+        http headers
+     */
+    MultiValueMap<String, String> headers = new LinkedMultiValueMap<String, String>();
+
+
     private List<String> ignoreSignParams = new ArrayList<String>(Arrays.asList(YopConstants.SIGN));
 
     /**
@@ -59,8 +66,6 @@ public class YopRequest {
      */
     private String serverRoot;
 
-    private Boolean useCFCA = false;
-
     /*配置的覆盖原则：
     * 构造方法 >> yop_sdk_config_default.json配置文件
     */
@@ -71,6 +76,9 @@ public class YopRequest {
         paramMap.set(YopConstants.APP_KEY, this.appKey);
         paramMap.set(YopConstants.LOCALE, locale);
         paramMap.set(YopConstants.TIMESTAMP, String.valueOf(System.currentTimeMillis()));
+
+        /*客户端版本*/
+        headers.add(Headers.YOP_SDK_VERSION, YopConstants.CLIENT_FEATURE);
     }
 
     /**
@@ -156,6 +164,30 @@ public class YopRequest {
     public MultiValueMap<String, String> getParams() {
         return paramMap;
     }
+
+
+    /**
+     * customize header,but none system reserved headers
+     *
+     * @param name
+     * @param value
+     */
+    public void addHeader(String name, String value) {
+        name = name.toLowerCase();
+        if (name.startsWith(Headers.YOP_PREFIX)) {
+            throw new IllegalArgumentException("illegal header name");
+        }
+        headers.add(name, value);
+    }
+
+    public void setRequestId(String requestId) {
+        headers.add(Headers.YOP_REQUEST_ID, requestId);
+    }
+
+    public void setRequestSource(String source) {
+        headers.add(Headers.YOP_REQUEST_SOURCE, source);
+    }
+
 
     public List<String> getIgnoreSignParams() {
         return ignoreSignParams;

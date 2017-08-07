@@ -10,7 +10,9 @@ package com.yeepay.g3.sdk.yop.client;
  */
 public class YopConstants {
 
-    public static final String CLIENT_VERSION = "2.0.0";
+    public static final String CLIENT_VERSION = "2.0.0-RC1";
+    public static final String CLIENT_LANGS = "java";
+    public static final String CLIENT_FEATURE = CLIENT_LANGS + "-" + CLIENT_VERSION;
 
     public static final String ENCODING = "UTF-8";
 

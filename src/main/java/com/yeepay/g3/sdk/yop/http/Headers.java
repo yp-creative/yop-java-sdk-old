@@ -64,6 +64,8 @@ public interface Headers {
 
     String YOP_COPY_SOURCE_IF_MATCH = "x-yop-copy-source-if-match";
 
+    String YOP_APP_KEY = "x-yop-appkey";
+
     String YOP_DATE = "x-yop-date";
 
     String YOP_USER_METADATA_PREFIX = "x-yop-meta-";
@@ -71,5 +73,11 @@ public interface Headers {
     String YOP_REQUEST_ID = "x-yop-request-id";
 
     String YOP_SECURE_TOKEN = "x-yop-secure-token";
+
+    /*sdk版本*/
+    String YOP_SDK_VERSION = "x-yop-sdk-version";
+
+    /*请求来源*/
+    String YOP_REQUEST_SOURCE = "x-yop-request-source";
 
 }

@@ -213,7 +213,7 @@
                 </configuration>
                 <executions>
                     <execution>
-                        <phase>package</phase>
+                        <phase>none</phase>
                         <goals>
                             <goal>shade</goal>
                         </goals>
