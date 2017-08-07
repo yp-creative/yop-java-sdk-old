@@ -78,7 +78,7 @@ public class YopRequest {
         paramMap.set(YopConstants.TIMESTAMP, String.valueOf(System.currentTimeMillis()));
 
         /*客户端版本*/
-        headers.add(Headers.YOP_SDK_VERSION, YopConstants.CLIENT_VERSION);
+        headers.add(Headers.YOP_SDK_VERSION, YopConstants.CLIENT_FEATURE);
     }
 
     /**
@@ -185,7 +185,7 @@ public class YopRequest {
     }
 
     public void setRequestSource(String source) {
-        headers.add(Headers.YOP_SOURCE, source);
+        headers.add(Headers.YOP_REQUEST_SOURCE, source);
     }
 
 

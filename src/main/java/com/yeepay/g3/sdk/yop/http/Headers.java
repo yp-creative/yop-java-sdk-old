@@ -64,7 +64,7 @@ public interface Headers {
 
     String YOP_COPY_SOURCE_IF_MATCH = "x-yop-copy-source-if-match";
 
-    String YOP_APP_KEY="x-yop-appkey";
+    String YOP_APP_KEY = "x-yop-appkey";
 
     String YOP_DATE = "x-yop-date";
 
@@ -78,6 +78,6 @@ public interface Headers {
     String YOP_SDK_VERSION = "x-yop-sdk-version";
 
     /*请求来源*/
-    String YOP_SOURCE = "x-yop-source";
+    String YOP_REQUEST_SOURCE = "x-yop-request-source";
 
 }
