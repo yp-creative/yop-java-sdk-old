@@ -1,14 +1,14 @@
 package com.yeepay.g3.sdk.yop;
 
 import com.TrustAllHttpsCertificates;
-import com.yeepay.g3.frame.yop.ca.utils.Encodes;
-import com.yeepay.g3.sdk.yop.client.*;
+import com.yeepay.g3.sdk.yop.client.YopClient;
+import com.yeepay.g3.sdk.yop.client.YopRequest;
+import com.yeepay.g3.sdk.yop.client.YopResponse;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
 
 /**
  * title: <br>
@@ -23,7 +23,7 @@ import java.util.List;
 public class QaDemo {
 
     //    private static final String BASE_URL = "http://10.151.30.87:8064/yop-center/";
-//    private static final String BASE_URL = "http://10.151.30.88:8064/yop-center/";
+//    private static final String BASE_URL = "http://open.yeepay.com:8064/yop-center/";
     private static final String BASE_URL = "http://10.151.30.87:8064/yop-center/";
 
     private static final String[] APP_KEYS = {"yop-boss", "jinkela"};
@@ -69,7 +69,7 @@ public class QaDemo {
     }
 
     @Test
-    public void v() {
+    public void v() throws IOException {
         YopRequest request = new YopRequest(null, "8intulgnqibv77f1t8q9j0hhlkiy6ei6c82sknv63vib3zhgyzl8uif9ky7a", BASE_URL);
         request.setEncrypt(true);
         request.setSignRet(true);
@@ -134,7 +134,7 @@ public class QaDemo {
     }
 
     @Test
-    public void test1() {
+    public void test1() throws IOException {
         YopRequest request = new YopRequest(null,
                 "s5KI8r0920SQ339oVlFE6eWJ0yk019SD7015nw39iaXJp10856z0C1d7JV5l",
                 BASE_URL);
@@ -195,7 +195,7 @@ public class QaDemo {
     }
 
     @Test
-    public void testCreateToken() {
+    public void testCreateToken() throws IOException {
         YopRequest request = new YopRequest(null, "cGB2CeC3YmwSWGoVz0kAvQ==", BASE_URL);
         request.setEncrypt(true);
         request.setSignRet(true);
@@ -211,7 +211,7 @@ public class QaDemo {
     }
 
     @Test
-    public void testAmount() {
+    public void testAmount() throws IOException {
         YopRequest request = new YopRequest(null, "cGB2CeC3YmwSWGoVz0kAvQ==", BASE_URL);
         request.setEncrypt(true);
         request.setSignRet(true);
@@ -227,7 +227,7 @@ public class QaDemo {
     }
 
     @Test
-    public void testJvmCollect() {
+    public void testJvmCollect() throws IOException {
         int i = 0;
         YopRequest request = new YopRequest(null, APP_SECRETS[i], BASE_URL);
         request.setEncrypt(false);
@@ -243,7 +243,7 @@ public class QaDemo {
 
 
     @Test
-    public void testQueryMember() {
+    public void testQueryMember() throws IOException {
         YopRequest request = new YopRequest(null, "8intulgnqibv77f1t8q9j0hhlkiy6ei6c82sknv63vib3zhgyzl8uif9ky7a", BASE_URL);
         request.setEncrypt(true);
         request.setSignRet(true);
@@ -272,7 +272,7 @@ public class QaDemo {
     }
 
     @Test
-    public void testSopay() {
+    public void testSopay() throws IOException {
         YopRequest request = new YopRequest(APP_KEYS[0], APP_SECRETS[0], BASE_URL);
         request.setEncrypt(true);
         request.setSignRet(true);
@@ -288,7 +288,7 @@ public class QaDemo {
     }
 
     @Test
-    public void testLaike() {
+    public void testLaike() throws IOException {
         YopRequest request = new YopRequest(APP_KEYS[0], APP_SECRETS[0], BASE_URL);
         request.setEncrypt(true);
         request.setSignRet(true);
@@ -306,7 +306,7 @@ public class QaDemo {
     }
 
     @Test
-    public void testLaikeToken() {
+    public void testLaikeToken() throws IOException {
         int i = 0;
         YopRequest request = new YopRequest(APP_KEYS[i], APP_SECRETS[i], BASE_URL);
         request.setEncrypt(true);
