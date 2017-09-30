@@ -40,8 +40,7 @@ public class TrustAllHttpsCertificates {
         javax.net.ssl.SSLContext sc = javax.net.ssl.SSLContext
                 .getInstance("SSL");
         sc.init(null, trustAllCerts, null);
-        javax.net.ssl.HttpsURLConnection.setDefaultSSLSocketFactory(sc
-                .getSocketFactory());
+        javax.net.ssl.HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
     }
 
     static class miTM implements javax.net.ssl.TrustManager,

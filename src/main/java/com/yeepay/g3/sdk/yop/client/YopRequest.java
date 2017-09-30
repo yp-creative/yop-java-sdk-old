@@ -1,7 +1,8 @@
 package com.yeepay.g3.sdk.yop.client;
 
-import com.yeepay.g3.sdk.yop.enums.FormatType;
+import com.yeepay.g3.sdk.yop.http.Headers;
 import com.yeepay.g3.sdk.yop.utils.Assert;
+import com.yeepay.g3.sdk.yop.utils.InternalConfig;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.util.LinkedMultiValueMap;
@@ -23,24 +24,20 @@ import java.util.List;
  * @version 1.0
  */
 public class YopRequest {
+
     private Logger logger = Logger.getLogger(getClass());
-
-    private FormatType format = FormatType.json;
-
-    private String method;
 
     private String locale = "zh_CN";
 
-    private String version = "1.0";
-
     private String signAlg = YopConstants.ALG_SHA1;
 
-    /**
-     * 商户编号，易宝商户可不注册开放应用(获取appKey)也可直接调用API
-     */
-    private String customerNo;
-
     private MultiValueMap<String, String> paramMap = new LinkedMultiValueMap<String, String>();
+
+    /*
+        http headers
+     */
+    MultiValueMap<String, String> headers = new LinkedMultiValueMap<String, String>();
+
 
     private List<String> ignoreSignParams = new ArrayList<String>(Arrays.asList(YopConstants.SIGN));
 
@@ -53,21 +50,6 @@ public class YopRequest {
      * 业务结果是否签名，默认不签名
      */
     private boolean signRet = false;
-
-    /**
-     * 连接超时时间, default: 30,000
-     */
-    private Integer connectTimeout;
-
-    /**
-     * 读取返回结果超时, default: 60,000
-     */
-    private Integer readTimeout;
-
-    /**
-     * 临时变量，避免多次判断
-     */
-    private transient boolean isRest = true;
 
     /**
      * 可支持不同请求使用不同的appKey及secretKey
@@ -84,21 +66,19 @@ public class YopRequest {
      */
     private String serverRoot;
 
-    /**
-     * 临时变量，请求绝对路径
-     */
-    private String absoluteURL;
-
+    /*配置的覆盖原则：
+    * 构造方法 >> yop_sdk_config_default.json配置文件
+    */
     public YopRequest() {
-        this.appKey = YopConfig.getAppKey();
-        this.secretKey = YopConfig.getSecret();
-        this.serverRoot = YopConfig.getServerRoot();
-        paramMap.set(YopConstants.APP_KEY, YopConfig.getAppKey());
-        paramMap.set(YopConstants.FORMAT, format.name());
-        paramMap.set(YopConstants.VERSION, version);
+        this.appKey = InternalConfig.APP_KEY;
+        this.secretKey = InternalConfig.SECRET_KEY;
+        this.serverRoot = InternalConfig.SERVER_ROOT;
+        paramMap.set(YopConstants.APP_KEY, this.appKey);
         paramMap.set(YopConstants.LOCALE, locale);
-        paramMap.set(YopConstants.TIMESTAMP,
-                String.valueOf(System.currentTimeMillis()));
+        paramMap.set(YopConstants.TIMESTAMP, String.valueOf(System.currentTimeMillis()));
+
+        /*客户端版本*/
+        headers.add(Headers.YOP_SDK_VERSION, YopConstants.CLIENT_FEATURE);
     }
 
     /**
@@ -111,23 +91,11 @@ public class YopRequest {
         paramMap.set(YopConstants.APP_KEY, appKey);
     }
 
-    public YopRequest(String appKey, String secretKey, boolean androidMode) {
-        this(appKey, secretKey);
-
-        if (!androidMode) {
-            this.customerNo = appKey;
-        }
-    }
-
     /**
      * 同一个工程内部可支持多个开放应用发起调用，且支持调不同的服务器
      */
     public YopRequest(String appKey, String secretKey, String serverRoot) {
-        this(appKey, secretKey, serverRoot, true);
-    }
-
-    public YopRequest(String appKey, String secretKey, String serverRoot, boolean androidMode) {
-        this(appKey, secretKey, androidMode);
+        this(appKey, secretKey);
         this.serverRoot = serverRoot;
     }
 
@@ -144,26 +112,22 @@ public class YopRequest {
      * @param ignoreSign 是否忽略签名
      * @return
      */
-    public YopRequest addParam(String paramName, Object paramValue,
-                               boolean ignoreSign) {
+    public YopRequest addParam(String paramName, Object paramValue, boolean ignoreSign) {
         Assert.hasText(paramName, "参数名不能为空");
-        if (paramValue == null
-                || ((paramValue instanceof String) && StringUtils
-                .isBlank((String) paramValue))
-                || ((paramValue instanceof Collection<?>) && ((Collection<?>) paramValue)
-                .isEmpty())) {
-            logger.warn("参数" + paramName + "为空，忽略");
+        if (paramValue == null || ((paramValue instanceof String) && StringUtils.isBlank((String) paramValue))
+                || ((paramValue instanceof Collection<?>) && ((Collection<?>) paramValue).isEmpty())) {
+            logger.warn("param " + paramName + "is null or empty，ignore it");
             return this;
         }
         if (YopConstants.isProtectedKey(paramName)) {
-            paramMap.set(paramName, paramValue.toString().trim());
+            paramMap.set(paramName, paramValue.toString());
             return this;
         }
         if (paramValue instanceof Collection<?>) {
             // 集合类
             for (Object o : (Collection<?>) paramValue) {
                 if (o != null) {
-                    paramMap.add(paramName, o.toString().trim());
+                    paramMap.add(paramName, o.toString());
                 }
             }
         } else if (paramValue.getClass().isArray()) {
@@ -172,11 +136,11 @@ public class YopRequest {
             for (int i = 0; i < len; i++) {
                 Object o = Array.get(paramValue, i);
                 if (o != null) {
-                    paramMap.add(paramName, o.toString().trim());
+                    paramMap.add(paramName, o.toString());
                 }
             }
         } else {
-            paramMap.add(paramName, paramValue.toString().trim());
+            paramMap.add(paramName, paramValue.toString());
         }
 
         if (ignoreSign) {
@@ -201,14 +165,32 @@ public class YopRequest {
         return paramMap;
     }
 
-    public List<String> getIgnoreSignParams() {
-        return ignoreSignParams;
+
+    /**
+     * customize header,but none system reserved headers
+     *
+     * @param name
+     * @param value
+     */
+    public void addHeader(String name, String value) {
+        name = name.toLowerCase();
+        if (name.startsWith(Headers.YOP_PREFIX)) {
+            throw new IllegalArgumentException("illegal header name");
+        }
+        headers.add(name, value);
     }
 
-    public void setFormat(FormatType format) {
-        Assert.notNull(format);
-        this.format = format;
-        paramMap.set(YopConstants.FORMAT, this.format.name());
+    public void setRequestId(String requestId) {
+        headers.add(Headers.YOP_REQUEST_ID, requestId);
+    }
+
+    public void setRequestSource(String source) {
+        headers.add(Headers.YOP_REQUEST_SOURCE, source);
+    }
+
+
+    public List<String> getIgnoreSignParams() {
+        return ignoreSignParams;
     }
 
     public void setLocale(String locale) {
@@ -216,30 +198,8 @@ public class YopRequest {
         paramMap.set(YopConstants.LOCALE, this.locale);
     }
 
-    public void setVersion(String version) {
-        this.version = version;
-        paramMap.set(YopConstants.VERSION, this.version);
-    }
-
-    public void setMethod(String method) {
-        this.method = method;
-        paramMap.set(YopConstants.METHOD, this.method);
-    }
-
-    public String getMethod() {
-        return method;
-    }
-
-    public FormatType getFormat() {
-        return format;
-    }
-
     public String getLocale() {
         return locale;
-    }
-
-    public String getVersion() {
-        return version;
     }
 
     public String getSignAlg() {
@@ -248,15 +208,6 @@ public class YopRequest {
 
     public void setSignAlg(String signAlg) {
         this.signAlg = signAlg;
-    }
-
-    public String getCustomerNo() {
-        return customerNo;
-    }
-
-    public void setCustomerNo(String customerNo) {
-        this.customerNo = customerNo;
-        paramMap.set(YopConstants.CUSTOMER_NO, this.customerNo);
     }
 
     public boolean isEncrypt() {
@@ -276,30 +227,6 @@ public class YopRequest {
         paramMap.set(YopConstants.SIGN_RETURN, String.valueOf(this.signRet));
     }
 
-    public boolean isRest() {
-        return isRest;
-    }
-
-    public void setRest(boolean isRest) {
-        this.isRest = isRest;
-    }
-
-    public Integer getReadTimeout() {
-        return readTimeout;
-    }
-
-    public void setReadTimeout(Integer readTimeout) {
-        this.readTimeout = readTimeout;
-    }
-
-    public Integer getConnectTimeout() {
-        return connectTimeout;
-    }
-
-    public void setConnectTimeout(Integer connectTimeout) {
-        this.connectTimeout = connectTimeout;
-    }
-
     public String getAppKey() {
         return appKey;
     }
@@ -313,9 +240,6 @@ public class YopRequest {
     }
 
     public String getServerRoot() {
-        if (StringUtils.isBlank(serverRoot)) {
-            serverRoot = YopConfig.getServerRoot();
-        }
         return serverRoot;
     }
 
@@ -336,14 +260,6 @@ public class YopRequest {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public String getAbsoluteURL() {
-        return absoluteURL;
-    }
-
-    public void setAbsoluteURL(String absoluteURL) {
-        this.absoluteURL = absoluteURL;
     }
 
     /**

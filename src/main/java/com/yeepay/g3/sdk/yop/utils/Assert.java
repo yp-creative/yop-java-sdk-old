@@ -3,10 +3,10 @@ package com.yeepay.g3.sdk.yop.utils;
 import org.springframework.util.StringUtils;
 
 /**
- * title: <br/>
- * description: 描述<br/>
- * Copyright: Copyright (c)2014<br/>
- * Company: 易宝支付(YeePay)<br/>
+ * title: <br>
+ * description: 描述<br>
+ * Copyright: Copyright (c)2014<br>
+ * Company: 易宝支付(YeePay)<br>
  *
  * @author baitao.ji
  * @version 1.0.0

@@ -2,9 +2,9 @@ package com.yeepay.g3.sdk.yop;
 
 import com.TrustAllHttpsCertificates;
 import com.yeepay.g3.sdk.yop.client.YopClient;
-import com.yeepay.g3.sdk.yop.client.YopConfig;
 import com.yeepay.g3.sdk.yop.client.YopRequest;
 import com.yeepay.g3.sdk.yop.client.YopResponse;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -13,10 +13,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * title: <br/>
- * description: 描述<br/>
- * Copyright: Copyright (c)2014<br/>
- * Company: 易宝支付(YeePay)<br/>
+ * title: <br>
+ * description: 描述<br>
+ * Copyright: Copyright (c)2014<br>
+ * Company: 易宝支付(YeePay)<br>
  *
  * @author baitao.ji
  * @version 1.0.0
@@ -134,9 +134,6 @@ public class Demo {
         request.addParam("webcallbackurl", "http://localhost:8080/reciver/page");
         System.out.println(request.toQueryString());
 
-        String requestUri = YopClient.buildURL("/rest/v1.0/member/gatewayDeposit", request);
-        System.out.println(requestUri);
-
         YopResponse yopResponse = YopClient.get("/rest/v1.0/member/gatewayDeposit", request);
         System.out.println(yopResponse);
     }
@@ -162,10 +159,7 @@ public class Demo {
 
     @Test//发送短信接口
     public void testSendSms() {
-        YopConfig.setAppKey("TestAppKey002");//yop应用
-        YopConfig.setAesSecretKey("TestAppSecret002");//yop应用密钥，需要和短信通知应用的密钥保持一致才行，否则验证签名不通过
-        YopConfig.setServerRoot("http://open.yeepay.com:8064/yop-center");
-        YopRequest request = new YopRequest();
+        YopRequest request = new YopRequest("TestAppKey002", "TestAppSecret002", "http://open.yeepay.com:8064/yop-center");
         // request.setSignAlg("SHA1");
         request.setSignAlg("MD5");//具体看api签名算法而定
         //request.setEncrypt(true);
@@ -186,10 +180,7 @@ public class Demo {
 
     @Test
     public void testSendSmsQa() {
-        YopConfig.setAppKey("openSmsApi");//yop应用
-        YopConfig.setAesSecretKey("1234554321");//yop应用密钥，需要和短信通知应用的密钥保持一致才行，否则验证签名不通过
-        YopConfig.setServerRoot("http://open.yeepay.com:8064/yop-center/");
-        YopRequest request = new YopRequest();
+        YopRequest request = new YopRequest("openSmsApi", "1234554321", "http://open.yeepay.com:8064/yop-center/");
         request.setSignAlg("MD5");//具体看api签名算法而定
         //request.setEncrypt(true);
         String notifyRule = "商户结算短信通知";//通知规则
@@ -214,13 +205,8 @@ public class Demo {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        YopConfig.setAppKey("ypo2o");//yop应用
-        YopConfig.setAesSecretKey("tpcY6k2RSpEod7hsJIp33Q==");//yop应用密钥，需要和短信通知应用的密钥保持一致才行，否则验证签名不通过
-        YopConfig.setServerRoot("https://open.yeepay.com:8064/yop-center");//生产环境
-        //   YopConfig.setServerRoot("http://50.1.1.14:8064/yop-center");
-        YopRequest request = new YopRequest();
+        YopRequest request = new YopRequest("ypo2o", "tpcY6k2RSpEod7hsJIp33Q==", "https://open.yeepay.com:8064/yop-center");
         request.setSignAlg("MD5");//具体看api签名算法而定
-        // request.setEncrypt(true);
         String notifyRule = "EGOU_VERIFY";//通知规则
         List recipients = new ArrayList();//接收人
         recipients.add(0, "18519193582");
@@ -508,5 +494,20 @@ public class Demo {
         request.addParam("merchantCategory", "042001");//商户一二级分类
         request.addParam("cashDepositType", "DELAYMONEY");//保证金缴纳方式：a滞留金（DELAYMONEY）；b线上充值（ONLINE）
         request.addParam("cashDepositAmount", "1000");//保证金金额
+    }
+
+    @Test
+    public void testBase64() {
+        String x = "+/dkjfdkjfs?kdjfkdjfkdjfkdjkdj";
+
+        String base64UrlSafe = Base64.encodeBase64URLSafeString(x.getBytes());
+        String base64 = "0/ZoyfKku0tunPunw7dbfA==";
+        System.out.println(base64UrlSafe);
+        System.out.println(base64);
+
+        System.out.println(new String(com.yeepay.g3.sdk.yop.encrypt.Base64.decode(base64UrlSafe)));
+        System.out.println(new String(com.yeepay.g3.sdk.yop.encrypt.Base64.decode(base64)));
+        System.out.println(new String(new Base64(true).decode(base64UrlSafe)));
+        System.out.println(new String(new Base64(true).decode(base64)));
     }
 }

@@ -1,10 +1,8 @@
 package com.yeepay.g3.sdk.yop.client;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
-import com.yeepay.g3.sdk.yop.enums.FormatType;
 import com.yeepay.g3.sdk.yop.error.YopError;
-import com.yeepay.g3.sdk.yop.unmarshaller.YopMarshallerUtils;
+import com.yeepay.g3.sdk.yop.unmarshaller.JacksonJsonMarshaller;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -56,11 +54,6 @@ public class YopResponse {
      * 字符串形式的业务结果，客户可自定义java类，使用YopMarshallerUtils.unmarshal做参数绑定
      */
     private String stringResult;
-
-    /**
-     * 响应格式，冗余字段，跟Request的format相同，用于解析结果
-     */
-    private FormatType format;
 
     /**
      * 业务结果签名是否合法，冗余字段
@@ -115,14 +108,6 @@ public class YopResponse {
         this.stringResult = stringResult;
     }
 
-    public FormatType getFormat() {
-        return format;
-    }
-
-    public void setFormat(FormatType format) {
-        this.format = format;
-    }
-
     public boolean isValidSign() {
         return validSign;
     }
@@ -146,18 +131,7 @@ public class YopResponse {
      */
     public <T> T unmarshal(Class<T> objectType) {
         if (objectType != null && StringUtils.isNotBlank(stringResult)) {
-            return YopMarshallerUtils.unmarshal(stringResult, format,
-                    objectType);
-        }
-        return null;
-    }
-
-    /**
-     * 将业务结果转换为自定义对象（参数映射）
-     */
-    public JsonNode parse() {
-        if (StringUtils.isNotBlank(stringResult) && format == FormatType.json) {
-            return YopMarshallerUtils.parse(stringResult);
+            return JacksonJsonMarshaller.unmarshal(stringResult, objectType);
         }
         return null;
     }

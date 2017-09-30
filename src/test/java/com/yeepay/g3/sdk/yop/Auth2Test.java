@@ -6,7 +6,6 @@ package com.yeepay.g3.sdk.yop;
 
 import com.TrustAllHttpsCertificates;
 import com.yeepay.g3.sdk.yop.client.YopClient;
-import com.yeepay.g3.sdk.yop.client.YopConfig;
 import com.yeepay.g3.sdk.yop.client.YopRequest;
 import com.yeepay.g3.sdk.yop.client.YopResponse;
 import org.junit.Before;
@@ -29,9 +28,7 @@ public class Auth2Test {
 
     @Test
     public void testSendSmsProduct() throws Exception {
-        YopConfig.setAppKey("test");//yop应用
-        YopConfig.setAesSecretKey("/MXzsRgoE8zDG+DACb/o1Q==");//yop应用密钥，需要和短信通知应用的密钥保持一致才行，否则验证签名不通过
-        YopRequest request = new YopRequest();
+        YopRequest request = new YopRequest("test","/MXzsRgoE8zDG+DACb/o1Q==");
         request.setSignAlg("SHA1");//具体看api签名算法而定
         request.setEncrypt(true);
         request.addParam("bankCardNumber", "6217211602000141798");

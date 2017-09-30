@@ -3,10 +3,10 @@ package com.yeepay.g3.sdk.yop;
 import com.yeepay.g3.sdk.yop.exception.YopClientException;
 
 /**
- * title: 业务异常<br/>
- * description: 描述<br/>
- * Copyright: Copyright (c)2014<br/>
- * Company: 易宝支付(YeePay)<br/>
+ * title: 业务异常<br>
+ * description: 描述<br>
+ * Copyright: Copyright (c)2014<br>
+ * Company: 易宝支付(YeePay)<br>
  *
  * @author baitao.ji
  * @version 1.0.0

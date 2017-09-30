@@ -1,16 +1,16 @@
 package com.yeepay.g3.sdk.yop.client;
 
 import com.yeepay.g3.sdk.yop.encrypt.AESEncrypter;
-import com.yeepay.g3.sdk.yop.encrypt.BlowfishEncrypter;
 import com.yeepay.g3.sdk.yop.encrypt.Digest;
 import com.yeepay.g3.sdk.yop.encrypt.YopSignUtils;
-import com.yeepay.g3.sdk.yop.enums.HttpMethodType;
-import com.yeepay.g3.sdk.yop.unmarshaller.YopMarshallerUtils;
+import com.yeepay.g3.sdk.yop.unmarshaller.JacksonJsonMarshaller;
 import com.yeepay.g3.sdk.yop.utils.Assert;
 import com.yeepay.g3.sdk.yop.utils.JsonUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
@@ -26,21 +26,20 @@ import java.util.*;
  * @author wang.bao
  * @version 1.0
  */
-public class YopClient extends YopBaseClient {
+public class YopClient extends AbstractClient {
 
     protected static final Logger logger = Logger.getLogger(YopClient.class);
 
     /**
      * 发起post请求，以YopResponse对象返回
      *
-     * @param methodOrUri 目标地址或命名模式的method
-     * @param request     客户端请求对象
+     * @param apiUri  目标地址
+     * @param request 客户端请求对象
      * @return 响应对象
      */
-    public static YopResponse post(String methodOrUri, YopRequest request) {
-        String content = postForString(methodOrUri, request);
-        YopResponse response = YopMarshallerUtils.unmarshal(content,
-                request.getFormat(), YopResponse.class);
+    public static YopResponse post(String apiUri, YopRequest request) {
+        String content = postForString(apiUri, request, useCFCA(apiUri));
+        YopResponse response = JacksonJsonMarshaller.unmarshal(content, YopResponse.class);
         handleResult(request, response, content);
         return response;
     }
@@ -48,14 +47,13 @@ public class YopClient extends YopBaseClient {
     /**
      * 发起get请求，以YopResponse对象返回
      *
-     * @param methodOrUri 目标地址或命名模式的method
-     * @param request     客户端请求对象
+     * @param apiUri  目标地址
+     * @param request 客户端请求对象
      * @return 响应对象
      */
-    public static YopResponse get(String methodOrUri, YopRequest request) {
-        String content = getForString(methodOrUri, request);
-        YopResponse response = YopMarshallerUtils.unmarshal(content,
-                request.getFormat(), YopResponse.class);
+    public static YopResponse get(String apiUri, YopRequest request) {
+        String content = getForString(apiUri, request, useCFCA(apiUri));
+        YopResponse response = JacksonJsonMarshaller.unmarshal(content, YopResponse.class);
         handleResult(request, response, content);
         return response;
     }
@@ -63,14 +61,13 @@ public class YopClient extends YopBaseClient {
     /**
      * 发起get请求，以YopResponse对象返回
      *
-     * @param methodOrUri 目标地址或命名模式的method
-     * @param request     客户端请求对象
+     * @param apiUri  目标地址
+     * @param request 客户端请求对象
      * @return 响应对象
      */
-    public static YopResponse upload(String methodOrUri, YopRequest request) {
-        String content = uploadForString(methodOrUri, request);
-        YopResponse response = YopMarshallerUtils.unmarshal(content,
-                request.getFormat(), YopResponse.class);
+    public static YopResponse upload(String apiUri, YopRequest request) {
+        String content = uploadForString(apiUri, request);
+        YopResponse response = JacksonJsonMarshaller.unmarshal(content, YopResponse.class);
         handleResult(request, response, content);
         return response;
     }
@@ -78,52 +75,40 @@ public class YopClient extends YopBaseClient {
     /**
      * 发起post请求，以字符串返回
      *
-     * @param methodOrUri 目标地址或命名模式的method
-     * @param request     客户端请求对象
+     * @param apiUri  目标地址
+     * @param request 客户端请求对象
      * @return 字符串形式的响应
      */
-    public static String postForString(String methodOrUri, YopRequest request) {
-        String serverUrl = richRequest(HttpMethodType.POST, methodOrUri,
-                request);
+    public static String postForString(String apiUri, YopRequest request, boolean cfca) {
+        String serverUrl = richRequest(apiUri, request, cfca);
         signAndEncrypt(request);
         logger.info("signature:" + request.getParamValue(YopConstants.SIGN));
-        request.setAbsoluteURL(serverUrl);
         request.encoding();
 
-        String content = getRestTemplate(request).postForObject(serverUrl,
-                request.getParams(), String.class);
-        if (logger.isDebugEnabled()) {
-            logger.debug("response:\n" + content);
-        }
-        return content;
+        return getRestTemplate(cfca).postForObject(serverUrl, new HttpEntity<MultiValueMap<String, String>>(request.getParams(), request.headers), String.class);
     }
 
     /**
      * 发起get请求，以字符串返回
      *
-     * @param methodOrUri 目标地址或命名模式的method
-     * @param request     客户端请求对象
+     * @param apiUri  目标地址或命名模式的method
+     * @param request 客户端请求对象
      * @return 字符串形式的响应
      */
-    public static String getForString(String methodOrUri, YopRequest request) {
-        String serverUrl = buildURL(methodOrUri, request);
-        request.setAbsoluteURL(serverUrl);
-        String content = getRestTemplate(request).getForObject(serverUrl, String.class);
-        if (logger.isDebugEnabled()) {
-            logger.debug("response:\n" + content);
-        }
-        return content;
+    public static String getForString(String apiUri, YopRequest request, boolean cfca) {
+        String serverUrl = buildURL(apiUri, request, cfca);
+        return getRestTemplate(cfca).exchange(serverUrl, HttpMethod.GET, new HttpEntity(request.headers), String.class).getBody();
     }
 
     /**
      * 发起文件上传请求，以字符串返回
      *
-     * @param methodOrUri 目标地址或命名模式的method
-     * @param request     客户端请求对象
+     * @param apiUri  目标地址或命名模式的method
+     * @param request 客户端请求对象
      * @return 字符串形式的响应
      */
-    public static String uploadForString(String methodOrUri, YopRequest request) {
-        String serverUrl = richRequest(HttpMethodType.POST, methodOrUri, request);
+    public static String uploadForString(String apiUri, YopRequest request) {
+        String serverUrl = richRequest(apiUri, request, false);
 
         MultiValueMap<String, String> original = request.getParams();
         MultiValueMap<String, Object> alternate = new LinkedMultiValueMap<String, Object>();
@@ -140,14 +125,13 @@ public class YopClient extends YopBaseClient {
         }
 
         signAndEncrypt(request);
-        request.setAbsoluteURL(serverUrl);
         request.encoding();
 
         for (String key : original.keySet()) {
             alternate.put(key, new ArrayList<Object>(original.get(key)));
         }
 
-        String content = getRestTemplate(request).postForObject(serverUrl, alternate, String.class);
+        String content = getRestTemplate(false).postForObject(serverUrl, alternate, String.class);
         if (logger.isDebugEnabled()) {
             logger.debug("response:\n" + content);
         }
@@ -158,22 +142,16 @@ public class YopClient extends YopBaseClient {
      * 简单校验及请求签名
      */
     public static void signAndEncrypt(YopRequest request) {
-        Assert.notNull(request.getMethod(), "method must be specified");
         Assert.notNull(request.getSecretKey(), "secretKey must be specified");
         String appKey = request.getParamValue(YopConstants.APP_KEY);
-        if (StringUtils.isBlank(appKey)) {
-            appKey = StringUtils.trimToNull(request
-                    .getParamValue(YopConstants.CUSTOMER_NO));
-        }
-        Assert.notNull(appKey, "appKey 与 customerNo 不能同时为空");
+
         String signValue = YopSignUtils.sign(toSimpleMap(request.getParams()),
                 request.getIgnoreSignParams(), request.getSecretKey(),
                 request.getSignAlg());
         request.addParam(YopConstants.SIGN, signValue);
-        if (request.isRest()) {
-            request.removeParam(YopConstants.METHOD);
-            request.removeParam(YopConstants.VERSION);
-        }
+
+        //TODO why is here?
+        request.removeParam(YopConstants.VERSION);
 
         // 签名之后再加密
         if (request.isEncrypt()) {
@@ -188,7 +166,8 @@ public class YopClient extends YopBaseClient {
     /**
      * 请求加密，使用AES算法，要求secret为正常的AESkey
      *
-     * @throws Exception
+     * @param request 请求参数
+     * @throws Exception 加密异常
      */
     protected static void encrypt(YopRequest request) throws Exception {
         StringBuilder builder = new StringBuilder();
@@ -219,31 +198,16 @@ public class YopClient extends YopBaseClient {
             // 没有需加密的参数，则只标识响应需加密
             request.addParam(YopConstants.ENCRYPT, true);
         } else {
-            if (StringUtils.isNotBlank(request
-                    .getParamValue(YopConstants.APP_KEY))) {
-                // 开放应用使用AES加密
-                String encrypt = AESEncrypter.encrypt(encryptBody,
-                        request.getSecretKey());
-                request.addParam(YopConstants.ENCRYPT, encrypt);
-            } else {
-                // 商户身份调用使用Blowfish加密
-                String encrypt = BlowfishEncrypter.encrypt(encryptBody,
-                        request.getSecretKey());
-                request.addParam(YopConstants.ENCRYPT, encrypt);
-            }
+            // 开放应用使用AES加密
+            String encrypt = AESEncrypter.encrypt(encryptBody, request.getSecretKey());
+            request.addParam(YopConstants.ENCRYPT, encrypt);
+
         }
     }
 
     protected static String decrypt(YopRequest request, String strResult) {
         if (request.isEncrypt() && StringUtils.isNotBlank(strResult)) {
-            if (StringUtils.isNotBlank(request
-                    .getParamValue(YopConstants.APP_KEY))) {
-                strResult = AESEncrypter.decrypt(strResult,
-                        request.getSecretKey());
-            } else {
-                strResult = BlowfishEncrypter.decrypt(strResult,
-                        request.getSecretKey());
-            }
+            strResult = AESEncrypter.decrypt(strResult, request.getSecretKey());
         }
         return strResult;
     }
@@ -260,8 +224,8 @@ public class YopClient extends YopBaseClient {
     /**
      * 数组、列表按值排序后逗号拼接
      *
-     * @param list
-     * @return
+     * @param list 参数列表
+     * @return 拼接结果
      */
     protected static String listAsString(List<String> list) {
         if (list == null || list.isEmpty()) {
@@ -273,10 +237,9 @@ public class YopClient extends YopBaseClient {
 
     protected static void handleResult(YopRequest request,
                                        YopResponse response, String content) {
-        response.setFormat(request.getFormat());
         String ziped = StringUtils.EMPTY;
         if (response.isSuccess()) {
-            String strResult = getBizResult(content, request.getFormat());
+            String strResult = getBizResult(content);
             ziped = strResult.replaceAll("[ \t\n]", "");
             // 先解密，极端情况可能业务正常，但返回前处理（如加密）出错，所以要判断是否有error
             if (StringUtils.isNotBlank(strResult)
@@ -309,26 +272,12 @@ public class YopClient extends YopBaseClient {
      * @param request
      * @return
      */
-    public static String buildURL(String methodOrUri, YopRequest request) {
-        String serverUrl = richRequest(HttpMethodType.GET, methodOrUri, request);
+    public static String buildURL(String methodOrUri, YopRequest request, boolean cfca) {
+        String serverUrl = richRequest(methodOrUri, request, cfca);
         signAndEncrypt(request);
         request.encoding();
-        serverUrl += serverUrl.contains("?") ? "&" : "?"
-                + request.toQueryString();
+        serverUrl += serverUrl.contains("?") ? "&" : "?" + request.toQueryString();
         return serverUrl;
-    }
-
-    /**
-     * 帮助方法，对request签名并返回签名结果
-     *
-     * @param methodOrUri
-     * @param request
-     * @return 签名结果
-     */
-    public static String getSign(String methodOrUri, YopRequest request) {
-        richRequest(HttpMethodType.GET, methodOrUri, request);
-        signAndEncrypt(request);
-        return request.getParamValue(YopConstants.SIGN);
     }
 
     public static String acceptNotificationAsJson(String key, String response) {
@@ -346,8 +295,6 @@ public class YopClient extends YopBaseClient {
         Map map = JsonUtils.fromJsonString(response, Map.class);
         //是否加密
         boolean doEncryption = Boolean.valueOf(map.get("doEncryption").toString());
-        //是否签名
-        boolean doSignature = Boolean.valueOf(map.get("doSignature").toString());
         //内容
         String encryption = map.get("encryption").toString();
         //签名
@@ -359,16 +306,14 @@ public class YopClient extends YopBaseClient {
 
         //如果加密，解密
         if (doEncryption) {
-            encryption = encryptionAlg.equals("BLOWFISH") ? BlowfishEncrypter.decrypt(encryption, key) : AESEncrypter
-                    .decrypt(encryption, key);
+            encryption = AESEncrypter.decrypt(encryption, key);
         }
 
-        if (doSignature) {
-            String localSignature = Digest.digest(key + encryption + key, signatureAlg);
-            //验签失败...
-            if (!localSignature.equals(signature)) {
-                return null;
-            }
+        //签名是必须的...
+        String localSignature = Digest.digest(key + encryption + key, signatureAlg);
+        //验签失败...
+        if (!localSignature.equals(signature)) {
+            return null;
         }
         return encryption;
     }

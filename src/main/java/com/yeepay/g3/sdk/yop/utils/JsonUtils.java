@@ -15,9 +15,9 @@ public class JsonUtils {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     static {
-        JsonUtils.objectMapper.configure(JsonParser.Feature.ALLOW_COMMENTS, true);
-        JsonUtils.objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        JsonUtils.objectMapper.setSerializationInclusion(Include.NON_NULL);
+        objectMapper.configure(JsonParser.Feature.ALLOW_COMMENTS, true);
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        objectMapper.setSerializationInclusion(Include.NON_NULL);
     }
 
     private static final ObjectWriter writer = JsonUtils.objectMapper.writer();
@@ -74,18 +74,6 @@ public class JsonUtils {
 
     public static <T> T loadFrom(InputStream input, Class<T> clazz)
             throws JsonParseException, JsonMappingException, IOException {
-        return JsonUtils.objectMapper.readValue(input, clazz);
-    }
-
-    public static ObjectMapper getObjectMapper() {
-        return JsonUtils.objectMapper;
-    }
-
-    public static ObjectWriter getWriter() {
-        return JsonUtils.writer;
-    }
-
-    public static ObjectWriter getPrettywriter() {
-        return JsonUtils.prettyWriter;
+        return objectMapper.readValue(input, clazz);
     }
 }

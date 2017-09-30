@@ -10,13 +10,13 @@ package com.yeepay.g3.sdk.yop.client;
  */
 public class YopConstants {
 
-    public static final String CLIENT_VERSION = "2.0.0";
+    public static final String CLIENT_VERSION = "2.0.0-RC1";
+    public static final String CLIENT_LANGS = "java";
+    public static final String CLIENT_FEATURE = CLIENT_LANGS + "-" + CLIENT_VERSION;
 
     public static final String ENCODING = "UTF-8";
 
     public static final String SUCCESS = "SUCCESS";
-
-    public static final String CALLBACK = "callback";
 
     // 方法的默认参数名
     public static final String METHOD = "method";
@@ -52,9 +52,8 @@ public class YopConstants {
     public static final String TIMESTAMP = "ts";
 
     // 保护参数
-    public static final String[] PROTECTED_KEY = {APP_KEY, VERSION, SIGN,
-            METHOD, FORMAT, LOCALE, SESSION_ID, CUSTOMER_NO, ENCRYPT,
-            SIGN_RETURN, TIMESTAMP};
+    public static final String[] PROTECTED_KEY = {APP_KEY, VERSION, SIGN, METHOD, FORMAT, LOCALE,
+            SESSION_ID, CUSTOMER_NO, ENCRYPT, SIGN_RETURN, TIMESTAMP};
 
     public static final String ALG_MD5 = "MD5";
     public static final String ALG_AES = "AES";

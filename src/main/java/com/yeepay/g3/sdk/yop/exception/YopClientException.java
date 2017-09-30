@@ -1,10 +1,10 @@
 package com.yeepay.g3.sdk.yop.exception;
 
 /**
- * title: 客户端抛出的异常<br/>
- * description: 描述<br/>
- * Copyright: Copyright (c)2014<br/>
- * Company: 易宝支付(YeePay)<br/>
+ * title: 客户端抛出的异常<br>
+ * description: 描述<br>
+ * Copyright: Copyright (c)2014<br>
+ * Company: 易宝支付(YeePay)<br>
  *
  * @author baitao.ji
  * @version 1.0.0
