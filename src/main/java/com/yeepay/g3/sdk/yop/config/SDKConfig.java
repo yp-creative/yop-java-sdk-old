@@ -5,7 +5,6 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import java.io.Serializable;
-import java.util.Map;
 
 /**
  * title: <br>
@@ -36,20 +35,11 @@ public final class SDKConfig implements Serializable {
     @JsonProperty("isv_private_key")
     private CertConfig[] isvPrivateKey;
 
-    @JsonProperty("api")
-    private Map<String, ApiConfig> apiConfig;
-
     @JsonProperty("connect_timeout")
     private Integer connectTimeout;
 
     @JsonProperty("read_timeout")
     private Integer readTimeout;
-
-    @JsonProperty("trust_certificate")
-    private CertificateConfig trustCertificate;
-
-    @JsonProperty("client_certificate")
-    private CertificateConfig clientCertificate;
 
     public CertConfig[] getYopPublicKey() {
         return yopPublicKey;
@@ -109,29 +99,5 @@ public final class SDKConfig implements Serializable {
 
     public void setAesSecretKey(String aesSecretKey) {
         this.aesSecretKey = aesSecretKey;
-    }
-
-    public CertificateConfig getTrustCertificate() {
-        return trustCertificate;
-    }
-
-    public void setTrustCertificate(CertificateConfig trustCertificate) {
-        this.trustCertificate = trustCertificate;
-    }
-
-    public CertificateConfig getClientCertificate() {
-        return clientCertificate;
-    }
-
-    public void setClientCertificate(CertificateConfig clientCertificate) {
-        this.clientCertificate = clientCertificate;
-    }
-
-    public Map<String, ApiConfig> getApiConfig() {
-        return apiConfig;
-    }
-
-    public void setApiConfig(Map<String, ApiConfig> apiConfig) {
-        this.apiConfig = apiConfig;
     }
 }
