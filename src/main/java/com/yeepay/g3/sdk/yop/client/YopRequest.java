@@ -60,8 +60,6 @@ public class YopRequest {
         paramMap.set(YopConstants.LOCALE, locale);
         paramMap.set(YopConstants.TIMESTAMP, String.valueOf(System.currentTimeMillis()));
 
-        /*客户端版本*/
-        headers.add(Headers.YOP_SDK_VERSION, YopConstants.CLIENT_FEATURE);
         headers.add(Headers.USER_AGENT, YopConstants.USER_AGENT);
     }
 

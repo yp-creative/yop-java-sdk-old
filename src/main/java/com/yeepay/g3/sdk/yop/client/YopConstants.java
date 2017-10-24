@@ -32,7 +32,6 @@ public class YopConstants {
 
     public static final String CLIENT_VERSION = "2.0.0-RC2";
     public static final String CLIENT_LANGS = "java";
-    public static final String CLIENT_FEATURE = CLIENT_LANGS + "-" + CLIENT_VERSION;
 
     public static String USER_AGENT;
 
