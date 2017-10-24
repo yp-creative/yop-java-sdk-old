@@ -33,23 +33,9 @@ public class YopRequest {
 
     private MultiValueMap<String, String> paramMap = new LinkedMultiValueMap<String, String>();
 
-    /*
-        http headers
-     */
     MultiValueMap<String, String> headers = new LinkedMultiValueMap<String, String>();
 
-
     private List<String> ignoreSignParams = new ArrayList<String>(Arrays.asList(YopConstants.SIGN));
-
-    /**
-     * 报文是否加密，如果请求加密，则响应也加密，需做解密处理
-     */
-    private boolean encrypt = false;
-
-    /**
-     * 业务结果是否签名，默认不签名
-     */
-    private boolean signRet = false;
 
     /**
      * 可支持不同请求使用不同的appKey及secretKey
@@ -66,9 +52,6 @@ public class YopRequest {
      */
     private String serverRoot;
 
-    /*配置的覆盖原则：
-    * 构造方法 >> yop_sdk_config_default.json配置文件
-    */
     public YopRequest() {
         this.appKey = InternalConfig.APP_KEY;
         this.secretKey = InternalConfig.SECRET_KEY;
@@ -79,6 +62,7 @@ public class YopRequest {
 
         /*客户端版本*/
         headers.add(Headers.YOP_SDK_VERSION, YopConstants.CLIENT_FEATURE);
+        headers.add(Headers.USER_AGENT, YopConstants.USER_AGENT);
     }
 
     /**
@@ -210,21 +194,23 @@ public class YopRequest {
         this.signAlg = signAlg;
     }
 
-    public boolean isEncrypt() {
-        return encrypt;
-    }
-
+    /**
+     * 该设置已无效，不再加密，安全传输由https保证
+     *
+     * @param encrypt
+     */
+    @Deprecated
     public void setEncrypt(boolean encrypt) {
-        this.encrypt = encrypt;
+
     }
 
-    public boolean isSignRet() {
-        return signRet;
-    }
-
+    /**
+     * 该设置已无效，签名是必须的
+     *
+     * @param signRet
+     */
+    @Deprecated
     public void setSignRet(boolean signRet) {
-        this.signRet = signRet;
-        paramMap.set(YopConstants.SIGN_RETURN, String.valueOf(this.signRet));
     }
 
     public String getAppKey() {

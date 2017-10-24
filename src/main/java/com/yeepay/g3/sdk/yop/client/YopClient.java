@@ -2,7 +2,6 @@ package com.yeepay.g3.sdk.yop.client;
 
 import com.yeepay.g3.sdk.yop.encrypt.AESEncrypter;
 import com.yeepay.g3.sdk.yop.encrypt.Digest;
-import com.yeepay.g3.sdk.yop.encrypt.YopSignUtils;
 import com.yeepay.g3.sdk.yop.unmarshaller.JacksonJsonMarshaller;
 import com.yeepay.g3.sdk.yop.utils.Assert;
 import com.yeepay.g3.sdk.yop.utils.JsonUtils;
@@ -15,7 +14,6 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import java.net.URI;
-import java.net.URLEncoder;
 import java.util.*;
 
 /**
@@ -38,9 +36,9 @@ public class YopClient extends AbstractClient {
      * @return 响应对象
      */
     public static YopResponse post(String apiUri, YopRequest request) {
-        String content = postForString(apiUri, request, useCFCA(apiUri));
+        String content = postForString(apiUri, request);
         YopResponse response = JacksonJsonMarshaller.unmarshal(content, YopResponse.class);
-        handleResult(request, response, content);
+        handleResult(request, response);
         return response;
     }
 
@@ -52,9 +50,9 @@ public class YopClient extends AbstractClient {
      * @return 响应对象
      */
     public static YopResponse get(String apiUri, YopRequest request) {
-        String content = getForString(apiUri, request, useCFCA(apiUri));
-        YopResponse response = JacksonJsonMarshaller.unmarshal(content, YopResponse.class);
-        handleResult(request, response, content);
+        String responseRawJson = getForString(apiUri, request);
+        YopResponse response = JacksonJsonMarshaller.unmarshal(responseRawJson, YopResponse.class);
+        handleResult(request, response);
         return response;
     }
 
@@ -68,7 +66,7 @@ public class YopClient extends AbstractClient {
     public static YopResponse upload(String apiUri, YopRequest request) {
         String content = uploadForString(apiUri, request);
         YopResponse response = JacksonJsonMarshaller.unmarshal(content, YopResponse.class);
-        handleResult(request, response, content);
+        handleResult(request, response);
         return response;
     }
 
@@ -79,13 +77,11 @@ public class YopClient extends AbstractClient {
      * @param request 客户端请求对象
      * @return 字符串形式的响应
      */
-    public static String postForString(String apiUri, YopRequest request, boolean cfca) {
-        String serverUrl = richRequest(apiUri, request, cfca);
-        signAndEncrypt(request);
-        logger.info("signature:" + request.getParamValue(YopConstants.SIGN));
+    public static String postForString(String apiUri, YopRequest request) {
+        String serverUrl = richRequest(apiUri, request);
+        sign(request);
         request.encoding();
-
-        return getRestTemplate(cfca).postForObject(serverUrl, new HttpEntity<MultiValueMap<String, String>>(request.getParams(), request.headers), String.class);
+        return getRestTemplate().postForObject(serverUrl, new HttpEntity<MultiValueMap<String, String>>(request.getParams(), request.headers), String.class);
     }
 
     /**
@@ -95,9 +91,9 @@ public class YopClient extends AbstractClient {
      * @param request 客户端请求对象
      * @return 字符串形式的响应
      */
-    public static String getForString(String apiUri, YopRequest request, boolean cfca) {
-        String serverUrl = buildURL(apiUri, request, cfca);
-        return getRestTemplate(cfca).exchange(serverUrl, HttpMethod.GET, new HttpEntity(request.headers), String.class).getBody();
+    public static String getForString(String apiUri, YopRequest request) {
+        String serverUrl = buildURL(apiUri, request);
+        return getRestTemplate().exchange(serverUrl, HttpMethod.GET, new HttpEntity(request.headers), String.class).getBody();
     }
 
     /**
@@ -108,7 +104,7 @@ public class YopClient extends AbstractClient {
      * @return 字符串形式的响应
      */
     public static String uploadForString(String apiUri, YopRequest request) {
-        String serverUrl = richRequest(apiUri, request, false);
+        String serverUrl = richRequest(apiUri, request);
 
         MultiValueMap<String, String> original = request.getParams();
         MultiValueMap<String, Object> alternate = new LinkedMultiValueMap<String, Object>();
@@ -124,14 +120,14 @@ public class YopClient extends AbstractClient {
             }
         }
 
-        signAndEncrypt(request);
+        sign(request);
         request.encoding();
 
         for (String key : original.keySet()) {
             alternate.put(key, new ArrayList<Object>(original.get(key)));
         }
 
-        String content = getRestTemplate(false).postForObject(serverUrl, alternate, String.class);
+        String content = getRestTemplate().postForObject(serverUrl, alternate, String.class);
         if (logger.isDebugEnabled()) {
             logger.debug("response:\n" + content);
         }
@@ -141,79 +137,50 @@ public class YopClient extends AbstractClient {
     /**
      * 简单校验及请求签名
      */
-    public static void signAndEncrypt(YopRequest request) {
+    private static void sign(YopRequest request) {
         Assert.notNull(request.getSecretKey(), "secretKey must be specified");
-        String appKey = request.getParamValue(YopConstants.APP_KEY);
-
-        String signValue = YopSignUtils.sign(toSimpleMap(request.getParams()),
+        String signValue = sign(toSimpleMap(request.getParams()),
                 request.getIgnoreSignParams(), request.getSecretKey(),
                 request.getSignAlg());
         request.addParam(YopConstants.SIGN, signValue);
 
         //TODO why is here?
         request.removeParam(YopConstants.VERSION);
-
-        // 签名之后再加密
-        if (request.isEncrypt()) {
-            try {
-                encrypt(request);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
     }
 
     /**
-     * 请求加密，使用AES算法，要求secret为正常的AESkey
+     * 对paramValues进行签名，其中ignoreParamNames这些参数不参与签名
      *
-     * @param request 请求参数
-     * @throws Exception 加密异常
+     * @param paramValues
+     * @param ignoreParamNames
+     * @param secret
+     * @return
      */
-    protected static void encrypt(YopRequest request) throws Exception {
-        StringBuilder builder = new StringBuilder();
-        boolean first = true;
-        MultiValueMap<String, String> params = request.getParams();
-        List<String> keys = new ArrayList<String>(params.keySet());
-        for (String key : keys) {
-            if (YopConstants.isProtectedKey(key)) {
+    private static String sign(Map<String, String> paramValues, List<String> ignoreParamNames, String secret, String algName) {
+        algName = StringUtils.isBlank(algName) ? YopConstants.ALG_SHA1 : algName;
+
+        StringBuilder sb = new StringBuilder();
+        List<String> paramNames = new ArrayList<String>(paramValues.size());
+        paramNames.addAll(paramValues.keySet());
+        if (ignoreParamNames != null && ignoreParamNames.size() > 0) {
+            for (String ignoreParamName : ignoreParamNames) {
+                paramNames.remove(ignoreParamName);
+            }
+        }
+        Collections.sort(paramNames);
+
+        sb.append(secret);
+        for (String paramName : paramNames) {
+            if (StringUtils.isBlank(paramValues.get(paramName))) {
                 continue;
             }
-            List<String> values = params.remove(key);
-            if (values == null || values.isEmpty()) {
-                continue;
-            }
-            for (String v : values) {
-                if (first) {
-                    first = false;
-                } else {
-                    builder.append("&");
-                }
-                // 避免解密后解析异常，此处需进行encode（此逻辑在整个request做encoding前）
-                builder.append(key).append("=")
-                        .append(URLEncoder.encode(v, YopConstants.ENCODING));
-            }
+            sb.append(paramName).append(paramValues.get(paramName));
         }
-        String encryptBody = builder.toString();
-        if (StringUtils.isBlank(encryptBody)) {
-            // 没有需加密的参数，则只标识响应需加密
-            request.addParam(YopConstants.ENCRYPT, true);
-        } else {
-            // 开放应用使用AES加密
-            String encrypt = AESEncrypter.encrypt(encryptBody, request.getSecretKey());
-            request.addParam(YopConstants.ENCRYPT, encrypt);
-
-        }
+        sb.append(secret);
+        return Digest.digest(sb.toString(), algName);
     }
 
-    protected static String decrypt(YopRequest request, String strResult) {
-        if (request.isEncrypt() && StringUtils.isNotBlank(strResult)) {
-            strResult = AESEncrypter.decrypt(strResult, request.getSecretKey());
-        }
-        return strResult;
-    }
-
-    protected static Map<String, String> toSimpleMap(
-            MultiValueMap<String, String> form) {
+    private static Map<String, String> toSimpleMap(MultiValueMap<String, String> form) {
         Map<String, String> map = new HashMap<String, String>();
         for (Map.Entry<String, List<String>> entry : form.entrySet()) {
             map.put(entry.getKey(), listAsString(entry.getValue()));
@@ -227,7 +194,7 @@ public class YopClient extends AbstractClient {
      * @param list 参数列表
      * @return 拼接结果
      */
-    protected static String listAsString(List<String> list) {
+    private static String listAsString(List<String> list) {
         if (list == null || list.isEmpty()) {
             return null;
         }
@@ -235,34 +202,33 @@ public class YopClient extends AbstractClient {
         return StringUtils.join(list, ",");
     }
 
-    protected static void handleResult(YopRequest request,
-                                       YopResponse response, String content) {
-        String ziped = StringUtils.EMPTY;
-        if (response.isSuccess()) {
-            String strResult = getBizResult(content);
-            ziped = strResult.replaceAll("[ \t\n]", "");
-            // 先解密，极端情况可能业务正常，但返回前处理（如加密）出错，所以要判断是否有error
-            if (StringUtils.isNotBlank(strResult)
-                    && response.getError() == null) {
-                if (request.isEncrypt()) {
-                    String decryptResult = decrypt(request, strResult.trim());
-                    response.setStringResult(decryptResult);
-                    response.setResult(decryptResult);
-                    ziped = decryptResult.replaceAll("[ \t\n]", "");
-                } else {
-                    response.setStringResult(strResult);
-                }
-            }
+    private static void handleResult(YopRequest request, YopResponse response) {
+        String stringResult = response.getStringResult();
+        if (StringUtils.isNotBlank(stringResult)) {
+            response.setResult(JacksonJsonMarshaller.unmarshal(stringResult, LinkedHashMap.class));
         }
-        // 再验签
-        if (request.isSignRet() && StringUtils.isNotBlank(response.getSign())) {
-            String signStr = response.getState() + ziped + response.getTs();
-            response.setValidSign(YopSignUtils.isValidResult(signStr,
-                    request.getSecretKey(), request.getSignAlg(),
-                    response.getSign()));
-        } else {
-            response.setValidSign(true);
+
+        String sign = response.getSign();
+        if (StringUtils.isNotBlank(sign)) {
+            response.setValidSign(verifySignature(request, response, sign));
         }
+    }
+
+    /**
+     * 校验签名
+     *
+     * @param response
+     * @param expectedSign
+     * @return
+     */
+    private static boolean verifySignature(YopRequest request, YopResponse response, String expectedSign) {
+        String trimmedBizResult = response.getStringResult().replaceAll("[ \t\n]", "");
+        StringBuilder sb = new StringBuilder();
+        sb.append(request.getSecretKey());
+        sb.append(StringUtils.trimToEmpty(response.getState() + trimmedBizResult + response.getTs()));
+        sb.append(request.getSecretKey());
+        String calculatedSign = Digest.digest(sb.toString(), StringUtils.isBlank(request.getSignAlg()) ? YopConstants.ALG_SHA1 : request.getSignAlg());
+        return StringUtils.equalsIgnoreCase(expectedSign, calculatedSign);
     }
 
     /**
@@ -272,36 +238,32 @@ public class YopClient extends AbstractClient {
      * @param request
      * @return
      */
-    public static String buildURL(String methodOrUri, YopRequest request, boolean cfca) {
-        String serverUrl = richRequest(methodOrUri, request, cfca);
-        signAndEncrypt(request);
+    private static String buildURL(String methodOrUri, YopRequest request) {
+        String serverUrl = richRequest(methodOrUri, request);
+        sign(request);
         request.encoding();
         serverUrl += serverUrl.contains("?") ? "&" : "?" + request.toQueryString();
         return serverUrl;
     }
 
+    /**
+     * //TODO 商户通知重新定义新二进制协议
+     * -------------------------商户通知--------------------------------------------------
+     */
     public static String acceptNotificationAsJson(String key, String response) {
         return validateAndDecryptNotification(key, response);
     }
 
     public static Map acceptNotificationAsMap(String key, String response) {
         String s = acceptNotificationAsJson(key, response);
-//        return s == null ? null : jm.unmarshal(acceptNotificationAsJson(key, response), Map.class);
         return s == null ? null : JsonUtils.fromJsonString(acceptNotificationAsJson(key, response), Map.class);
     }
 
     private static String validateAndDecryptNotification(String key, String response) {
-//        Map map = jm.unmarshal(response, Map.class);
         Map map = JsonUtils.fromJsonString(response, Map.class);
-        //是否加密
         boolean doEncryption = Boolean.valueOf(map.get("doEncryption").toString());
-        //内容
         String encryption = map.get("encryption").toString();
-        //签名
         String signature = map.get("signature").toString();
-
-        String encryptionAlg = map.get("encryptionAlg").toString();
-
         String signatureAlg = map.get("signatureAlg").toString();
 
         //如果加密，解密

@@ -47,8 +47,6 @@ public class QaDemo {
             request.addParam("name", "张文康");
             request.addParam("idCardNumber", "370982199101186692");
             System.out.println(request.toQueryString());
-            request.setRequestId("AUTHORIZATIONxyz111111");
-            request.setRequestSource("wenkang.zhang's rmbp");
             YopResponse response = YopClient.get("/rest/v2.0/auth/idcard", request);
             System.out.println(response.toString());
 //        }

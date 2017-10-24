@@ -224,11 +224,7 @@ public class LocalDemo {
                 @Override
                 public void run() {
                     YopResponse response = null;
-                    try {
-                        response = YopClient.post("/rest/v1.0/member/queryAccount", request);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                    response = YopClient.post("/rest/v1.0/member/queryAccount", request);
                     System.out.println(response.toString());
                     latch.countDown();
                 }

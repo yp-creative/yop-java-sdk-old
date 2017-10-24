@@ -74,7 +74,8 @@ public interface Headers {
 
     String YOP_SECURE_TOKEN = "x-yop-secure-token";
 
-    /*sdk版本*/
+    /* sdk版本, 改用 USER_AGENT */
+    @Deprecated
     String YOP_SDK_VERSION = "x-yop-sdk-version";
 
     /*请求来源*/

@@ -293,11 +293,7 @@ public class Demo {
                     request.addParam("bankCardNumber", "4392250043179877");
                     System.out.println(request.toQueryString());
                     YopResponse response = null;
-                    try {
-                        response = YopClient.post("/rest/v2.0/auth/debit3", request);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                    response = YopClient.post("/rest/v2.0/auth/debit3", request);
                     System.out.println(response.toString());
                 }
             }).start();
