@@ -62,6 +62,7 @@ public class YopRequest {
 
         /*客户端版本*/
         headers.add(Headers.YOP_SDK_VERSION, YopConstants.CLIENT_FEATURE);
+        headers.add(Headers.USER_AGENT, YopConstants.USER_AGENT);
     }
 
     /**
