@@ -41,7 +41,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public class YopClient3 extends AbstractClient {
 
-    protected static final Logger logger = Logger.getLogger(YopClient3.class);
+    protected static final Logger LOGGER = Logger.getLogger(YopClient3.class);
 
     private static final Set<String> defaultHeadersToSign = Sets.newHashSet();
     private static final Joiner headerJoiner = Joiner.on('\n');
@@ -66,7 +66,7 @@ public class YopClient3 extends AbstractClient {
     public static YopResponse postRsa(String apiUri, YopRequest request) {
         String content = postRsaString(apiUri, request);
         YopResponse response = JacksonJsonMarshaller.unmarshal(content, YopResponse.class);
-        handleRsaResult(request, response, content);
+        handleRsaResult(response);
         return response;
     }
 
@@ -78,16 +78,15 @@ public class YopClient3 extends AbstractClient {
      * @return 字符串形式的响应
      */
     public static String postRsaString(String apiUri, YopRequest request) {
-        logger.debug(request.toQueryString());
-        boolean cfca = useCFCA(apiUri);
-        String serverUrl = richRequest(apiUri, request, cfca);
-        String content = getRestTemplate(cfca).postForObject(serverUrl, signAndEncrypt(apiUri, request), String.class);
+        LOGGER.debug(request.toQueryString());
+        String serverUrl = richRequest(apiUri, request);
+        String content = getRestTemplate().postForObject(serverUrl, signAndEncrypt(apiUri, request), String.class);
         return content;
     }
 
     private static HttpEntity<MultiValueMap<String, String>> signAndEncrypt(String apiUri, YopRequest request) {
         String appKey = request.getAppKey();
-        String timestamp = DateUtils.formatCompressedIso8601Timestamp(new Date().getTime());
+        String timestamp = DateUtils.formatCompressedIso8601Timestamp(System.currentTimeMillis());
 
 //        authorization  yop-auth-v2/openSmsApi/2016-02-25T08:57:48Z/1800/host/a57365cb4bf6cd83c91dfae214c1404aa0cc74f2ade95f121530fcb9c91f3c9d
 
@@ -164,7 +163,7 @@ public class YopClient3 extends AbstractClient {
     public static YopResponse uploadRsa(String apiUri, YopRequest request) {
         String content = uploadRsaForString(apiUri, request);
         YopResponse response = JacksonJsonMarshaller.unmarshal(content, YopResponse.class);
-        handleRsaResult(request, response, content);
+        handleRsaResult(response);
         return response;
     }
 
@@ -176,7 +175,7 @@ public class YopClient3 extends AbstractClient {
      * @return 字符串形式的响应
      */
     public static String uploadRsaForString(String apiUri, YopRequest request) {
-        String serverUrl = richRequest(apiUri, request, false);
+        String serverUrl = richRequest(apiUri, request);
 
         MultiValueMap<String, String> original = request.getParams();
         MultiValueMap<String, Object> alternate = new LinkedMultiValueMap<String, Object>();
@@ -189,7 +188,7 @@ public class YopClient3 extends AbstractClient {
             try {
                 alternate.add("_file", new UrlResource(new URI(uploadFile)));
             } catch (Exception e) {
-                logger.error("_file upload error.", e);
+                LOGGER.error("_file upload error.", e);
             }
         }
 
@@ -200,7 +199,7 @@ public class YopClient3 extends AbstractClient {
         }
 
         HttpEntity<MultiValueMap<String, Object>> alternateHttpEntity = new HttpEntity<MultiValueMap<String, Object>>(alternate, originalHttpEntity.getHeaders());
-        String content = getRestTemplate(false).postForObject(serverUrl, alternateHttpEntity, String.class);
+        String content = getRestTemplate().postForObject(serverUrl, alternateHttpEntity, String.class);
         return content;
     }
 
@@ -227,41 +226,38 @@ public class YopClient3 extends AbstractClient {
         return queryStringJoiner.join(parameterStrings);
     }
 
-    protected static void handleRsaResult(YopRequest request,
-                                          YopResponse response, String content) {
-        String ziped = StringUtils.EMPTY;
-        if (response.isSuccess()) {
-            String strResult = getBizResult(content);
-            ziped = strResult.replaceAll("[ \t\n]", "");
-            // 先解密，极端情况可能业务正常，但返回前处理（如加密）出错，所以要判断是否有error
-            if (StringUtils.isNotBlank(strResult)
-                    && response.getError() == null) {
-                response.setStringResult(strResult);
-            }
+    protected static void handleRsaResult(YopResponse response) {
+        String stringResult = response.getStringResult();
+        if (StringUtils.isNotBlank(stringResult)) {
+            response.setResult(JacksonJsonMarshaller.unmarshal(stringResult, LinkedHashMap.class));
         }
-        // 再验签
-        String signStr = ziped;
-        isValidResult(signStr, response.getSign());
-        response.setValidSign(true);
+
+        String sign = response.getSign();
+        if (StringUtils.isNotBlank(sign)) {
+            response.setValidSign(verifySignature(stringResult, sign));
+        }
     }
 
     /**
      * 对业务结果签名进行校验
      */
-    public static boolean isValidResult(String result, String sign) {
-        if (StringUtils.isBlank(sign)) {
-            return true;
-        }
+    public static boolean verifySignature(String result, String expectedSign) {
+        String trimmedBizResult = result.replaceAll("[ \t\n]", "");
 
         StringBuilder sb = new StringBuilder();
-        sb.append(StringUtils.trimToEmpty(result));
+        sb.append(StringUtils.trimToEmpty(trimmedBizResult));
 
         DigitalSignatureDTO digitalSignatureDTO = new DigitalSignatureDTO();
         digitalSignatureDTO.setCertType(CertTypeEnum.RSA2048);
-        digitalSignatureDTO.setSignature(sign);
+        digitalSignatureDTO.setSignature(expectedSign);
         digitalSignatureDTO.setPlainText(sb.toString());
 
-        DigitalEnvelopeUtils.verify(digitalSignatureDTO, InternalConfig.getYopPublicKey(CertTypeEnum.RSA2048));
+        try {
+            DigitalEnvelopeUtils.verify(digitalSignatureDTO, InternalConfig.getYopPublicKey(CertTypeEnum.RSA2048));
+        } catch (Exception e) {
+            LOGGER.error("error verify sign", e);
+            return false;
+        }
         return true;
     }
 

@@ -5,9 +5,7 @@ import com.yeepay.g3.facade.yop.ca.enums.CertTypeEnum;
 import com.yeepay.g3.facade.yop.ca.enums.KeyStoreTypeEnum;
 import com.yeepay.g3.frame.yop.ca.rsa.RSAKeyUtils;
 import com.yeepay.g3.frame.yop.ca.utils.Exceptions;
-import com.yeepay.g3.sdk.yop.config.ApiConfig;
 import com.yeepay.g3.sdk.yop.config.CertConfig;
-import com.yeepay.g3.sdk.yop.config.CertificateConfig;
 import com.yeepay.g3.sdk.yop.config.SDKConfig;
 import com.yeepay.g3.sdk.yop.exception.YopClientException;
 import com.yeepay.g3.utils.common.log.Logger;
@@ -22,7 +20,6 @@ import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -41,14 +38,13 @@ public final class InternalConfig {
 
     private static final String SP_SDK_CONFIG_FILE = "yop.sdk.config.file";
 
-    /*
-    1.如果配置file://开头，则是系统绝对路径
-    2.如果是/开头，则是classpath下相对路径
-    */
+    /**
+     * 1.如果配置file://开头，则是系统绝对路径
+     * 2.如果是/开头，则是classpath下相对路径
+     */
     private static final String DEFAULT_SDK_CONFIG_FILE = "/config/yop_sdk_config_default.json";
 
     public static final String PROTOCOL_VERSION = "yop-auth-v2";
-    public static final String SDK_VERSION = "20170104.2103";
 
     public static String APP_KEY;
     public static String SECRET_KEY;
@@ -58,14 +54,9 @@ public final class InternalConfig {
     public static int CONNECT_TIMEOUT = 30000;
     public static int READ_TIMEOUT = 60000;
 
-    public static CertificateConfig TRUST_CERTIFICATE;
-    public static CertificateConfig CLIENT_CERTIFICATE;
-
     private static Map<CertTypeEnum, PublicKey> yopPublicKeyMap;
 
     private static Map<CertTypeEnum, PrivateKey> isvPrivateKeyMap;
-
-    private static Map<String, ApiConfig> apiConfigMap = Maps.newHashMap();
 
     private InternalConfig() {
         /*forbid instantiate*/
@@ -78,8 +69,6 @@ public final class InternalConfig {
         try {
             // 允许在 VM arguments 中指定配置文件名 -Dyop.sdk.config.file=/yop_sdk_config_override.json
             SDKConfig config = load(System.getProperty(SP_SDK_CONFIG_FILE, DEFAULT_SDK_CONFIG_FILE));
-
-            apiConfigMap = config.getApiConfig() == null ? new HashMap<String, ApiConfig>() : config.getApiConfig();
 
             SERVER_ROOT = config.getServerRoot();
 
@@ -104,13 +93,8 @@ public final class InternalConfig {
                     isvPrivateKeyMap.put(certConfig.getCertType(), loadPrivateKey(certConfig));
                 }
             }
-
-            TRUST_CERTIFICATE = config.getTrustCertificate();
-            CLIENT_CERTIFICATE = config.getClientCertificate();
         } catch (Exception ex) {
             LOGGER.error("yop sdk load config file error", ex);
-
-//            throw new IllegalStateException("Fatal: Failed to load the internal config for YOP Java SDK", ex);
         }
     }
 
@@ -172,7 +156,7 @@ public final class InternalConfig {
                 try {
                     char[] password = certConfig.getPassword().toCharArray();
                     KeyStore keystore = KeyStore.getInstance(KeyStoreTypeEnum.PKCS12.getValue());
-                    keystore.load(InternalConfig.class.getResourceAsStream(certConfig.getValue()), password);
+                    keystore.load(getInputStream(certConfig.getValue()), password);
 
                     Enumeration aliases = keystore.aliases();
                     String keyAlias = "";
@@ -207,9 +191,5 @@ public final class InternalConfig {
 
     public static PrivateKey getISVPrivateKey(CertTypeEnum certType) {
         return isvPrivateKeyMap.get(certType);
-    }
-
-    public static ApiConfig getApiConfig(String apiUri) {
-        return apiConfigMap.get(apiUri);
     }
 }

@@ -5,6 +5,8 @@ import com.yeepay.g3.sdk.yop.client.YopRequest;
 import com.yeepay.g3.sdk.yop.client.YopResponse;
 import org.junit.Test;
 
+import java.io.IOException;
+
 /**
  * title: <br>
  * description:描述<br>
@@ -17,8 +19,8 @@ import org.junit.Test;
  */
 public class TestPersonalBadInfo {
     @Test
-    public void personnalBadInfoTest() {
-        YopRequest request = new YopRequest("test","LVLDflZNINrrCFPIis9gCA==","http://172.17.102.173:8064/yop-center");
+    public void personnalBadInfoTest() throws IOException {
+        YopRequest request = new YopRequest("test", "LVLDflZNINrrCFPIis9gCA==", "http://open.yeepay.com:8064/yop-center");
         request.setSignAlg("SHA-256");//具体看api签名算法而定
         request.setEncrypt(false);
         request.addParam("idcard", "360121198605075212");

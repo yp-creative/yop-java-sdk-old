@@ -5,12 +5,16 @@ import com.yeepay.g3.facade.yop.ca.dto.DigitalEnvelopeDTO;
 import com.yeepay.g3.facade.yop.ca.enums.CertTypeEnum;
 import com.yeepay.g3.frame.yop.ca.DigitalEnvelopeUtils;
 import com.yeepay.g3.frame.yop.ca.rsa.RSAKeyUtils;
-import com.yeepay.g3.sdk.yop.client.*;
+import com.yeepay.g3.sdk.yop.client.YopClient;
+import com.yeepay.g3.sdk.yop.client.YopClient3;
+import com.yeepay.g3.sdk.yop.client.YopRequest;
+import com.yeepay.g3.sdk.yop.client.YopResponse;
 import com.yeepay.g3.sdk.yop.utils.InternalConfig;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -66,7 +70,7 @@ public class ProductiveDemo {
     }
 
     @Test
-    public void v() {
+    public void v() throws IOException {
         YopRequest request = new YopRequest(null, "8intulgnqibv77f1t8q9j0hhlkiy6ei6c82sknv63vib3zhgyzl8uif9ky7a", BASE_URL);
         request.setEncrypt(true);
         request.setSignRet(true);
@@ -132,7 +136,7 @@ public class ProductiveDemo {
     }
 
     @Test
-    public void test1() {
+    public void test1() throws IOException {
         YopRequest request = new YopRequest(null,
                 "s5KI8r0920SQ339oVlFE6eWJ0yk019SD7015nw39iaXJp10856z0C1d7JV5l", BASE_URL);
         request.setEncrypt(true);
@@ -151,7 +155,7 @@ public class ProductiveDemo {
     }
 
     @Test//发送短信接口
-    public void testSendSms() {
+    public void testSendSms() throws IOException {
         YopRequest request = new YopRequest("TestAppKey002", "TestAppSecret002", BASE_URL);
         // request.setSignAlg("SHA1");
         request.setSignAlg("MD5");//具体看api签名算法而定
@@ -173,7 +177,7 @@ public class ProductiveDemo {
     }
 
     @Test
-    public void testSendSmsQa() {
+    public void testSendSmsQa() throws IOException {
         YopRequest request = new YopRequest("openSmsApi", "1234554321", BASE_URL);
         request.setSignAlg("MD5");//具体看api签名算法而定
         //request.setEncrypt(true);
@@ -194,7 +198,7 @@ public class ProductiveDemo {
     }
 
     @Test
-    public void testSendSmsProduct() {
+    public void testSendSmsProduct() throws IOException {
         YopRequest request = new YopRequest("ypo2o", "tpcY6k2RSpEod7hsJIp33Q==", BASE_URL);
         request.setSignAlg("MD5");//具体看api签名算法而定
         // request.setEncrypt(true);
@@ -253,7 +257,7 @@ public class ProductiveDemo {
     }
 
     @Test
-    public void testCreateToken() {
+    public void testCreateToken() throws IOException {
         YopRequest request = new YopRequest(null, "cGB2CeC3YmwSWGoVz0kAvQ==", BASE_URL);
         request.setEncrypt(true);
         request.setSignRet(true);
@@ -271,7 +275,7 @@ public class ProductiveDemo {
     }
 
     @Test
-    public void testAmount() {
+    public void testAmount() throws IOException {
         YopRequest request = new YopRequest(null, "cGB2CeC3YmwSWGoVz0kAvQ==", BASE_URL);
         request.setEncrypt(true);
         request.setSignRet(true);
@@ -287,7 +291,7 @@ public class ProductiveDemo {
     }
 
     @Test
-    public void testJvmCollect() {
+    public void testJvmCollect() throws IOException {
         int i = 0;
         YopRequest request = new YopRequest(APP_KEYS[i], APP_SECRETS[i], BASE_URL);
         request.setEncrypt(false);
@@ -299,7 +303,7 @@ public class ProductiveDemo {
     }
 
     @Test
-    public void testLaike() {
+    public void testLaike() throws IOException {
         YopRequest request = new YopRequest(APP_KEYS[0], APP_SECRETS[0], BASE_URL);
         request.setEncrypt(false);
         request.setSignRet(true);
@@ -317,7 +321,7 @@ public class ProductiveDemo {
     }
 
     @Test
-    public void testLaikeToken() {
+    public void testLaikeToken() throws IOException {
         int i = 0;
         YopRequest request = new YopRequest(APP_KEYS[i], APP_SECRETS[i], BASE_URL);
         request.setEncrypt(true);
@@ -336,21 +340,31 @@ public class ProductiveDemo {
         //int i = 0;
 //        String secretKey ="MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCEk5fANXccim3575EasuANg_U_rM14xSNKi7KWdHRSY7hAJK7N-QhWOGz81rKLmgyd4Q7c1dmZbLzNnOQlGYjBAy2jH0a84EW5dM3GqNCX_A3iJda8xSUIpsaxOceqc46z370sijjVmn9rlbJMNpx-BZuLAHivYVOtg95-VOeWiyGMsDlMpAZQjD-bRWshMV41Bzlq-9u5h-NGJ7371wvrqSpAId2Jxp9OR-G8_nSByAvS3y2xliwbntK9MEcD64ew-6dkLb3hsmVc2pWm0uZPumnirjyvGatd--OrEAtb_8-Bki-ukqJWOAdb5bdp29gkg738Gdl-5at3e6uHdz0JAgMBAAECggEAYYJUmLA6PSmrnaqQJPzvQcGOfhjQv0TvogKBhZt9eqORfsv8Lc4-TXwO3R_kDj1tjilbzx0SgH-zld8RBiBzrtJxnIqCcqTZY3__YWAEm-RtKan--LRfeq9_cBY5PqrjiHTFJJ89Eg4iLbTagKeiDiZ9sozUNtn0u6hD2tMDynrU7pI9uyFIkPdU9ratku8tOgKWLFchRCQ1UD5Knda3F7fW0V4sCxfVqpuCZIROj7zAoB-RCMxkubiO6CyMZA19sunUQRwnp71DXcUqbZK-_jhef_hBQBUX1oaEojYtua4jx5p8xo9nP7jJeK-xqCj_CAoQF4LomezuGojgvxOoAQKBgQDSsCdKL_aFO7ONJSMgRGpNT9MGOMfKmAfPuELDOqRmJyTfbyR8TUiDYq74L3ffgjPIjZlJJM8m5gpCGalmsxRMUyvsDXE_bU2Zb1jlj_FFSdC2y5eTVfac-Ihp1qISm-t8EwvE0qzNK2xbG3G6ijy4WOtMoUh6FfZhzfmbxDgoiQKBgQChFtqYFu--khcyd26GVjxdDyPyiQfyAyqwdaWHqjyYad0sjEgZDaaAF_2qvrkSuD7kYULI9nVZv7kJmQu-T8owf38Hz931r9GaJdJJSTvexinJ54T0GpJdPsOUosHHgfPFvyetl1pxD05GMt88Z36KUUcZXVnoJxS9mo7HpoBQgQKBgAfJRspxF1U5LZuLwc6ReLQ-vPe_5XJRSAifMKhyZFz6GVzAiMKnQITKgtjdODrkXvGMehu_5n_zhHGI7T_EYn2nnTnuDT9g1LtU6B4jwbDj13jJ8WIajTCj5rayne6-IGfHdGnjt0slza1YSE2yiift8VQ1qa4JXb-jkxP0nnaxAoGAO4t4F9n6msXjnzr4dt2viHKNRhyS_ElhYULLgh9SMMCJCet8xw39qsGzeYbwYFQMo1y0VBaOADPXUQ3qgll6En0-VoPmtudbohAy7_YLFGjJj6FtytF7os4Ne4bB_F4z3revEgKtYrdWpqotTGWxJ62ti1mvXxn7F67m8jPAoIECgYEA0dGY2JnYVIku9hOYTTzjAJCRqA2Exl4lzxLYyD1SG_gTly9cee77m4wHOwYpLrRAu8zwLK5_4EkKDk_AKAVP9-lbqIWo7LG3KQ8OAbaJ3XnF4-ildPGQWXlpusDZQhYTFZIbbZ7zhi30A3XiZUqVMBkn8y1LdFmgj7Ogb4_87K4" ;
 
-//        String BASE_URL = "http://10.151.30.80:18064/yop-center/";
+//        String BASE_URL = "http://open.yeepay.com:18064/yop-center/";
 //        String BASE_URL = "https://58.83.141.56/yop-center/";
 
 //        YopConfig.setConnectTimeout(1);
 //        YopConfig.setReadTimeout(1);
 
         String appKey = "OPR:10012481831";
-        YopRequest request = new YopRequest(appKey, null, BASE_URL);
+        YopRequest yopRequest = new YopRequest(appKey, null, BASE_URL);
         // YopRequest request = new YopRequest(appKey, "");
 
-        request.addParam("customerNo", "10012481831");
-        request.addParam("parentCustomerNo", "10012481831");
-        request.addParam("requestId", "requestId1480392119078");
-        request.addParam("uniqueOrderNo", "1001201611290000000000000808");
-        YopResponse response = YopClient3.postRsa("/rest/v2.0/opr/queryorder", request);
+        //批状态通知地址
+        yopRequest.addParam("batchcallbackurl", "123");
+        //终端号
+        yopRequest.addParam("terminalno", "SQKKSCENEPK010");
+        //批次明细
+        yopRequest.addParam("batchdetails", "123");
+        //请求时间
+        yopRequest.addParam("requesttime", "2017-07-01 00:00:00");
+        //商户批次号
+        yopRequest.addParam("merchantbatchno", "123");
+        //商户编号
+        yopRequest.addParam("merchantno", "123");
+
+        YopResponse response = YopClient3.postRsa("/rest/v1.0/paperorder/api/pay/batchtempcard/order", yopRequest);
+
         AssertUtils.assertYopResponse(response);
     }
 
@@ -367,7 +381,7 @@ public class ProductiveDemo {
     }
 
     @Test
-    public void testCfca() {
+    public void testCfca() throws IOException {
         int i = 2;
         YopRequest request = new YopRequest(APP_KEYS[i], APP_SECRETS[i], "https://remit.yeepay.com/yop-center");
         request.setEncrypt(true);
@@ -378,6 +392,24 @@ public class ProductiveDemo {
         request.addParam("id_card_number", "370982199101186691");
         YopResponse response = YopClient.post("/rest/v1.0/test/cfca", request);
         System.out.println(response);
+    }
+
+    @Test
+    public void test() throws Exception {
+        YopRequest request = new YopRequest("app_xNTU4NDMwMDQ1", "8XlBB3pwiCqfnoH4W2q5rA==");
+        request.setEncrypt(true);
+        request.setSignRet(true);
+        request.setSignAlg("sha-256");
+
+        request.addParam("corp_id", "356e1dc1-4c11-419b-a043-cccb537dfb9b");//请求者标识
+        request.addParam("user_name", "qian.li");
+        request.addParam("password", "Cqmyg@0703");
+        request.addParam("need_corp_info", "true");
+        request.addParam("need_token", "true");
+        request.addParam("verified", "true");
+        System.out.println(request.toQueryString());
+        YopResponse response = YopClient.post("/rest/v2.0/hbird/oauth2/token", request);
+        System.out.println(response.toString());
     }
 
 }

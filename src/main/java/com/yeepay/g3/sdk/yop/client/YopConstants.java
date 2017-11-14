@@ -1,5 +1,7 @@
 package com.yeepay.g3.sdk.yop.client;
 
+import com.google.common.base.Joiner;
+
 /**
  * <pre>
  * 功能说明：
@@ -10,9 +12,28 @@ package com.yeepay.g3.sdk.yop.client;
  */
 public class YopConstants {
 
-    public static final String CLIENT_VERSION = "2.0.0-RC1";
+    // Initialize DEFAULT_USER_AGENT
+    static {
+        String language = System.getProperty("user.language");
+        if (language == null) {
+            language = "";
+        }
+        String region = System.getProperty("user.region");
+        if (region == null) {
+            region = "";
+        }
+        USER_AGENT = Joiner.on('/').join(YopConstants.CLIENT_LANGS, YopConstants.CLIENT_VERSION, System.getProperty("os.name"),
+                System.getProperty("os.version"),
+                System.getProperty("java.vm.name"),
+                System.getProperty("java.vm.version"),
+                System.getProperty("java.version"), language, region)
+                .replace(' ', '_');
+    }
+
+    public static final String CLIENT_VERSION = "2.0.0-RC2";
     public static final String CLIENT_LANGS = "java";
-    public static final String CLIENT_FEATURE = CLIENT_LANGS + "-" + CLIENT_VERSION;
+
+    public static String USER_AGENT;
 
     public static final String ENCODING = "UTF-8";
 

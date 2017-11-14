@@ -17,6 +17,7 @@ import static junit.framework.TestCase.assertEquals;
 public class AssertUtils {
 
     public static void assertYopResponse(YopResponse response) {
+        System.out.println(response);
         assertEquals("SUCCESS", response.getState());
     }
 

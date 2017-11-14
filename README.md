@@ -88,7 +88,7 @@ yop_sdk_config_default.json
 
 ```java
 // QA 环境
-// String BASE_URL = "http://10.151.30.80:18064/yop-center/";
+// String BASE_URL = "http://open.yeepay.com:18064/yop-center/";
 // YopRequest request = new YopRequest("<Your appKey>", "<Your appSecret>", BASE_URL);
 YopRequest request = new YopRequest("<Your appKey>", "<Your appSecret>");
 request.addParam("name", "安徽四创");
