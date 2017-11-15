@@ -23,20 +23,14 @@ public class AbstractClient {
     protected static final RestTemplate restTemplate;
 
     static {
-        int connectTimeout = 30000;
-        int readTimeout = 60000;
+        int connectTimeout = InternalConfig.CONNECT_TIMEOUT >= 0 ? InternalConfig.CONNECT_TIMEOUT : 30000;
+        int readTimeout = InternalConfig.READ_TIMEOUT >= 0 ? InternalConfig.READ_TIMEOUT : 60000;
 
-        if (InternalConfig.CONNECT_TIMEOUT >= 0) {
-            connectTimeout = InternalConfig.CONNECT_TIMEOUT;
-        }
+        boolean trustAllCerts = Boolean.valueOf(System.getProperty("yop.sdk.trust.all.certs", "false"));
+        restTemplate = new RestTemplate(getRequestFactory(trustAllCerts, connectTimeout, readTimeout));
+    }
 
-        if (InternalConfig.READ_TIMEOUT >= 0) {
-            readTimeout = InternalConfig.READ_TIMEOUT;
-        }
-
-        boolean trustAllCerts = Boolean.valueOf(System.getProperty("yop.trust.all.certs", "false"));
-
-        HttpComponentsClientHttpRequestFactory requestFactory = null;
+    private static HttpComponentsClientHttpRequestFactory getRequestFactory(boolean trustAllCerts, int connectTimeout, int readTimeout) {
         if (trustAllCerts) {
             LOGGER.warn("[yop-sdk]已设置信任所有证书。仅供内测使用，请勿在生产环境配置。");
             try {
@@ -48,17 +42,15 @@ public class AbstractClient {
                     }
                 });
                 CloseableHttpClient httpclient = HttpClients.custom().setSSLSocketFactory(new SSLConnectionSocketFactory(builder.build())).build();
-                requestFactory = new HttpComponentsClientHttpRequestFactory(httpclient);
+                return new HttpComponentsClientHttpRequestFactory(httpclient);
             } catch (Exception e) {
-                e.printStackTrace();
+                LOGGER.error("error when get trust-all-certs request factory,will return normal request factory instead", e);
             }
-        } else {
-            requestFactory = new HttpComponentsClientHttpRequestFactory();
-            requestFactory.setConnectTimeout(connectTimeout);
-            requestFactory.setReadTimeout(readTimeout);
         }
-
-        restTemplate = new RestTemplate(requestFactory);
+        HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
+        requestFactory.setConnectTimeout(connectTimeout);
+        requestFactory.setReadTimeout(readTimeout);
+        return requestFactory;
     }
 
     protected static RestTemplate getRestTemplate() {
