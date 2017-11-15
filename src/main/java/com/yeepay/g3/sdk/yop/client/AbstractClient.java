@@ -38,6 +38,7 @@ public class AbstractClient {
 
         HttpComponentsClientHttpRequestFactory requestFactory = null;
         if (trustAllCerts) {
+            LOGGER.warn("[yop-sdk]已设置信任所有证书。仅供内测使用，请勿在生产环境配置。");
             try {
                 SSLContextBuilder builder = new SSLContextBuilder();
                 builder.loadTrustMaterial(null, new TrustStrategy() {
