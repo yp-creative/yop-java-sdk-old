@@ -6,16 +6,14 @@ import com.yeepay.g3.facade.yop.ca.enums.KeyStoreTypeEnum;
 import com.yeepay.g3.frame.yop.ca.rsa.RSAKeyUtils;
 import com.yeepay.g3.frame.yop.ca.utils.Exceptions;
 import com.yeepay.g3.sdk.yop.config.CertConfig;
+import com.yeepay.g3.sdk.yop.config.CertStoreType;
 import com.yeepay.g3.sdk.yop.config.SDKConfig;
 import com.yeepay.g3.sdk.yop.exception.YopClientException;
 import com.yeepay.g3.utils.common.log.Logger;
 import com.yeepay.g3.utils.common.log.LoggerFactory;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -46,6 +44,10 @@ public final class InternalConfig {
 
     public static final String PROTOCOL_VERSION = "yop-auth-v2";
 
+    private static final String CONFIG_FILE_ABSOLUTE_PATH_PREFIX = "file://";
+    private static final String CONFIG_FILE_CLASS_PATH_PREFIX = "classpath:";
+    private static final String FILE_SEPARATOR_CHAR = "" + File.separatorChar;
+
     public static String APP_KEY;
     public static String SECRET_KEY;
 
@@ -54,109 +56,124 @@ public final class InternalConfig {
     public static int CONNECT_TIMEOUT = 30000;
     public static int READ_TIMEOUT = 60000;
 
-    private static Map<CertTypeEnum, PublicKey> yopPublicKeyMap;
+    private static Map<CertTypeEnum, PublicKey> yopPublicKeyMap = Maps.newEnumMap(CertTypeEnum.class);
 
-    private static Map<CertTypeEnum, PrivateKey> isvPrivateKeyMap;
+    private static Map<CertTypeEnum, PrivateKey> isvPrivateKeyMap = Maps.newEnumMap(CertTypeEnum.class);
+
+    static {
+        initialize();
+    }
 
     private InternalConfig() {
         /*forbid instantiate*/
     }
 
-    static {
-        yopPublicKeyMap = Maps.newEnumMap(CertTypeEnum.class);
-        isvPrivateKeyMap = Maps.newEnumMap(CertTypeEnum.class);
+    private static void initialize() {
+        LOGGER.info("[yop-sdk]尝试加载配置，具体使用请参照https://open.yeepay.com/doc/platform_profile/java_sdk_guide");
 
-        try {
-            // 允许在 VM arguments 中指定配置文件名 -Dyop.sdk.config.file=/yop_sdk_config_override.json
-            SDKConfig config = load(System.getProperty(SP_SDK_CONFIG_FILE, DEFAULT_SDK_CONFIG_FILE));
-
-            SERVER_ROOT = config.getServerRoot();
-
-            APP_KEY = config.getAppKey();
-            SECRET_KEY = config.getAesSecretKey();
-
-            if (config.getConnectTimeout() != null && config.getConnectTimeout() >= 0) {
-                CONNECT_TIMEOUT = config.getConnectTimeout();
-            }
-            if (config.getReadTimeout() != null && config.getReadTimeout() >= 0) {
-                READ_TIMEOUT = config.getReadTimeout();
-            }
-
-            if (null != config.getYopPublicKey()) {
-                for (CertConfig certConfig : config.getYopPublicKey()) {
-                    yopPublicKeyMap.put(certConfig.getCertType(), loadPublicKey(certConfig));
-                }
-            }
-
-            if (null != config.getIsvPrivateKey()) {
-                for (CertConfig certConfig : config.getIsvPrivateKey()) {
-                    isvPrivateKeyMap.put(certConfig.getCertType(), loadPrivateKey(certConfig));
-                }
-            }
-        } catch (Exception ex) {
-            LOGGER.error("yop sdk load config file error", ex);
+        String configFilePath = System.getProperty(SP_SDK_CONFIG_FILE);
+        if (StringUtils.isBlank(configFilePath)) {
+            LOGGER.info("[yop-sdk]系统属性yop.sdk.config.file未配置，将尝试从默认路径classpath:{}寻找配置文件", DEFAULT_SDK_CONFIG_FILE);
+            configFilePath = DEFAULT_SDK_CONFIG_FILE;
         }
-    }
 
-    static SDKConfig load(String configFile) {
-        InputStream fis = null;
+        LOGGER.info("[yop-sdk]尝试加载配置文件{}，将在{}下寻找该文件", configFilePath, configFilePath.startsWith(CONFIG_FILE_ABSOLUTE_PATH_PREFIX) ? "绝对路径" : "classpath");
+
+        InputStream configInputStream = getInputStream(configFilePath);
+        if (configInputStream == null) {
+            LOGGER.warn("[yop-sdk]未找到或无权限访问配置文件{}，将不使用配置文件，请在代码中手动传递所需配置", configFilePath);
+            return;
+        }
+
         SDKConfig config;
         try {
-            fis = getInputStream(configFile);
-            config = JsonUtils.loadFrom(fis, SDKConfig.class);
+            config = JsonUtils.loadFrom(configInputStream, SDKConfig.class);
         } catch (Exception e) {
-            System.out.println("Config format is error, file name:" + configFile);
+            LOGGER.error("[yop-sdk]从配置文件加载配置时失败，请检查配置文件格式", e);
             throw Exceptions.unchecked(e);
         } finally {
-            if (null != fis) {
-                try {
-                    fis.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+            close(configInputStream);
+        }
+
+        SERVER_ROOT = config.getServerRoot();
+        APP_KEY = config.getAppKey();
+        SECRET_KEY = config.getAesSecretKey();
+
+        if (config.getConnectTimeout() != null && config.getConnectTimeout() >= 0) {
+            CONNECT_TIMEOUT = config.getConnectTimeout();
+        }
+        if (config.getReadTimeout() != null && config.getReadTimeout() >= 0) {
+            READ_TIMEOUT = config.getReadTimeout();
+        }
+
+        if (null != config.getYopPublicKey()) {
+            for (CertConfig certConfig : config.getYopPublicKey()) {
+                yopPublicKeyMap.put(certConfig.getCertType(), loadPublicKey(certConfig));
             }
         }
-        return config;
+
+        if (null != config.getIsvPrivateKey()) {
+            for (CertConfig certConfig : config.getIsvPrivateKey()) {
+                isvPrivateKeyMap.put(certConfig.getCertType(), loadPrivateKey(certConfig));
+            }
+        }
+
+        LOGGER.info("[yop-sdk]已成功从配置文件{}中加载所有配置", configFilePath);
     }
 
     private static PublicKey loadPublicKey(CertConfig certConfig) {
-        PublicKey publicKey;
-        if (null == certConfig.getStoreType()) {
-            throw new YopClientException("Can't init YOP public key! Store type is error.");
+        LOGGER.info("[yop-sdk]尝试从配置文件中加载yop平台公钥");
+        CertStoreType certStoreType = certConfig.getStoreType();
+        if (certStoreType != CertStoreType.STRING) {
+            throw new YopClientException("[yop-sdk]初始化yop平台公钥异常! 公钥[yop_public_key.store_type]配置有误，公钥[store_type]的合法值为string.");
         }
-        switch (certConfig.getStoreType()) {
-            case STRING:
-                try {
-                    publicKey = RSAKeyUtils.string2PublicKey(certConfig.getValue());
-                } catch (Exception e) {
-                    System.out.println("Failed to load public key form config file is error, " + certConfig);
-                    throw Exceptions.unchecked(e);
-                }
-                break;
-            default:
-                throw new RuntimeException("Not support cert store type.");
+        if (StringUtils.isBlank(certConfig.getValue())) {
+            throw new YopClientException("[yop-sdk]初始化yop平台公钥异常！公钥[yop_public_key.value]不能为空！");
         }
-        return publicKey;
+        try {
+            PublicKey publicKey = RSAKeyUtils.string2PublicKey(certConfig.getValue());
+            LOGGER.info("[yop-sdk]从配置文件中加载yop平台公钥成功");
+            return publicKey;
+        } catch (Exception e) {
+            LOGGER.error("[yop-sdk]初始化yop平台公钥异常!请检查配置项[yop_public_key.value]", e);
+            throw Exceptions.unchecked(e);
+        }
     }
 
     private static PrivateKey loadPrivateKey(CertConfig certConfig) {
-        PrivateKey privateKey = null;
+        LOGGER.info("[yop-sdk]尝试从配置文件中加载用户私钥");
+        PrivateKey privateKey;
         if (null == certConfig.getStoreType()) {
-            throw new YopClientException("Can't init ISV private key! Store type is error.");
+            throw new YopClientException("[yop-sdk]初始化用户私钥异常! 私钥[isv_private_key.store_type]配置有误，私钥[store_type]的合法值为string或file_p12");
         }
         switch (certConfig.getStoreType()) {
             case STRING:
                 try {
                     privateKey = RSAKeyUtils.string2PrivateKey(certConfig.getValue());
                 } catch (Exception e) {
-                    System.out.println("Failed to load private key form config file is error, " + certConfig);
+                    LOGGER.error("[yop-sdk]初始化string类型用户私钥异常!请检查配置项[isv_private_key.value]", e);
+                    throw Exceptions.unchecked(e);
                 }
                 break;
             case FILE_P12:
+                if (StringUtils.isBlank(certConfig.getPassword())) {
+                    throw new YopClientException("[yop-sdk]初始化file_p12类型用户私钥异常！[isv_private_key.password]不能为空");
+                }
+                char[] password = certConfig.getPassword().toCharArray();
+
+                if (StringUtils.isBlank(certConfig.getValue())) {
+                    throw new YopClientException("[yop-sdk]初始化file_p12类型用户私钥异常！[isv_private_key.value]不能为空");
+                }
+
+                LOGGER.info("[yop-sdk]尝试从p12文件{}中解析私钥", certConfig.getValue());
+                InputStream certInputStream = getInputStream(certConfig.getValue());
+                if (certInputStream == null) {
+                    throw new YopClientException("[yop-sdk]初始化file_p12类型用户私钥异常！找不到文件:" + certConfig.getValue() + ",请将文件放在项目classpath下，并以classpath:为前缀指定路径；或者放在服务器绝对路径下，并以file:/为前缀指定路径");
+                }
+
                 try {
-                    char[] password = certConfig.getPassword().toCharArray();
                     KeyStore keystore = KeyStore.getInstance(KeyStoreTypeEnum.PKCS12.getValue());
-                    keystore.load(getInputStream(certConfig.getValue()), password);
+                    keystore.load(certInputStream, password);
 
                     Enumeration aliases = keystore.aliases();
                     String keyAlias = "";
@@ -164,25 +181,39 @@ public final class InternalConfig {
                         keyAlias = (String) aliases.nextElement();
                     }
                     privateKey = (PrivateKey) keystore.getKey(keyAlias, password);
+                    LOGGER.info("[yop-sdk]从p12文件{}中解析私钥成功", certConfig.getValue());
                 } catch (Exception e) {
-                    System.out.println("Cert key is error, " + certConfig);
+                    LOGGER.error("[yop-sdk]初始化file_p12类型用户私钥异常!", e);
                     throw Exceptions.unchecked(e);
+                } finally {
+                    close(certInputStream);
                 }
                 break;
             default:
-                throw new RuntimeException("Not support cert store type.");
+                throw new YopClientException("[yop-sdk]暂不支持配置该密钥类型:" + certConfig.getStoreType());
         }
+        LOGGER.info("[yop-sdk]从配置文件中加载用户私钥成功");
         return privateKey;
     }
 
-    public static InputStream getInputStream(String location) throws FileNotFoundException {
+    public static InputStream getInputStream(String location) {
         InputStream fis;
-        if (StringUtils.startsWith(location, "file://")) {
-            fis = new FileInputStream(StringUtils.substring(location, 6));
-        } else {
-            fis = InternalConfig.class.getResourceAsStream(location);
+        if (StringUtils.startsWith(location, CONFIG_FILE_ABSOLUTE_PATH_PREFIX)) {
+            try {
+                fis = new FileInputStream(StringUtils.substring(location, 6));
+                return fis;
+            } catch (FileNotFoundException e) {
+                LOGGER.error("[yop-sdk]文件" + StringUtils.substring(location, 6) + "不存在，或者无访问权限");
+                return null;
+            }
         }
-        return fis;
+        if (StringUtils.startsWith(location, CONFIG_FILE_CLASS_PATH_PREFIX)) {
+            location = StringUtils.substring(location, CONFIG_FILE_CLASS_PATH_PREFIX.length());
+        }
+        if (!StringUtils.startsWith(location, FILE_SEPARATOR_CHAR)) {
+            location = FILE_SEPARATOR_CHAR + location;
+        }
+        return InternalConfig.class.getResourceAsStream(location);
     }
 
     public static PublicKey getYopPublicKey(CertTypeEnum certType) {
@@ -191,5 +222,16 @@ public final class InternalConfig {
 
     public static PrivateKey getISVPrivateKey(CertTypeEnum certType) {
         return isvPrivateKeyMap.get(certType);
+    }
+
+    private static final void close(InputStream is) {
+        if (is == null) {
+            return;
+        }
+        try {
+            is.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
