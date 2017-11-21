@@ -9,9 +9,8 @@ import com.yeepay.g3.sdk.yop.config.CertConfig;
 import com.yeepay.g3.sdk.yop.config.CertStoreType;
 import com.yeepay.g3.sdk.yop.config.SDKConfig;
 import com.yeepay.g3.sdk.yop.exception.YopClientException;
-import com.yeepay.g3.utils.common.log.Logger;
-import com.yeepay.g3.utils.common.log.LoggerFactory;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
 
 import java.io.*;
 import java.security.KeyStore;
@@ -32,7 +31,7 @@ import java.util.Map;
  */
 public final class InternalConfig {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(InternalConfig.class);
+    private static final Logger LOGGER = Logger.getLogger(InternalConfig.class);
 
     private static final String SP_SDK_CONFIG_FILE = "yop.sdk.config.file";
 
@@ -73,15 +72,15 @@ public final class InternalConfig {
 
         String configFilePath = System.getProperty(SP_SDK_CONFIG_FILE);
         if (StringUtils.isBlank(configFilePath)) {
-            LOGGER.info("[yop-sdk]系统属性yop.sdk.config.file未配置，将尝试从默认路径classpath:{}寻找配置文件", DEFAULT_SDK_CONFIG_FILE);
+            LOGGER.info("[yop-sdk]系统属性yop.sdk.config.file未配置，将尝试从默认路径classpath:" + DEFAULT_SDK_CONFIG_FILE + "寻找配置文件");
             configFilePath = DEFAULT_SDK_CONFIG_FILE;
         }
 
-        LOGGER.info("[yop-sdk]尝试加载配置文件{}，将在{}下寻找该文件", configFilePath, configFilePath.startsWith(CONFIG_FILE_ABSOLUTE_PATH_PREFIX) ? "绝对路径" : "classpath");
+        LOGGER.info(String.format("[yop-sdk]尝试加载配置文件%s，将在%s下寻找该文件", configFilePath, configFilePath.startsWith(CONFIG_FILE_ABSOLUTE_PATH_PREFIX) ? "绝对路径" : "classpath"));
 
         InputStream configInputStream = getInputStream(configFilePath);
         if (configInputStream == null) {
-            LOGGER.warn("[yop-sdk]未找到或无权限访问配置文件{}，将不使用配置文件，请在代码中手动传递所需配置", configFilePath);
+            LOGGER.warn("[yop-sdk]未找到或无权限访问配置文件" + configFilePath + "，将不使用配置文件，请在代码中手动传递所需配置");
             return;
         }
 
@@ -118,7 +117,7 @@ public final class InternalConfig {
             }
         }
 
-        LOGGER.info("[yop-sdk]已成功从配置文件{}中加载所有配置", configFilePath);
+        LOGGER.info("[yop-sdk]已成功从配置文件" + configFilePath + "中加载所有配置");
     }
 
     private static PublicKey loadPublicKey(CertConfig certConfig) {
@@ -165,7 +164,7 @@ public final class InternalConfig {
                     throw new YopClientException("[yop-sdk]初始化file_p12类型用户私钥异常！[isv_private_key.value]不能为空");
                 }
 
-                LOGGER.info("[yop-sdk]尝试从p12文件{}中解析私钥", certConfig.getValue());
+                LOGGER.info("[yop-sdk]尝试从p12文件" + certConfig.getValue() + "中解析私钥");
                 InputStream certInputStream = getInputStream(certConfig.getValue());
                 if (certInputStream == null) {
                     throw new YopClientException("[yop-sdk]初始化file_p12类型用户私钥异常！找不到文件:" + certConfig.getValue() + ",请将文件放在项目classpath下，并以classpath:为前缀指定路径；或者放在服务器绝对路径下，并以file:/为前缀指定路径");
@@ -181,7 +180,7 @@ public final class InternalConfig {
                         keyAlias = (String) aliases.nextElement();
                     }
                     privateKey = (PrivateKey) keystore.getKey(keyAlias, password);
-                    LOGGER.info("[yop-sdk]从p12文件{}中解析私钥成功", certConfig.getValue());
+                    LOGGER.info("[yop-sdk]从p12文件" + certConfig.getValue() + "中解析私钥成功");
                 } catch (Exception e) {
                     LOGGER.error("[yop-sdk]初始化file_p12类型用户私钥异常!", e);
                     throw Exceptions.unchecked(e);
