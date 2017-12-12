@@ -16,7 +16,7 @@
                 <include>pom.xml</include>
                 <include>LICENSE*</include>
                 <include>NOTICE*</include>
-                <include>docs/*</include>
+                <include>docs/**</include>
             </includes>
         </fileSet>
         <fileSet>
