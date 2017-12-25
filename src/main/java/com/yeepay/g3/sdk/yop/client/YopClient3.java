@@ -229,7 +229,7 @@ public class YopClient3 extends AbstractClient {
     protected static void handleRsaResult(YopResponse response) {
         String stringResult = response.getStringResult();
         if (StringUtils.isNotBlank(stringResult)) {
-            response.setResult(JacksonJsonMarshaller.unmarshal(stringResult, LinkedHashMap.class));
+            response.setResult(JacksonJsonMarshaller.unmarshal(stringResult, Object.class));
         }
 
         String sign = response.getSign();
