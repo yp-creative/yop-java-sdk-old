@@ -21,6 +21,7 @@
         <maven.compiler.source>1.6</maven.compiler.source>
         <maven.compiler.target>1.6</maven.compiler.target>
         <maven.compiler.compilerVersion>1.6</maven.compiler.compilerVersion>
+        <fasterxml.jackson.version>2.8.9</fasterxml.jackson.version>
     </properties>
 
     <dependencies>
