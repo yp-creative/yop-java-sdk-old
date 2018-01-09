@@ -12,7 +12,10 @@ import com.yeepay.g3.sdk.yop.exception.YopClientException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -45,8 +48,7 @@ public final class InternalConfig {
 
     private static final String CONFIG_FILE_ABSOLUTE_PATH_PREFIX = "file://";
     private static final String CONFIG_FILE_CLASS_PATH_PREFIX = "classpath:";
-    private static final String FILE_SEPARATOR_CHAR = "" + File.separatorChar;
-
+    private static final String SLASH = "/";
     public static String APP_KEY;
     public static String SECRET_KEY;
 
@@ -209,9 +211,10 @@ public final class InternalConfig {
         if (StringUtils.startsWith(location, CONFIG_FILE_CLASS_PATH_PREFIX)) {
             location = StringUtils.substring(location, CONFIG_FILE_CLASS_PATH_PREFIX.length());
         }
-        if (!StringUtils.startsWith(location, FILE_SEPARATOR_CHAR)) {
-            location = FILE_SEPARATOR_CHAR + location;
+        if (!StringUtils.startsWith(location, SLASH)) {
+            location = SLASH + location;
         }
+
         return InternalConfig.class.getResourceAsStream(location);
     }
 

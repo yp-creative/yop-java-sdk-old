@@ -241,6 +241,10 @@
                             </filters>
                             <relocations>
                                 <relocation>
+                                    <pattern>com.yeepay.g3.utils.common</pattern>
+                                    <shadedPattern>com.yeepay.shade.com.yeepay.g3.utils.common</shadedPattern>
+                                </relocation>
+                                <relocation>
                                     <pattern>com.fasterxml</pattern>
                                     <shadedPattern>com.yeepay.shade.com.fasterxml</shadedPattern>
                                 </relocation>
