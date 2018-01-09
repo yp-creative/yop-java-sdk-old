@@ -37,18 +37,18 @@ public class QaDemo {
     @Test
     public void testIdCard() throws Exception {
 //        for(int j=0;j<100;j++) {
-            int i = 0;
-            YopRequest request = new YopRequest(null, APP_SECRETS[i], BASE_URL);
-            request.setEncrypt(true);
-            request.setSignRet(true);
+        int i = 0;
+        YopRequest request = new YopRequest(null, APP_SECRETS[i], BASE_URL);
+        request.setEncrypt(true);
+        request.setSignRet(true);
 //        request.setSignAlg("sha-256");
-            request.addParam("appKey", APP_KEYS[i]);
-            request.addParam("requestFlowId", "test123456");//请求流水标识
-            request.addParam("name", "张文康");
-            request.addParam("idCardNumber", "370982199101186692");
-            System.out.println(request.toQueryString());
-            YopResponse response = YopClient.get("/rest/v2.0/auth/idcard", request);
-            System.out.println(response.toString());
+        request.addParam("appKey", APP_KEYS[i]);
+        request.addParam("requestFlowId", "test123456");//请求流水标识
+        request.addParam("name", "张文康");
+        request.addParam("idCardNumber", "370982199101186692");
+        System.out.println(request.toQueryString());
+        YopResponse response = YopClient.get("/rest/v2.0/auth/idcard", request);
+        System.out.println(response.toString());
 //        }
     }
 
@@ -315,6 +315,19 @@ public class QaDemo {
         request.addParam("scope", "123");
         System.out.println(request.toQueryString());
         YopResponse response = YopClient.post("/rest/v1.0/laike/token", request);
+        System.out.println(response.toString());
+    }
+
+    @Test
+    public void testLoadMethod() {
+        int i = 0;
+        YopRequest request = new YopRequest(APP_KEYS[i], APP_SECRETS[i], BASE_URL);
+        request.setEncrypt(true);
+        request.setSignRet(true);
+//        request.setSignAlg("sha-256");
+        request.addParam("className", "com.yeepay.g3.facade.auth2.facade.Auth2Facade");
+        System.out.println(request.toQueryString());
+        YopResponse response = YopClient.post("/rest/v1.0/system/loader/methods", request);
         System.out.println(response.toString());
     }
 }

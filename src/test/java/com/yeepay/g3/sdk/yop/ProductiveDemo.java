@@ -43,7 +43,7 @@ public class ProductiveDemo {
     @Test
     public void testIdCard() throws Exception {
         int i = 2;
-        YopRequest request = new YopRequest(APP_KEYS[i], APP_SECRETS[i], "https://remit.yeepay.com/yop-center");
+        YopRequest request = new YopRequest(APP_KEYS[i], APP_SECRETS[i], "https://open.yeepay.com/yop-center");
         request.setEncrypt(true);
         request.setSignRet(true);
 //        request.setSignAlg("sha-256");
@@ -52,6 +52,7 @@ public class ProductiveDemo {
         request.addParam("idCardNumber", "370982199101186691111");
 
         YopResponse response = YopClient.post("/rest/v2.0/auth/idcard", request);
+        return;
 //        AssertUtils.assertYopResponse(response);
     }
 

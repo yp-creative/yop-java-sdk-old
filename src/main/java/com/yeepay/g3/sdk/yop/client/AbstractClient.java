@@ -4,9 +4,17 @@ import com.yeepay.g3.sdk.yop.exception.YopClientException;
 import com.yeepay.g3.sdk.yop.utils.Assert;
 import com.yeepay.g3.sdk.yop.utils.InternalConfig;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLContextBuilder;
+import org.apache.http.conn.ssl.TrustStrategy;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.log4j.Logger;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
+
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 
 public class AbstractClient {
 
@@ -15,21 +23,34 @@ public class AbstractClient {
     protected static final RestTemplate restTemplate;
 
     static {
-        int connectTimeout = 30000;
-        int readTimeout = 60000;
+        int connectTimeout = InternalConfig.CONNECT_TIMEOUT >= 0 ? InternalConfig.CONNECT_TIMEOUT : 30000;
+        int readTimeout = InternalConfig.READ_TIMEOUT >= 0 ? InternalConfig.READ_TIMEOUT : 60000;
 
-        if (InternalConfig.CONNECT_TIMEOUT >= 0) {
-            connectTimeout = InternalConfig.CONNECT_TIMEOUT;
+        boolean trustAllCerts = Boolean.valueOf(System.getProperty("yop.sdk.trust.all.certs", "false"));
+        restTemplate = new RestTemplate(getRequestFactory(trustAllCerts, connectTimeout, readTimeout));
+    }
+
+    private static HttpComponentsClientHttpRequestFactory getRequestFactory(boolean trustAllCerts, int connectTimeout, int readTimeout) {
+        if (trustAllCerts) {
+            LOGGER.warn("[yop-sdk]已设置信任所有证书。仅供内测使用，请勿在生产环境配置。");
+            try {
+                SSLContextBuilder builder = new SSLContextBuilder();
+                builder.loadTrustMaterial(null, new TrustStrategy() {
+                    @Override
+                    public boolean isTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+                        return true;
+                    }
+                });
+                CloseableHttpClient httpclient = HttpClients.custom().setSSLSocketFactory(new SSLConnectionSocketFactory(builder.build())).build();
+                return new HttpComponentsClientHttpRequestFactory(httpclient);
+            } catch (Exception e) {
+                LOGGER.error("error when get trust-all-certs request factory,will return normal request factory instead", e);
+            }
         }
-
-        if (InternalConfig.READ_TIMEOUT >= 0) {
-            readTimeout = InternalConfig.READ_TIMEOUT;
-        }
-
         HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
         requestFactory.setConnectTimeout(connectTimeout);
         requestFactory.setReadTimeout(readTimeout);
-        restTemplate = new RestTemplate(requestFactory);
+        return requestFactory;
     }
 
     protected static RestTemplate getRestTemplate() {
@@ -69,22 +90,5 @@ public class AbstractClient {
         request.addParam(YopConstants.VERSION, StringUtils.substringBetween(methodOrUri, REST_PREFIX, "/"));
         request.addParam(YopConstants.METHOD, methodOrUri);
         return serverUrl;
-    }
-
-    /**
-     * 从完整返回结果中获取业务结果，主要用于验证返回结果签名
-     *
-     * @param content 响应报文
-     * @return 业务返回结果
-     */
-    protected static String getBizResult(String content) {
-        if (StringUtils.isBlank(content)) {
-            return content;
-        }
-        String jsonStr = StringUtils.substringAfter(content, "\"result\" : ");
-        jsonStr = StringUtils.substringBeforeLast(jsonStr, "\"ts\"");
-        // 去除逗号
-        jsonStr = StringUtils.substringBeforeLast(jsonStr, ",");
-        return jsonStr;
     }
 }

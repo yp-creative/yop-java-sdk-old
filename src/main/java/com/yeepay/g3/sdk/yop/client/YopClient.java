@@ -2,8 +2,10 @@ package com.yeepay.g3.sdk.yop.client;
 
 import com.yeepay.g3.sdk.yop.encrypt.AESEncrypter;
 import com.yeepay.g3.sdk.yop.encrypt.Digest;
+import com.yeepay.g3.sdk.yop.http.Headers;
 import com.yeepay.g3.sdk.yop.unmarshaller.JacksonJsonMarshaller;
 import com.yeepay.g3.sdk.yop.utils.Assert;
+import com.yeepay.g3.sdk.yop.utils.DateUtils;
 import com.yeepay.g3.sdk.yop.utils.JsonUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -92,6 +94,14 @@ public class YopClient extends AbstractClient {
      * @return 字符串形式的响应
      */
     public static String getForString(String apiUri, YopRequest request) {
+        if (!request.headers.containsKey(Headers.YOP_REQUEST_ID)) {
+            String requestId = UUID.randomUUID().toString();
+            request.headers.add(Headers.YOP_REQUEST_ID, requestId);
+        }
+
+        String timestamp = DateUtils.formatCompressedIso8601Timestamp(System.currentTimeMillis());
+        request.headers.add(Headers.YOP_DATE, timestamp);
+
         String serverUrl = buildURL(apiUri, request);
         return getRestTemplate().exchange(serverUrl, HttpMethod.GET, new HttpEntity(request.headers), String.class).getBody();
     }
@@ -205,7 +215,7 @@ public class YopClient extends AbstractClient {
     private static void handleResult(YopRequest request, YopResponse response) {
         String stringResult = response.getStringResult();
         if (StringUtils.isNotBlank(stringResult)) {
-            response.setResult(JacksonJsonMarshaller.unmarshal(stringResult, LinkedHashMap.class));
+            response.setResult(JacksonJsonMarshaller.unmarshal(stringResult, Object.class));
         }
 
         String sign = response.getSign();
