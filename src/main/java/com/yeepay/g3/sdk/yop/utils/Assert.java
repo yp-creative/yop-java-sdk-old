@@ -1,6 +1,6 @@
 package com.yeepay.g3.sdk.yop.utils;
 
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * title: <br>
@@ -25,7 +25,7 @@ public class Assert {
     }
 
     public static void hasText(String text, String message) {
-        if (!StringUtils.hasText(text)) {
+        if (StringUtils.isEmpty(text)) {
             throw new IllegalArgumentException(message);
         }
     }

@@ -225,7 +225,7 @@ public class Demo {
 
 
     @Test
-    public void testValidate() {
+    public void testValidate() throws IOException {
         YopRequest request = new YopRequest(null,
                 "cGB2CeC3YmwSWGoVz0kAvQ==",
                 "http://localhost:8064/yop-center/");
@@ -293,7 +293,11 @@ public class Demo {
                     request.addParam("bankCardNumber", "4392250043179877");
                     System.out.println(request.toQueryString());
                     YopResponse response = null;
-                    response = YopClient.post("/rest/v2.0/auth/debit3", request);
+                    try {
+                        response = YopClient.post("/rest/v2.0/auth/debit3", request);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                     System.out.println(response.toString());
                 }
             }).start();

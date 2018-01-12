@@ -32,8 +32,7 @@ public class AESEncrypter {
 			SecretKeySpec seckey = new SecretKeySpec(enCodeFormat, YopConstants.ALG_AES);
 			Cipher cipher = Cipher.getInstance(YopConstants.ALG_AES);// 创建密码器
 			cipher.init(Cipher.ENCRYPT_MODE, seckey);// 初始化
-			byte[] result = cipher.doFinal(data);
-			return result; // 加密
+			return cipher.doFinal(data); // 加密
 		} catch (Exception e) {
 			throw new RuntimeException("encrypt fail!", e);
 		}
@@ -52,8 +51,7 @@ public class AESEncrypter {
 			SecretKeySpec seckey = new SecretKeySpec(enCodeFormat, YopConstants.ALG_AES);
 			Cipher cipher = Cipher.getInstance(YopConstants.ALG_AES);// 创建密码器
 			cipher.init(Cipher.DECRYPT_MODE, seckey);// 初始化
-			byte[] result = cipher.doFinal(data);
-			return result; // 加密
+			return cipher.doFinal(data); // 加密
 		} catch (Exception e) {
 			throw new RuntimeException("decrypt fail!", e);
 		}

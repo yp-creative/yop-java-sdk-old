@@ -57,6 +57,11 @@ public final class InternalConfig {
     public static int CONNECT_TIMEOUT = 30000;
     public static int READ_TIMEOUT = 60000;
 
+    public static int MAX_CONN_TOTAL = 200;
+    public static int MAX_CONN_PER_ROUTE = 100;
+
+    public static boolean TRUST_ALL_CERTS = false;
+
     private static Map<CertTypeEnum, PublicKey> yopPublicKeyMap = Maps.newEnumMap(CertTypeEnum.class);
 
     private static Map<CertTypeEnum, PrivateKey> isvPrivateKeyMap = Maps.newEnumMap(CertTypeEnum.class);
@@ -100,11 +105,25 @@ public final class InternalConfig {
         APP_KEY = config.getAppKey();
         SECRET_KEY = config.getAesSecretKey();
 
+        // HttpClient 配置
         if (config.getConnectTimeout() != null && config.getConnectTimeout() >= 0) {
             CONNECT_TIMEOUT = config.getConnectTimeout();
         }
         if (config.getReadTimeout() != null && config.getReadTimeout() >= 0) {
             READ_TIMEOUT = config.getReadTimeout();
+        }
+        if (config.getMaxConnTotal() != null && config.getMaxConnTotal() >= 0) {
+            MAX_CONN_TOTAL = config.getMaxConnTotal();
+        }
+        if (config.getMaxConnPerRoute() != null && config.getMaxConnPerRoute() >= 0) {
+            MAX_CONN_PER_ROUTE = config.getMaxConnPerRoute();
+        }
+
+        // 信任所有证书
+        if (config.getTrustAllCerts() != null) {
+            TRUST_ALL_CERTS = config.getTrustAllCerts();
+        } else {
+            TRUST_ALL_CERTS = Boolean.valueOf(System.getProperty("yop.sdk.trust.all.certs", "false"));
         }
 
         if (null != config.getYopPublicKey()) {
@@ -226,7 +245,7 @@ public final class InternalConfig {
         return isvPrivateKeyMap.get(certType);
     }
 
-    private static final void close(InputStream is) {
+    private static void close(InputStream is) {
         if (is == null) {
             return;
         }
