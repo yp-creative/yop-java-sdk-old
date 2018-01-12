@@ -41,6 +41,15 @@ public final class SDKConfig implements Serializable {
     @JsonProperty("read_timeout")
     private Integer readTimeout;
 
+    @JsonProperty("max_conn_total")
+    private Integer maxConnTotal;
+
+    @JsonProperty("max_conn_per_route")
+    private Integer maxConnPerRoute;
+
+    @JsonProperty("trust_all_certs")
+    private Boolean trustAllCerts;
+
     public CertConfig[] getYopPublicKey() {
         return yopPublicKey;
     }
@@ -57,10 +66,6 @@ public final class SDKConfig implements Serializable {
         this.isvPrivateKey = isvPrivateKey;
     }
 
-    public String toString() {
-        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
-    }
-
     public Integer getConnectTimeout() {
         return connectTimeout;
     }
@@ -75,6 +80,30 @@ public final class SDKConfig implements Serializable {
 
     public void setReadTimeout(Integer readTimeout) {
         this.readTimeout = readTimeout;
+    }
+
+    public Integer getMaxConnTotal() {
+        return maxConnTotal;
+    }
+
+    public void setMaxConnTotal(Integer maxConnTotal) {
+        this.maxConnTotal = maxConnTotal;
+    }
+
+    public Integer getMaxConnPerRoute() {
+        return maxConnPerRoute;
+    }
+
+    public void setMaxConnPerRoute(Integer maxConnPerRoute) {
+        this.maxConnPerRoute = maxConnPerRoute;
+    }
+
+    public Boolean getTrustAllCerts() {
+        return trustAllCerts;
+    }
+
+    public void setTrustAllCerts(Boolean trustAllCerts) {
+        this.trustAllCerts = trustAllCerts;
     }
 
     public String getServerRoot() {
@@ -100,4 +129,10 @@ public final class SDKConfig implements Serializable {
     public void setAesSecretKey(String aesSecretKey) {
         this.aesSecretKey = aesSecretKey;
     }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+    }
+
 }

@@ -1,52 +1,70 @@
-#SDK使用说明
-易宝开放平台的SDK是由程序自动化生成的代码包，其中包含了构建请求、加密、返回解析等一些必要的功能。目前支持的开发环境如下：
+# SDK使用说明
 
-java sdk支持1.5及以上（目前仅支持j2se标准java平台使用，不适合andriod平台）；且需依赖spring框架及fastxml包
+[易宝开放平台](https://open.yeepay.com/) 的SDK是由程序自动化生成的代码包，其中包含了构建请求、加密、返回解析等一些必要的功能。
 
-##1.开始
-前提已注册成为开放平台开发者，并创建应用。如果未注册，请访问[开放平台](https://open.yeepay.com/yop-mbr/)注册并创建应用。
+* 支持java sdk支持1.5及以上（目前仅支持j2se标准java平台使用，不适合android平台）
 
-如果是易宝商户，也可以不创建应用，直接以商户身份可登录开放平台、申请API权限、并直接发起调用
+## 1.准备工作
 
-##2. 开发准备
-普通java工程请将sdk内各jar包加入classpath（若工程已有相同jar或有其他版本jar可不添加）
-易宝子公司使用YOP可通过maven依赖：
+注册成为开放平台开发者并创建应用。
 
-```xml
+* 如果未注册，请访问[开放平台](https://open.yeepay.com/)注册并创建应用。
+* 如果是易宝原有商户，请联系技术支持开通相关账号。
+
+## 2.下载SDK包
+
+将下载好的压缩包解压，内容如下：
+
+````
++- docs                           // 其他文档或工具
+|  +- jce_policy-6.zip            // 支持 SHA-256 的 JCE for JDK6
+|  +- jce_policy-8.zip            // 支持 SHA-256 的 JCE for JDK8
+|  +- UnlimitedJCEPolicyJDK7.zip  // 支持 SHA-256 的 JCE for JDK7
++- lib                            // 依赖包，采用All in One时请忽略本目录
++- LICENSE                        // 授权协议，请勿删除
++- original-yop-sdk-${version}.jar // 未将lib目录shade打包的原始jar包
++- pom.xml                        // maven 依赖管理文件
++- README.md                      // README 文档
++- yop_sdk_config_default.json    // 默认用配置文件
++- yop_sdk_config_template.json   // 配置文件模版
++- yop-sdk-${version}-sources.jar  // 源码包
++- yop-sdk-${version}-tests.jar    // 单元测试
++- yop-sdk-${version}.jar          // All in One，已将lib目录shade打包
+````
+
+````xml
 <dependency>
 	<groupId>com.yeepay.g3.yop</groupId>
 	<artifactId>yop-sdk</artifactId>
-	<version>1.0</version>
+	<version>${具体版本见SDK包}</version>
 </dependency>
-```
+````
 
-##3. 示例
+## 3. 示例
 
-###3.1. 对称
+### 3.1. 对称加密接口
 
 代码示例：
 
-```java
+````java
+// 初始化 SDK
 YopConfig.setAppKey("<Your appKey>");
 YopConfig.setAesSecretKey("<Your appSecret>");
-YopRequest request = new YopRequest();
+
+// 发起调用
+YopRequest request = new YopRequest();// 注意重载方法可以支持不同请求使用不同的密钥
 request.addParam("address", "13812345678");
 YopResponse response = YopClient.get("/rest/v1.0/notifier/blacklist/add", request);
-```
+````
 
-###3.2. 非对称
+### 3.2. 非对称签名接口
 
-#### 默认配置文件名：
-yop_sdk_config_default.json
+#### 配置文件 
 
-#### 覆盖默认配置文件名的方法：
-在 VM arguments 中指定配置文件名
+默认配置文件名：yop_sdk_config_default.json
 
-例如：
-* -Dyop.sdk.config.file=/yop_sdk_config_override.json
-* -Dyop.sdk.config.file=file://home/app/yop_sdk_config_override.json
+#### 配置项
 
-#### 配置项说明：
 * yop_public_key：YOP平台密钥
 * store_type
     * string：密钥文本
@@ -59,7 +77,7 @@ yop_sdk_config_default.json
     * 如果store_type为file_*，则该值为密钥文件路径
 * password：如果p12需要密码
 
-#### 示例配置：
+#### 配置示例
 
 ```sdk_config
 {
@@ -84,7 +102,15 @@ yop_sdk_config_default.json
 }
 ```
 
-#### 代码示例：
+#### 如何覆盖默认配置文件
+
+在 VM arguments 中指定配置文件名
+
+例如：
+* -Dyop.sdk.config.file=/yop_sdk_config_override.json
+* -Dyop.sdk.config.file=file://home/app/yop_sdk_config_override.json
+
+#### 代码示例
 
 ```java
 // QA 环境
@@ -100,7 +126,8 @@ System.out.println(request.toQueryString());
 YopResponse response = YopClient3.postRsa("/rest/v2.0/auth/idcard", request);
 ```
 
-#### 测试私钥RSA2048：
+#### 测试用商户私钥RSA2048
+
 MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCXsKWWClznZbdTwp9183e4Ygu/
 twbQhuS6LPpu/TZ+OFwwauvIZnOyKu+rFh6apKyVxiLEkssnTsBjLjUIlypEGU2SdLGkswWAPvVd
 unLjjWEz37W2w4VNkGf8bGCQ9fIxMynoBCTeeWcQz896e1y2p5YZHygUhXGLM/9q5mr3iQQgrEPd
@@ -124,7 +151,8 @@ emtNAoGBAMzGo6aNER8VZfET8Oy0i5G8aVBp6yrMiQsNOj4S1VPoHI+Pc6ot5rDQdjek9PRzF9xe
 CU4K7+KLaOs6fVmTfsFpPbDafCTTmos9LGr5FIyXpU7LQCl3QPHWPDd5ezsu9SPVjzsEPX3WTSOJ
 uUA8hE7pJnAzMHLGAFpIXJRu3Z/y
 
-#### 测试公钥RSA2048：
+#### 测试用商户公钥RSA2048
+
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAl7Cllgpc52W3U8KfdfN3uGILv7cG0Ibk
 uiz6bv02fjhcMGrryGZzsirvqxYemqSslcYixJLLJ07AYy41CJcqRBlNknSxpLMFgD71Xbpy441h
 M9+1tsOFTZBn/GxgkPXyMTMp6AQk3nlnEM/PentctqeWGR8oFIVxizP/auZq94kEIKxD3RRAHZXy
@@ -132,7 +160,8 @@ M9+1tsOFTZBn/GxgkPXyMTMp6AQk3nlnEM/PentctqeWGR8oFIVxizP/auZq94kEIKxD3RRAHZXy
 2dzYLcCQ39vY4m6TN3WnEu7amBsKXhqSms0vbWYEwGHF9pC0+7Phur1c1UEetab7w7Obm8n7MPyh
 UfCgwwIDAQAB
 
-#### 易宝生产公钥RSA2048：
+#### 易宝生产公钥RSA2048
+
 -----BEGIN RSA2048 PUBLIC KEY BLOCK-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA6p0XWjscY+gsyqKRhw9MeLsEmhFdBRhT
 2emOck/F1Omw38ZWhJxh9kDfs5HzFJMrVozgU+SJFDONxs8UB0wMILKRmqfLcfClG9MyCNuJkkfm
@@ -142,7 +171,8 @@ QBuDsJVsFPiGh/b6K/+zGTvWyUcu+LUj2MejYQELDO3i2vQXVDk7lVi2/TcUYefvIcssnzsfCfja
 orxsuwIDAQAB
 -----END RSA2048 PUBLIC KEY BLOCK-----
 
-#### 易宝生产公钥RSA4096：
+#### 易宝生产公钥RSA4096
+
 -----BEGIN RSA4096 PUBLIC KEY BLOCK-----
 MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEArbJ1oNf7JmQ5k9HxebaxPet34gzTOPXu
 LNQJZ8LsgfiDs/J6k8pv3xahGaGWddF+Hl0JYKov69eoOe7aMIvg6M9hM+mz/7bEo2N3IjsgN3gb
@@ -156,7 +186,7 @@ N5OjuAlOY7hJYwRdv9YdOUcf5yfgGgDIKNpGRqEJBUSQGVQiEnwO93QZOIaoGmld/gzjnN+zVFkK
 evf+n+LRMqQlb1RU9oKOcv4g0GW5mojWy3Fy6UI32kUCAwEAAQ==
 -----END RSA4096 PUBLIC KEY BLOCK-----
 
-##4. 详细说明
+## 4. 详细说明
 
 ###4.1. 应用-密钥配置
 默认使用`YopConfig.setXXX`初始化`appKey`及`AES密钥`（商户身份仅需设置Hmac密钥）

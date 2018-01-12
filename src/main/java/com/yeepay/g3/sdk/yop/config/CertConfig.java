@@ -63,6 +63,7 @@ public final class CertConfig implements Serializable {
         this.value = value;
     }
 
+    @Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this,
                 ToStringStyle.SHORT_PREFIX_STYLE);

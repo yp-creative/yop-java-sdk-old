@@ -36,7 +36,6 @@ public class QaDemo {
 
     @Test
     public void testIdCard() throws Exception {
-//        for(int j=0;j<100;j++) {
         int i = 0;
         YopRequest request = new YopRequest(null, APP_SECRETS[i], BASE_URL);
         request.setEncrypt(true);
@@ -48,8 +47,7 @@ public class QaDemo {
         request.addParam("idCardNumber", "370982199101186692");
         System.out.println(request.toQueryString());
         YopResponse response = YopClient.get("/rest/v2.0/auth/idcard", request);
-        System.out.println(response.toString());
-//        }
+        AssertUtils.assertYopResponse(response);
     }
 
     @Test
@@ -61,9 +59,8 @@ public class QaDemo {
         request.addParam("customerNo", APP_KEYS[i]);
         request.addParam("requestId", "0");
         request.addParam("platformUserNo", "1234567890123456789012345673333");
-        System.out.println(request.toQueryString());
         YopResponse response = YopClient.post("/rest/v1.0/member/queryAccount", request);
-        System.out.println(response.toString());
+        AssertUtils.assertYopResponse(response);
     }
 
     @Test
@@ -74,9 +71,8 @@ public class QaDemo {
         request.addParam("customerNo", "10040011444");
         request.addParam("merchantNo", "10040028626");
 //        request.addParam("platformUserNo", "12345678901234567890123456789012");
-        System.out.println(request.toQueryString());
         YopResponse response = YopClient.post("/rest/v1.0/merchant/queryBalance", request);
-        System.out.println(response.toString());
+        AssertUtils.assertYopResponse(response);
     }
 
     @Test
@@ -91,9 +87,8 @@ public class QaDemo {
         request.addParam("requestCustomerId", "jinkela");//子商户编号
         request.addParam("requestFlowId", "test-" + System.currentTimeMillis() + RandomStringUtils.randomNumeric(3));//请求流水标识
         request.addParam("requestIdentification", "wenkang.zhang");//请求者标识
-        System.out.println(request.toQueryString());
         YopResponse response = YopClient.post("/rest/v1.2/auth/authenterprise", request);
-        System.out.println(response.toString());
+        AssertUtils.assertYopResponse(response);
     }
 
     @Test
@@ -106,9 +101,8 @@ public class QaDemo {
 //		request.addParam("platformUserNo","YOP-USERNO-" + System.currentTimeMillis());
         request.addParam("platformUserNo", "8880222");
 //		request.addParam("platformUserNo","YOP-USERNO-1435560994654");
-        System.out.println(request.toQueryString());
         YopResponse response = YopClient.post("/rest/v1.0/merchant/queryAccount", request);
-        System.out.println(response.toString());
+        AssertUtils.assertYopResponse(response);
     }
 
     @Test
@@ -125,10 +119,8 @@ public class QaDemo {
         request.addParam("bankid", "");
         request.addParam("callbackurl", "http://50.1.1.24:8018/fundtrans-hessian/");
         request.addParam("webcallbackurl", "http://localhost:8080/reciver/page");
-        System.out.println(request.toQueryString());
-
-        YopResponse yopResponse = YopClient.get("/rest/v1.0/member/gatewayDeposit", request);
-        System.out.println(yopResponse);
+        YopResponse response = YopClient.get("/rest/v1.0/member/gatewayDeposit", request);
+        AssertUtils.assertYopResponse(response);
     }
 
     @Test
@@ -147,11 +139,11 @@ public class QaDemo {
         request.addParam("bankid", "ICBC");
         request.addParam("payproducttype", "SALES");
         YopResponse response = YopClient.post("/rest/v1.0/merchant/pay", request);
-        System.out.println(response.toString());
+        AssertUtils.assertYopResponse(response);
     }
 
     @Test
-    public void testValidate() {
+    public void testValidate() throws IOException {
         YopRequest request = new YopRequest(null,
                 "cGB2CeC3YmwSWGoVz0kAvQ==",
                 BASE_URL);
@@ -170,9 +162,8 @@ public class QaDemo {
         request.addParam("mobile", "15901189967");
         request.addParam("idcard", "370982199101186");
 
-
         YopResponse response = YopClient.get("/rest/v1.0/kong/validator", request);
-        System.out.println(response.toString());
+        AssertUtils.assertYopResponse(response);
     }
 
     @Test
@@ -187,9 +178,8 @@ public class QaDemo {
         request.addParam("name", "张文康");
         request.addParam("requestFlowId", "test123456");//请求流水标识
         request.addParam("idCardNumber", "370982199101186691");
-        System.out.println(request.toQueryString());
         YopResponse response = YopClient.post("/rest/v2.0/auth/idcard", request);
-        System.out.println(response.toString());
+        AssertUtils.assertYopResponse(response);
     }
 
     @Test
@@ -203,9 +193,8 @@ public class QaDemo {
         request.addParam("client_id", "appKey");
         request.addParam("authenticated_user_id", "wenkang.zhang");
         request.addParam("scope", "test");
-        System.out.println(request.toQueryString());
         YopResponse response = YopClient.post("/rest/v1.0/oauth2/token", request);
-        System.out.println(response.toString());
+        AssertUtils.assertYopResponse(response);
     }
 
     @Test
@@ -219,9 +208,9 @@ public class QaDemo {
         request.addParam("name", "张文康", true);
         request.addParam("idCardNumber", "370982199101186691");
         request.addParam("bankCardNumber", "4392250043179877");
-        System.out.println(request.toQueryString());
+
         YopResponse response = YopClient.post("/rest/v2.0/auth/debit3", request);
-        System.out.println(response.toString());
+        AssertUtils.assertYopResponse(response);
     }
 
     @Test
@@ -234,9 +223,8 @@ public class QaDemo {
 //        request.addParam("customerNo", "10040011444");
         request.addParam("appKey", "yop-boss");
 
-        System.out.println(request.toQueryString());
         YopResponse response = YopClient.post("/rest/v1.0/system/jvm", request);
-        System.out.println(response.toString());
+        AssertUtils.assertYopResponse(response);
     }
 
 
@@ -249,25 +237,22 @@ public class QaDemo {
         request.addParam("requestId", "YOP-SDK-" + System.currentTimeMillis());
         request.addParam("platformUserNo", "x");
 
-        System.out.println(request.toQueryString());
-
         YopResponse response = YopClient.post("/rest/v1.0/member/queryAccount", request);
-
-        System.out.println(toString());
+        AssertUtils.assertYopResponse(response);
     }
 
-    @Test
-    public void testUpLoadFile() {
-        YopRequest request = new YopRequest(APP_KEYS[0], APP_SECRETS[0], BASE_URL);
-        request.setEncrypt(true);
-        request.setSignRet(true);
-        request.addParam("fileType", "IMAGE");
-        request.addParam("appKey", APP_KEYS[0]);
-        request.addParam("_file", "file:/Users/zhangwenkang/Desktop/tomcat-lifecycle.png");
-        System.out.println(request.toQueryString());
-        YopResponse response = YopClient.upload("/rest/v1.0/file/upload", request);
-        System.out.println(response.toString());
-    }
+//    @Test
+//    public void testUpLoadFile() {
+//        YopRequest request = new YopRequest(APP_KEYS[0], APP_SECRETS[0], BASE_URL);
+//        request.setEncrypt(true);
+//        request.setSignRet(true);
+//        request.addParam("fileType", "IMAGE");
+//        request.addParam("appKey", APP_KEYS[0]);
+//        request.addParam("_file", "file:/Users/zhangwenkang/Desktop/tomcat-lifecycle.png");
+
+//        YopResponse response = YopClient.upload("/rest/v1.0/file/upload", request);
+//        AssertUtils.assertYopResponse(response);
+//    }
 
     @Test
     public void testSopay() throws IOException {
@@ -280,9 +265,9 @@ public class QaDemo {
         request.addParam("uname", "13811112222");
         request.addParam("pwd", APP_KEYS[0]);
         request.addParam("imei", APP_KEYS[0]);
-        System.out.println(request.toQueryString());
+
         YopResponse response = YopClient.post("/rest/v1.0/sopay/user/login", request);
-        System.out.println(response.toString());
+        AssertUtils.assertYopResponse(response);
     }
 
     @Test
@@ -298,9 +283,9 @@ public class QaDemo {
         request.addParam("version_id", "1");
         request.addParam("pwd", APP_KEYS[0]);
         request.addParam("imei", APP_KEYS[0]);
-        System.out.println(request.toQueryString());
+
         YopResponse response = YopClient.post("/rest/v1.0/laike/login", request);
-        System.out.println(response.toString());
+        AssertUtils.assertYopResponse(response);
     }
 
     @Test
@@ -313,21 +298,21 @@ public class QaDemo {
         request.addParam("grant_type", "password");
         request.addParam("refresh_token", "123");//请求流水标识
         request.addParam("scope", "123");
-        System.out.println(request.toQueryString());
+
         YopResponse response = YopClient.post("/rest/v1.0/laike/token", request);
-        System.out.println(response.toString());
+        AssertUtils.assertYopResponse(response);
     }
 
     @Test
-    public void testLoadMethod() {
+    public void testLoadMethod() throws IOException {
         int i = 0;
         YopRequest request = new YopRequest(APP_KEYS[i], APP_SECRETS[i], BASE_URL);
         request.setEncrypt(true);
         request.setSignRet(true);
 //        request.setSignAlg("sha-256");
         request.addParam("className", "com.yeepay.g3.facade.auth2.facade.Auth2Facade");
-        System.out.println(request.toQueryString());
+
         YopResponse response = YopClient.post("/rest/v1.0/system/loader/methods", request);
-        System.out.println(response.toString());
+        AssertUtils.assertYopResponse(response);
     }
 }
