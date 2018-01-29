@@ -35,7 +35,7 @@ public class AbstractClient {
     }
 
     // 创建包含connection pool与超时设置的client
-    private static void initApacheHttpClient() {
+    public static void initApacheHttpClient() {
         RequestConfig requestConfig = RequestConfig.custom()
                 .setSocketTimeout(InternalConfig.READ_TIMEOUT)
                 .setConnectTimeout(InternalConfig.CONNECT_TIMEOUT)
@@ -49,7 +49,7 @@ public class AbstractClient {
                 .build();
     }
 
-    private static void destroyApacheHttpClient() {
+    public static void destroyApacheHttpClient() {
         try {
             httpClient.close();
         } catch (IOException e) {

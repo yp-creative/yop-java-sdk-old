@@ -16,13 +16,6 @@
       "value": "<Your RSA2048 private key>"
     }
   ],
-  "trust_certificates": [
-    "trust.ca"
-  ],
-  "client_certificate": {
-    "password": "p",
-    "path": "file:///usr/local/test.pfx"
-  },
   "connect_timeout": 1000,
   "read_timeout": 3000
 }

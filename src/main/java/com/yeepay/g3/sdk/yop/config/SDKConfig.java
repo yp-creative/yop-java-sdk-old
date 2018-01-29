@@ -35,17 +35,16 @@ public final class SDKConfig implements Serializable {
     @JsonProperty("isv_private_key")
     private CertConfig[] isvPrivateKey;
 
+    @Deprecated
     @JsonProperty("connect_timeout")
     private Integer connectTimeout;
 
+    @Deprecated
     @JsonProperty("read_timeout")
     private Integer readTimeout;
 
-    @JsonProperty("max_conn_total")
-    private Integer maxConnTotal;
-
-    @JsonProperty("max_conn_per_route")
-    private Integer maxConnPerRoute;
+    @JsonProperty("http_client")
+    private HttpClientConfig httpClient;
 
     @JsonProperty("trust_all_certs")
     private Boolean trustAllCerts;
@@ -82,20 +81,12 @@ public final class SDKConfig implements Serializable {
         this.readTimeout = readTimeout;
     }
 
-    public Integer getMaxConnTotal() {
-        return maxConnTotal;
+    public HttpClientConfig getHttpClient() {
+        return httpClient;
     }
 
-    public void setMaxConnTotal(Integer maxConnTotal) {
-        this.maxConnTotal = maxConnTotal;
-    }
-
-    public Integer getMaxConnPerRoute() {
-        return maxConnPerRoute;
-    }
-
-    public void setMaxConnPerRoute(Integer maxConnPerRoute) {
-        this.maxConnPerRoute = maxConnPerRoute;
+    public void setHttpClient(HttpClientConfig httpClient) {
+        this.httpClient = httpClient;
     }
 
     public Boolean getTrustAllCerts() {

@@ -9,6 +9,7 @@ import com.yeepay.g3.sdk.yop.http.Headers;
 import com.yeepay.g3.sdk.yop.unmarshaller.JacksonJsonMarshaller;
 import com.yeepay.g3.sdk.yop.utils.DateUtils;
 import com.yeepay.g3.sdk.yop.utils.JsonUtils;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
@@ -224,7 +225,12 @@ public class YopClient extends AbstractClient {
 
         String sb = secret + canonicalQueryString + secret;
         String signature = Digest.digest(sb, algName);
-        request.getParams().put("sign", signature);
+        if (32 == Base64.decodeBase64(secret).length) {
+            request.addHeader("Authorization", "YOP-HMAC-AES256 " + signature);
+        } else {
+            request.addHeader("Authorization", "YOP-HMAC-AES128 " + signature);
+        }
+//        request.getParams().put("sign", signature);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("canonicalQueryString:" + canonicalQueryString);
             LOGGER.debug("signature:" + signature);
