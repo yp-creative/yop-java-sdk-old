@@ -11,7 +11,7 @@
 
     <groupId>com.yeepay.g3.yop</groupId>
     <artifactId>yop-java-sdk</artifactId>
-    <version>2.1.0-RC4</version>
+    <version>2.1.1</version>
     <packaging>jar</packaging>
 
     <name>YOP :: SDK</name>
@@ -198,6 +198,7 @@
                                     <pattern>com.google</pattern>
                                     <shadedPattern>com.yeepay.shade.com.google</shadedPattern>
                                 </relocation>
+                                <!-- 需要排除 org.apache.log4j -->
                                 <relocation>
                                     <pattern>org.apache.commons</pattern>
                                     <shadedPattern>com.yeepay.shade.org.apache.commons</shadedPattern>
