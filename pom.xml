@@ -10,8 +10,8 @@
     </parent>
 
     <groupId>com.yeepay.g3.yop</groupId>
-    <artifactId>yop-sdk</artifactId>
-    <version>2.1.0-RC3</version>
+    <artifactId>yop-java-sdk</artifactId>
+    <version>2.1.0-RC4</version>
     <packaging>jar</packaging>
 
     <name>YOP :: SDK</name>
@@ -110,11 +110,6 @@
             <version>4.12</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <scope>test</scope>
-        </dependency>
         <!-- test end -->
     </dependencies>
 
@@ -177,6 +172,7 @@
                         <configuration>
                             <artifactSet>
                                 <excludes>
+                                    <exclude>log4j:log4j:jar:</exclude>
                                     <exclude>com.yeepay.infra:metrics-agent:jar:</exclude>
                                 </excludes>
                             </artifactSet>
@@ -203,8 +199,12 @@
                                     <shadedPattern>com.yeepay.shade.com.google</shadedPattern>
                                 </relocation>
                                 <relocation>
-                                    <pattern>org.apache</pattern>
-                                    <shadedPattern>com.yeepay.shade.org.apache</shadedPattern>
+                                    <pattern>org.apache.commons</pattern>
+                                    <shadedPattern>com.yeepay.shade.org.apache.commons</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.apache.http</pattern>
+                                    <shadedPattern>com.yeepay.shade.org.apache.http</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>org.bouncycastle</pattern>
