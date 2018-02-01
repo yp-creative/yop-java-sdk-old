@@ -152,13 +152,15 @@ public class YopClient extends AbstractClient {
             }
         } else {
             MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create();
-            for (Object file : request.getMultiportFiles()) {
+            for (Map.Entry<String, Object> entry : request.getMultiportFiles().entries()) {
+                String paramName = entry.getKey();
+                Object file = entry.getValue();
                 if (file instanceof String) {
-                    multipartEntityBuilder.addBinaryBody("_file", new File((String) file));
+                    multipartEntityBuilder.addBinaryBody(paramName, new File((String) file));
                 } else if (file instanceof File) {
-                    multipartEntityBuilder.addBinaryBody("_file", (File) file);
+                    multipartEntityBuilder.addBinaryBody(paramName, (File) file);
                 } else {
-                    multipartEntityBuilder.addBinaryBody("_file", (InputStream) file, ContentType.DEFAULT_BINARY, generateFileName());
+                    multipartEntityBuilder.addBinaryBody(paramName, (InputStream) file, ContentType.DEFAULT_BINARY, generateFileName());
                 }
             }
             for (Map.Entry<String, String> entry : request.getParams().entries()) {
@@ -217,6 +219,10 @@ public class YopClient extends AbstractClient {
     }
 
     private static void sign(YopRequest request) {
+        if (request.getHeaders().containsKey("Authorization")) {
+            return;
+        }
+
         String canonicalQueryString = getCanonicalQueryString(request, true);
 
         String secret = request.getSecretKey();

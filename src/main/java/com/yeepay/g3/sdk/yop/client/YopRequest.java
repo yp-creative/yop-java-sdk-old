@@ -6,7 +6,6 @@ import com.yeepay.g3.sdk.yop.exception.YopClientException;
 import com.yeepay.g3.sdk.yop.http.Headers;
 import com.yeepay.g3.sdk.yop.utils.Assert;
 import com.yeepay.g3.sdk.yop.utils.InternalConfig;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -35,7 +34,7 @@ public class YopRequest {
 
     private Multimap<String, String> paramMap = ArrayListMultimap.create();
 
-    private List<Object> multiportFiles = new ArrayList<Object>();
+    private Multimap<String, Object> multiportFiles = ArrayListMultimap.create();
 
     private Map<String, String> headers = new HashMap<String, String>();
 
@@ -174,20 +173,25 @@ public class YopRequest {
     }
 
     public YopRequest addFile(Object file) {
+        addFile("_file", file);
+        return this;
+    }
+
+    public YopRequest addFile(String paramName, Object file) {
         if (file instanceof String || file instanceof File || file instanceof InputStream) {
-            multiportFiles.add(file);
+            multiportFiles.put(paramName, file);
         } else {
             throw new YopClientException("Unsupported file object.");
         }
         return this;
     }
 
-    public List<Object> getMultiportFiles() {
+    public Multimap<String, Object> getMultiportFiles() {
         return multiportFiles;
     }
 
     public boolean hasFiles() {
-        return CollectionUtils.isNotEmpty(multiportFiles);
+        return null != multiportFiles && multiportFiles.size() > 0;
     }
 
     public Map<String, String> getHeaders() {
