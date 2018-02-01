@@ -1,34 +1,43 @@
 package com.yeepay.g3.sdk.yop.client;
 
+import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 import com.yeepay.g3.sdk.yop.encrypt.AESEncrypter;
 import com.yeepay.g3.sdk.yop.encrypt.Digest;
 import com.yeepay.g3.sdk.yop.http.Headers;
 import com.yeepay.g3.sdk.yop.unmarshaller.JacksonJsonMarshaller;
-import com.yeepay.g3.sdk.yop.utils.Assert;
 import com.yeepay.g3.sdk.yop.utils.DateUtils;
 import com.yeepay.g3.sdk.yop.utils.JsonUtils;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.methods.RequestBuilder;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.log4j.Logger;
-import org.springframework.core.io.UrlResource;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 
-import java.net.URI;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.util.*;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * <pre>
- * 功能说明：易宝开放平台(YeepayOpenPlatform简称YOP)SDK客户端，简化用户发起请求及解析结果的处理，包括加解密
+ * 对称加密 Client，简化用户发起请求及解析结果的处理
  * </pre>
  *
- * @author wang.bao
- * @version 1.0
+ * @author baitao.ji
+ * @version 2.0
  */
 public class YopClient extends AbstractClient {
 
-    protected static final Logger logger = Logger.getLogger(YopClient.class);
+    private static final Logger LOGGER = Logger.getLogger(YopClient.class);
+
+    private static final Joiner queryStringOldJoiner = Joiner.on("");
 
     /**
      * 发起post请求，以YopResponse对象返回
@@ -37,36 +46,8 @@ public class YopClient extends AbstractClient {
      * @param request 客户端请求对象
      * @return 响应对象
      */
-    public static YopResponse post(String apiUri, YopRequest request) {
+    public static YopResponse post(String apiUri, YopRequest request) throws IOException {
         String content = postForString(apiUri, request);
-        YopResponse response = JacksonJsonMarshaller.unmarshal(content, YopResponse.class);
-        handleResult(request, response);
-        return response;
-    }
-
-    /**
-     * 发起get请求，以YopResponse对象返回
-     *
-     * @param apiUri  目标地址
-     * @param request 客户端请求对象
-     * @return 响应对象
-     */
-    public static YopResponse get(String apiUri, YopRequest request) {
-        String responseRawJson = getForString(apiUri, request);
-        YopResponse response = JacksonJsonMarshaller.unmarshal(responseRawJson, YopResponse.class);
-        handleResult(request, response);
-        return response;
-    }
-
-    /**
-     * 发起get请求，以YopResponse对象返回
-     *
-     * @param apiUri  目标地址
-     * @param request 客户端请求对象
-     * @return 响应对象
-     */
-    public static YopResponse upload(String apiUri, YopRequest request) {
-        String content = uploadForString(apiUri, request);
         YopResponse response = JacksonJsonMarshaller.unmarshal(content, YopResponse.class);
         handleResult(request, response);
         return response;
@@ -79,11 +60,35 @@ public class YopClient extends AbstractClient {
      * @param request 客户端请求对象
      * @return 字符串形式的响应
      */
-    public static String postForString(String apiUri, YopRequest request) {
-        String serverUrl = richRequest(apiUri, request);
+    public static String postForString(String apiUri, YopRequest request) throws IOException {
+        String contentUrl = richRequest(apiUri, request);
+        normalize(request);
         sign(request);
-        request.encoding();
-        return getRestTemplate().postForObject(serverUrl, new HttpEntity<MultiValueMap<String, String>>(request.getParams(), request.headers), String.class);
+
+        RequestBuilder requestBuilder = RequestBuilder.post().setUri(contentUrl);
+        for (Map.Entry<String, String> entry : request.getHeaders().entrySet()) {
+            requestBuilder.addHeader(entry.getKey(), entry.getValue());
+        }
+        for (Map.Entry<String, String> entry : request.getParams().entries()) {
+            requestBuilder.addParameter(entry.getKey(), entry.getValue());
+        }
+
+        HttpUriRequest httpPost = requestBuilder.build();
+        return fetchContentByApacheHttpClient(httpPost);
+    }
+
+    /**
+     * 发起get请求，以YopResponse对象返回
+     *
+     * @param apiUri  目标地址
+     * @param request 客户端请求对象
+     * @return 响应对象
+     */
+    public static YopResponse get(String apiUri, YopRequest request) throws IOException {
+        String content = getForString(apiUri, request);
+        YopResponse response = JacksonJsonMarshaller.unmarshal(content, YopResponse.class);
+        handleResult(request, response);
+        return response;
     }
 
     /**
@@ -93,17 +98,35 @@ public class YopClient extends AbstractClient {
      * @param request 客户端请求对象
      * @return 字符串形式的响应
      */
-    public static String getForString(String apiUri, YopRequest request) {
-        if (!request.headers.containsKey(Headers.YOP_REQUEST_ID)) {
-            String requestId = UUID.randomUUID().toString();
-            request.headers.add(Headers.YOP_REQUEST_ID, requestId);
+    public static String getForString(String apiUri, YopRequest request) throws IOException {
+        String contentUrl = richRequest(apiUri, request);
+        normalize(request);
+        sign(request);
+
+        RequestBuilder requestBuilder = RequestBuilder.get().setUri(contentUrl);
+        for (Map.Entry<String, String> entry : request.getHeaders().entrySet()) {
+            requestBuilder.addHeader(entry.getKey(), entry.getValue());
+        }
+        for (Map.Entry<String, String> entry : request.getParams().entries()) {
+            requestBuilder.addParameter(entry.getKey(), entry.getValue());
         }
 
-        String timestamp = DateUtils.formatCompressedIso8601Timestamp(System.currentTimeMillis());
-        request.headers.add(Headers.YOP_DATE, timestamp);
+        HttpUriRequest httpGet = requestBuilder.build();
+        return fetchContentByApacheHttpClient(httpGet);
+    }
 
-        String serverUrl = buildURL(apiUri, request);
-        return getRestTemplate().exchange(serverUrl, HttpMethod.GET, new HttpEntity(request.headers), String.class).getBody();
+    /**
+     * 发起get请求，以YopResponse对象返回
+     *
+     * @param apiUri  目标地址
+     * @param request 客户端请求对象
+     * @return 响应对象
+     */
+    public static YopResponse upload(String apiUri, YopRequest request) throws IOException, URISyntaxException {
+        String content = uploadForString(apiUri, request);
+        YopResponse response = JacksonJsonMarshaller.unmarshal(content, YopResponse.class);
+        handleResult(request, response);
+        return response;
     }
 
     /**
@@ -113,103 +136,105 @@ public class YopClient extends AbstractClient {
      * @param request 客户端请求对象
      * @return 字符串形式的响应
      */
-    public static String uploadForString(String apiUri, YopRequest request) {
-        String serverUrl = richRequest(apiUri, request);
-
-        MultiValueMap<String, String> original = request.getParams();
-        MultiValueMap<String, Object> alternate = new LinkedMultiValueMap<String, Object>();
-        List<String> uploadFiles = request.getParam("_file");
-        if (null == uploadFiles || uploadFiles.size() == 0) {
-            throw new RuntimeException("上传文件时参数_file不能为空!");
-        }
-        for (String uploadFile : uploadFiles) {
-            try {
-                alternate.add("_file", new UrlResource(new URI(uploadFile)));
-            } catch (Exception e) {
-                logger.debug("_file upload error.", e);
-            }
-        }
-
+    public static String uploadForString(String apiUri, YopRequest request) throws IOException, URISyntaxException {
+        String contentUrl = richRequest(apiUri, request);
+        normalize(request);
         sign(request);
-        request.encoding();
 
-        for (String key : original.keySet()) {
-            alternate.put(key, new ArrayList<Object>(original.get(key)));
+        RequestBuilder requestBuilder = RequestBuilder.post().setUri(contentUrl);
+        for (Map.Entry<String, String> entry : request.getHeaders().entrySet()) {
+            requestBuilder.addHeader(entry.getKey(), entry.getValue());
         }
 
-        String content = getRestTemplate().postForObject(serverUrl, alternate, String.class);
-        if (logger.isDebugEnabled()) {
-            logger.debug("response:\n" + content);
+        if (!request.hasFiles()) {
+            for (Map.Entry<String, String> entry : request.getParams().entries()) {
+                requestBuilder.addParameter(entry.getKey(), entry.getValue());
+            }
+        } else {
+            MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create();
+            for (Object file : request.getMultiportFiles()) {
+                if (file instanceof String) {
+                    multipartEntityBuilder.addBinaryBody("_file", new File((String) file));
+                } else if (file instanceof File) {
+                    multipartEntityBuilder.addBinaryBody("_file", (File) file);
+                } else {
+                    multipartEntityBuilder.addBinaryBody("_file", (InputStream) file, ContentType.DEFAULT_BINARY, generateFileName());
+                }
+            }
+            for (Map.Entry<String, String> entry : request.getParams().entries()) {
+                multipartEntityBuilder.addTextBody(entry.getKey(), entry.getValue());
+            }
+            requestBuilder.setEntity(multipartEntityBuilder.build());
         }
-        return content;
+
+        HttpUriRequest httpPost = requestBuilder.build();
+        return fetchContentByApacheHttpClient(httpPost);
     }
 
     /**
-     * 简单校验及请求签名
-     */
-    private static void sign(YopRequest request) {
-        Assert.notNull(request.getSecretKey(), "secretKey must be specified");
-        String signValue = sign(toSimpleMap(request.getParams()),
-                request.getIgnoreSignParams(), request.getSecretKey(),
-                request.getSignAlg());
-        request.addParam(YopConstants.SIGN, signValue);
-
-        //TODO why is here?
-        request.removeParam(YopConstants.VERSION);
-    }
-
-    /**
-     * 对paramValues进行签名，其中ignoreParamNames这些参数不参与签名
+     * 适用于 AES 签名方式
      *
-     * @param paramValues
-     * @param ignoreParamNames
-     * @param secret
+     * @param request
+     * @param forSignature
      * @return
      */
-    private static String sign(Map<String, String> paramValues, List<String> ignoreParamNames, String secret, String algName) {
-        algName = StringUtils.isBlank(algName) ? YopConstants.ALG_SHA1 : algName;
-
-        StringBuilder sb = new StringBuilder();
-        List<String> paramNames = new ArrayList<String>(paramValues.size());
-        paramNames.addAll(paramValues.keySet());
-        if (ignoreParamNames != null && ignoreParamNames.size() > 0) {
-            for (String ignoreParamName : ignoreParamNames) {
-                paramNames.remove(ignoreParamName);
-            }
+    public static String getCanonicalQueryString(YopRequest request, boolean forSignature) {
+        Multimap<String, String> parameters = request.getParams();
+        if (parameters.isEmpty()) {
+            return "";
         }
-        Collections.sort(paramNames);
 
-        sb.append(secret);
-        for (String paramName : paramNames) {
-            if (StringUtils.isBlank(paramValues.get(paramName))) {
+        List<String> parameterStrings = Lists.newArrayList();
+        for (Map.Entry<String, Collection<String>> entry : parameters.asMap().entrySet()) {
+            if (forSignature &&
+                    (Headers.AUTHORIZATION.equalsIgnoreCase(entry.getKey()) || request.getIgnoreSignParams().contains(entry.getKey()))) {
                 continue;
             }
-            sb.append(paramName).append(paramValues.get(paramName));
+            String key = entry.getKey();
+            checkNotNull(key, "parameter key should not be null");
+            Collection<String> values = entry.getValue();
+            for (String value : values) {
+                if (value == null) {
+                    parameterStrings.add(key);
+                } else {
+                    parameterStrings.add(key + value);
+                }
+            }
         }
-        sb.append(secret);
-        return Digest.digest(sb.toString(), algName);
+        Collections.sort(parameterStrings);
+
+        return queryStringOldJoiner.join(parameterStrings);
     }
 
-    private static Map<String, String> toSimpleMap(MultiValueMap<String, String> form) {
-        Map<String, String> map = new HashMap<String, String>();
-        for (Map.Entry<String, List<String>> entry : form.entrySet()) {
-            map.put(entry.getKey(), listAsString(entry.getValue()));
+    private static void normalize(YopRequest request) {
+        // 归一化
+        if (!request.getHeaders().containsKey(Headers.YOP_REQUEST_ID)) {
+            request.addHeader(Headers.YOP_REQUEST_ID, UUID.randomUUID().toString());
         }
-        return map;
+
+        String timestamp = DateUtils.formatCompressedIso8601Timestamp(System.currentTimeMillis());
+        request.addHeader(Headers.YOP_DATE, timestamp);
     }
 
-    /**
-     * 数组、列表按值排序后逗号拼接
-     *
-     * @param list 参数列表
-     * @return 拼接结果
-     */
-    private static String listAsString(List<String> list) {
-        if (list == null || list.isEmpty()) {
-            return null;
+    private static void sign(YopRequest request) {
+        String canonicalQueryString = getCanonicalQueryString(request, true);
+
+        String secret = request.getSecretKey();
+        String algName = request.getSignAlg();
+        algName = StringUtils.isBlank(algName) ? YopConstants.ALG_SHA1 : algName;
+
+        String sb = secret + canonicalQueryString + secret;
+        String signature = Digest.digest(sb, algName);
+        if (32 == Base64.decodeBase64(secret).length) {
+            request.addHeader("Authorization", "YOP-HMAC-AES256 " + signature);
+        } else {
+            request.addHeader("Authorization", "YOP-HMAC-AES128 " + signature);
         }
-        Collections.sort(list);
-        return StringUtils.join(list, ",");
+//        request.getParams().put("sign", signature);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("canonicalQueryString:" + canonicalQueryString);
+            LOGGER.debug("signature:" + signature);
+        }
     }
 
     private static void handleResult(YopRequest request, YopResponse response) {
@@ -239,21 +264,6 @@ public class YopClient extends AbstractClient {
         sb.append(request.getSecretKey());
         String calculatedSign = Digest.digest(sb.toString(), StringUtils.isBlank(request.getSignAlg()) ? YopConstants.ALG_SHA1 : request.getSignAlg());
         return StringUtils.equalsIgnoreCase(expectedSign, calculatedSign);
-    }
-
-    /**
-     * 帮助方法，构建get类型的完整请求路径
-     *
-     * @param methodOrUri
-     * @param request
-     * @return
-     */
-    private static String buildURL(String methodOrUri, YopRequest request) {
-        String serverUrl = richRequest(methodOrUri, request);
-        sign(request);
-        request.encoding();
-        serverUrl += serverUrl.contains("?") ? "&" : "?" + request.toQueryString();
-        return serverUrl;
     }
 
     /**

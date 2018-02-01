@@ -1,8 +1,8 @@
 package com.yeepay.g3.sdk.yop.encrypt;
 
-import java.io.UnsupportedEncodingException;
+import com.yeepay.g3.sdk.yop.utils.Assert;
 
-import org.springframework.util.Assert;
+import java.io.UnsupportedEncodingException;
 
 /**
  * BASE64编码工具
@@ -115,10 +115,8 @@ public class Base64 {
     private static boolean isBase64(byte octect) {
         if (octect == PAD) {
             return true;
-        } else if (base64Alphabet[octect] == -1) {
-            return false;
         } else {
-            return true;
+            return base64Alphabet[octect] != -1;
         }
     }
 
