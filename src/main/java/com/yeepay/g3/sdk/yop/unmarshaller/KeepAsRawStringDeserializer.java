@@ -1,7 +1,6 @@
 package com.yeepay.g3.sdk.yop.unmarshaller;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import org.apache.log4j.Logger;
@@ -26,14 +25,15 @@ public class KeepAsRawStringDeserializer extends JsonDeserializer<String> {
 
     @Override
     public String deserialize(JsonParser jp, DeserializationContext context) throws IOException {
-        if (JsonToken.START_OBJECT != jp.getCurrentToken() && JsonToken.START_ARRAY != jp.getCurrentToken()) {
-            throw new IllegalArgumentException("KeepAsRawStringDeserializer can't be used here,current token is not a start of json object or json array!");
-        }
-
         String rawJson = getStringFromSource(jp.getCurrentLocation().getSourceRef());
         int startLocation = (int) jp.getCurrentLocation().getCharOffset();
         jp.skipChildren();
         int endLocation = (int) jp.getCurrentLocation().getCharOffset();
+
+        // jp.skipChildren() 跳过子节点，但纯文本 Value 不属于子节点
+        if (endLocation <= startLocation) {
+            endLocation = startLocation + jp.getTextLength() + 1;
+        }
         return rawJson.substring(startLocation - 1, endLocation);
     }
 
