@@ -1,0 +1,21 @@
+{
+  "app_key": "jinkela",
+  "aes_secret_key": "",
+  "server_root": "http://10.151.30.88:8064/yop-center",
+  "yop_public_key": [
+    {
+      "store_type": "string",
+      "cert_type": "RSA2048",
+      "value": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA4g7dPL+CBeuzFmARI2GFjZpKODUROaMG+E6wdNfv5lhPqC3jjTIeljWU8AiruZLGRhl92QWcTjb3XonjaV6k9rf9adQtyv2FLS7bl2Vz2WgjJ0FJ5/qMaoXaT+oAgWFk2GypyvoIZsscsGpUStm6BxpWZpbPrGJR0N95un/130cQI9VCmfvgkkCaXt7TU1BbiYzkc8MDpLScGm/GUCB2wB5PclvOxvf5BR/zNVYywTEFmw2Jo0hIPPSWB5Yyf2mx950Fx8da56co/FxLdMwkDOO51Qg3fbaExQDVzTm8Odi++wVJEP1y34tlmpwFUVbAKIEbyyELmi/2S6GG0j9vNwIDAQAB"
+    }
+  ],
+  "isv_private_key": [
+    {
+      "store_type": "string",
+      "cert_type": "RSA2048",
+      "value": "MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCvlSAtSmqH/40mLUM4VIbqNm4bDrYsRKB3o4uvCBi4gaP/AbVwswEevr5gfGzRetaVNrgxaRw36fo5Qn+xWdy1hbRZtIF2GX6/cOLW3ODogRI53iriirnrWK4sa8sP/1Z9M+yNEwKImG0vRBxQkO67D6unSgXKaXHcGaCCEUIWozYAoWSPaszIImQ2uw5ZXc6GwDYqAHLaRzQvXiYKEmOjYaol3/+38pDqGkauZoyDjZwbMM25LPeZag5+9xYE2ov5zeo2gkWMNWbJ1/nCAcIA1KDqaIQzS5NeAMH0fAzl0qO4jx+zBl+fGiyCw+n+Xjztksc4tn3xZfdVnK7vQxvlAgMBAAECggEBAKEi+am2/rea5v3fUi5zHHH7y+aXBMbxoFbLx9i1VIKXr1rLRamNDf0aTnscFX3V/vJninkGHriNyW8dQTUQ5EXO0+nzh1BMK48j2XoYsWuPcJuc8byAVgnPk+D+eBhRXB2BNpltlcioIqPbHSUvLXiM9BqOC2xsgurctfpIPl+omUhA75faRF4AnwuvQ4Dn/RD/T0DE82YhYCA8HRzRC4zssB8S7QuOb/EC1Pg21BoApJuhK60r4Cen6XO6FNlS2RUZ9wzleRzVC3RlNoIjkE/dzIXbP+ye9NUF3cjhof8znq9UvhaeMNoKDatAqfHiTI9ljXWM6TQZcU2UkVr5y4ECgYEA4yPwWEG5MR3GIaORVhebnuI7c5zDwcledXt0UOrtFjY+DxFcnf+sTk2qkwLTDQraOBzhH6O3+PQI+7AqC5ax6A7Onoc3l56ZPVdV4K2cMCOf0jv34XnXQkEGUqVbGS9gN603cvVzYyBZCKuQFa46gUwF9rJxo/bz5odZV79q+4UCgYEAxeQx1YH76BD8bFZP+9shf9U6HWDWgPbftArOb9zX6U/nvm0WmdRiw1fo2e0mnCBL+8ZXPgdlVYd8gWCZ2d8uAYDSVs++kEbkI+zGLd7fWfaVFKy/NZh8JYuDc+g1KWy2B+eXYNOR6E5fYXV917ubntnH1qCw5GkgMC3s/d1LnOECgYAdhoNshYaUKuGhZ8ixnzn8aj3+JkeP/iQIM3cIObF97KkefkxCwYRdXV0p5PkYPevl1WMyIK7+boJobRraDMmtd5dGJh+E1vnmbl7caNTfsRHKWz86kQL5Osien5365RylwB9wExXfscnBBcQh/VbfjclMqx94h9ZmhfuIG3rFnQKBgQDFVfZf6/wRAgdF3ZhrFazFNhN6wluFRSn09yW/JSHl1jnJii0Uf1dxZtObpcJvxEEhNDtBbsydSrtcpMEnI0hUVWrrCMUGSLsuG+nQSkS+CIfHkzAluQZrxkDyr2d8BJ1NKqOo+bGxT54LqMcx/zKDaLbAD4P2ceKYSOPgj/Hb4QKBgCXi/DKZE4fqTuJ9etHiWM1qCR590YfIZK0TmfF1NWO9MLPaCibwed1/O9SFQrwS/31D7lKFa48JkjFne+Hh1Pbf7bLp3caCCkGnbmyWNKb71YN0G8eLk5QwnVpWr9qQmBsvbOOnvvqeeTZg2HOJuEh+hwfNheWuW+f/GVitl/vJ"
+    }
+  ],
+  "connect_timeout": 30000,
+  "read_timeout": 60000
+}

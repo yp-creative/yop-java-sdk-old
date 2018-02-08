@@ -2,19 +2,21 @@ package com.yeepay.g3.sdk.yop.client;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+import com.yeepay.g3.sdk.yop.YopServiceException;
+import com.yeepay.g3.sdk.yop.config.AppSDKConfig;
+import com.yeepay.g3.sdk.yop.config.AppSDKConfigSupport;
 import com.yeepay.g3.sdk.yop.exception.YopClientException;
 import com.yeepay.g3.sdk.yop.http.Headers;
 import com.yeepay.g3.sdk.yop.utils.Assert;
 import com.yeepay.g3.sdk.yop.utils.InternalConfig;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.InputStream;
 import java.lang.reflect.Array;
 import java.util.*;
-
-import static org.apache.commons.lang3.Validate.notNull;
 
 /**
  * <pre>
@@ -41,56 +43,54 @@ public class YopRequest {
     private List<String> ignoreSignParams = new ArrayList<String>(Arrays.asList(YopConstants.SIGN));
 
     /**
-     * 可支持不同请求使用不同的appKey及secretKey
+     * app对应的sdkConfig
      */
-    private String appKey;
+    private final AppSDKConfig appSDKConfig;
 
     /**
      * 可支持不同请求使用不同的appKey及secretKey,secretKey只用于本地签名，不会被提交
      */
-    private String secretKey;
-
-    /**
-     * 可支持不同请求使用不同的appKey及secretKey、serverRoot,secretKey只用于本地签名，不会被提交
-     */
-    private String serverRoot;
+    private final String secretKey;
 
     public YopRequest() {
-        this(InternalConfig.APP_KEY, InternalConfig.SECRET_KEY, InternalConfig.SERVER_ROOT);
+        this.appSDKConfig = AppSDKConfigSupport.getDefaultAppSDKConfig();
+        if (this.appSDKConfig == null) {
+            throw new YopServiceException("Default SDKConfig not found.");
+        }
+        this.secretKey = null;
     }
 
-    public YopRequest(String serverRoot) {
-        this(InternalConfig.APP_KEY, InternalConfig.SECRET_KEY, serverRoot);
+    public YopRequest(String appKey) {
+        Validate.notBlank(appKey, "AppKey is blank.");
+        this.appSDKConfig = AppSDKConfigSupport.getConfig(appKey);
+        if (this.appSDKConfig == null) {
+            throw new YopServiceException("SDKConfig for appKey:" + appKey + " not found.");
+        }
+        this.secretKey = null;
     }
 
     /**
      * 同一个工程内部可支持多个开放应用发起调用
      */
     public YopRequest(String appKey, String secretKey) {
-        this(appKey, secretKey, InternalConfig.SERVER_ROOT);
+        Validate.notBlank(appKey, "AppKey is blank.");
+        Validate.notBlank(secretKey, "SecretKey is blank.");
+
+        this.appSDKConfig = new AppSDKConfig();
+        this.appSDKConfig.setAppKey(appKey);
+        AppSDKConfig defaultAppSDKConfig = AppSDKConfigSupport.getDefaultAppSDKConfig();
+        this.appSDKConfig.setServerRoot(defaultAppSDKConfig == null ? InternalConfig.SERVER_ROOT : defaultAppSDKConfig.getServerRoot());
+        this.secretKey = secretKey;
     }
 
-    /**
-     * 同一个工程内部可支持多个开放应用发起调用，且支持调不同的服务器
-     */
     public YopRequest(String appKey, String secretKey, String serverRoot) {
-        notNull(appKey, "必须指定 appKey");
-//        notNull(secretKey, "必须指定 secretKey");
-        notNull(serverRoot, "必须指定 serverRoot");
-        this.appKey = appKey;
+        Validate.notBlank(appKey, "AppKey is blank.");
+        Validate.notBlank(secretKey, "SecretKey is blank.");
+        Validate.notBlank(secretKey, "ServerRoot is blank.");
+        this.appSDKConfig = new AppSDKConfig();
+        this.appSDKConfig.setAppKey(appKey);
+        this.appSDKConfig.setServerRoot(serverRoot);
         this.secretKey = secretKey;
-
-        if (StringUtils.endsWith(serverRoot, "/")) {
-            this.serverRoot = StringUtils.substring(serverRoot, 0, -1);
-        } else {
-            this.serverRoot = serverRoot;
-        }
-
-        headers.put(Headers.USER_AGENT, YopConstants.USER_AGENT);
-
-        paramMap.put(YopConstants.APP_KEY, this.appKey);
-        paramMap.put(YopConstants.LOCALE, locale);
-        paramMap.put(YopConstants.TIMESTAMP, String.valueOf(System.currentTimeMillis()));
     }
 
     public YopRequest setParam(String paramName, Object paramValue) {
@@ -257,20 +257,12 @@ public class YopRequest {
 
     }
 
-    public String getAppKey() {
-        return appKey;
-    }
-
     public String getSecretKey() {
         return secretKey;
     }
 
-    public void setServerRoot(String serverRoot) {
-        this.serverRoot = serverRoot;
-    }
-
-    public String getServerRoot() {
-        return serverRoot;
+    public AppSDKConfig getAppSDKConfig() {
+        return appSDKConfig;
     }
 
     /**

@@ -102,7 +102,7 @@ public class AbstractClient {
 
     protected static String richRequest(String methodOrUri, YopRequest request) {
         Assert.hasText(methodOrUri, "method name or rest uri");
-        String serverRoot = request.getServerRoot();
+        String serverRoot = request.getAppSDKConfig().getServerRoot();
 
         String path = methodOrUri;
         if (StringUtils.startsWith(methodOrUri, serverRoot)) {
