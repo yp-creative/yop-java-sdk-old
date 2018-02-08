@@ -31,6 +31,11 @@ public class YopResponse {
     private String state;
 
     /**
+     * 唯一请求标示，需要技术支持时提供该字符串将有助于问题的快速解决
+     */
+    private String requestId;
+
+    /**
      * 业务结果，非简单类型解析后为LinkedHashMap
      */
     @JsonIgnore
@@ -72,6 +77,14 @@ public class YopResponse {
 
     public void setState(String state) {
         this.state = state;
+    }
+
+    public String getRequestId() {
+        return requestId;
+    }
+
+    public void setRequestId(String requestId) {
+        this.requestId = requestId;
     }
 
     public Object getResult() {

@@ -2,26 +2,26 @@ package com.yeepay.g3.sdk.yop.http;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 
 import java.io.UnsupportedEncodingException;
-import java.util.BitSet;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
- * title: Http Utils<br>
- * description: 描述<br>
- * Copyright: Copyright (c)2014<br>
+ * title: <br>
+ * description:描述<br>
+ * Copyright: Copyright (c)2011<br>
  * Company: 易宝支付(YeePay)<br>
  *
- * @author baitao.ji
+ * @author dreambt
  * @version 1.0.0
- * @since 16/2/18 16:45
+ * @since 2018/1/10 上午11:23
  */
 public final class HttpUtils {
+
+    private static final String DEFAULT_ENCODING = "UTF-8";
 
     private static BitSet URI_UNRESERVED_CHARACTERS = new BitSet();
     private static String[] PERCENT_ENCODED_STRINGS = new String[256];
@@ -96,12 +96,11 @@ public final class HttpUtils {
     public static String normalize(String value) {
         try {
             StringBuilder builder = new StringBuilder();
-            for (byte b : value.getBytes("UTF-8")) {
-                int bl = b & 0xFF;
-                if (URI_UNRESERVED_CHARACTERS.get(bl)) {
+            for (byte b : value.getBytes(DEFAULT_ENCODING)) {
+                if (URI_UNRESERVED_CHARACTERS.get(b & 0xFF)) {
                     builder.append((char) b);
                 } else {
-                    builder.append(PERCENT_ENCODED_STRINGS[bl]);
+                    builder.append(PERCENT_ENCODED_STRINGS[b & 0xFF]);
                 }
             }
             return builder.toString();
@@ -120,22 +119,27 @@ public final class HttpUtils {
         }
     }
 
-    public static String getCanonicalQueryString(Map<String, String[]> parameters, boolean forSignature) {
+    /**
+     * 适用于 RSA 签名方式
+     *
+     * @param parameters
+     * @param forSignature
+     * @return
+     */
+    public static String getCanonicalQueryString(Multimap<String, String> parameters, boolean forSignature) {
         if (parameters.isEmpty()) {
             return "";
         }
 
         List<String> parameterStrings = Lists.newArrayList();
-        for (Map.Entry<String, String[]> entry : parameters.entrySet()) {
-            String key = entry.getKey();
-            checkNotNull(key, "parameter key should not be null");
-
-            if (forSignature && Headers.AUTHORIZATION.equalsIgnoreCase(key)) {
+        for (Map.Entry<String, Collection<String>> entry : parameters.asMap().entrySet()) {
+            if (forSignature && Headers.AUTHORIZATION.equalsIgnoreCase(entry.getKey())) {
                 continue;
             }
-
-            String[] value = entry.getValue();
-            if (value.length == 0) {
+            String key = entry.getKey();
+            checkNotNull(key, "parameter key should not be null");
+            Collection<String> value = entry.getValue();
+            if (null == value || 0 == value.size()) {
                 if (forSignature) {
                     parameterStrings.add(normalize(key) + '=');
                 } else {
@@ -151,4 +155,42 @@ public final class HttpUtils {
 
         return queryStringJoiner.join(parameterStrings);
     }
+
+    /**
+     * 适用于 RSA 签名方式
+     *
+     * @param parameters
+     * @param forSignature
+     * @return
+     */
+    public static String getCanonicalQueryString(Map<String, String[]> parameters, boolean forSignature) {
+        if (parameters.isEmpty()) {
+            return "";
+        }
+
+        List<String> parameterStrings = Lists.newArrayList();
+        for (Map.Entry<String, String[]> entry : parameters.entrySet()) {
+            if (forSignature && Headers.AUTHORIZATION.equalsIgnoreCase(entry.getKey())) {
+                continue;
+            }
+            String key = entry.getKey();
+            checkNotNull(key, "parameter key should not be null");
+            String[] value = entry.getValue();
+            if (0 == value.length) {
+                if (forSignature) {
+                    parameterStrings.add(normalize(key) + '=');
+                } else {
+                    parameterStrings.add(normalize(key));
+                }
+            } else {
+                for (String item : value) {
+                    parameterStrings.add(normalize(key) + '=' + normalize(item));
+                }
+            }
+        }
+        Collections.sort(parameterStrings);
+
+        return queryStringJoiner.join(parameterStrings);
+    }
+
 }

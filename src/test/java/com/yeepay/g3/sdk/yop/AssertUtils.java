@@ -2,7 +2,7 @@ package com.yeepay.g3.sdk.yop;
 
 import com.yeepay.g3.sdk.yop.client.YopResponse;
 
-import static junit.framework.TestCase.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * title: <br>
@@ -18,7 +18,8 @@ public class AssertUtils {
 
     public static void assertYopResponse(YopResponse response) {
         System.out.println(response);
-        assertEquals("SUCCESS", response.getState());
+        assertTrue(response.isSuccess());
+        assertTrue(response.isValidSign());
     }
 
 }

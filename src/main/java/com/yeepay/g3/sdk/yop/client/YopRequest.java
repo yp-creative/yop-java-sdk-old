@@ -1,19 +1,20 @@
 package com.yeepay.g3.sdk.yop.client;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
+import com.yeepay.g3.sdk.yop.exception.YopClientException;
 import com.yeepay.g3.sdk.yop.http.Headers;
 import com.yeepay.g3.sdk.yop.utils.Assert;
 import com.yeepay.g3.sdk.yop.utils.InternalConfig;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 
+import java.io.File;
+import java.io.InputStream;
 import java.lang.reflect.Array;
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
+
+import static org.apache.commons.lang3.Validate.notNull;
 
 /**
  * <pre>
@@ -31,9 +32,11 @@ public class YopRequest {
 
     private String signAlg = YopConstants.ALG_SHA1;
 
-    private MultiValueMap<String, String> paramMap = new LinkedMultiValueMap<String, String>();
+    private Multimap<String, String> paramMap = ArrayListMultimap.create();
 
-    MultiValueMap<String, String> headers = new LinkedMultiValueMap<String, String>();
+    private Multimap<String, Object> multiportFiles = ArrayListMultimap.create();
+
+    private Map<String, String> headers = new HashMap<String, String>();
 
     private List<String> ignoreSignParams = new ArrayList<String>(Arrays.asList(YopConstants.SIGN));
 
@@ -53,32 +56,47 @@ public class YopRequest {
     private String serverRoot;
 
     public YopRequest() {
-        this.appKey = InternalConfig.APP_KEY;
-        this.secretKey = InternalConfig.SECRET_KEY;
-        this.serverRoot = InternalConfig.SERVER_ROOT;
-        paramMap.set(YopConstants.APP_KEY, this.appKey);
-        paramMap.set(YopConstants.LOCALE, locale);
-        paramMap.set(YopConstants.TIMESTAMP, String.valueOf(System.currentTimeMillis()));
+        this(InternalConfig.APP_KEY, InternalConfig.SECRET_KEY, InternalConfig.SERVER_ROOT);
+    }
 
-        headers.add(Headers.USER_AGENT, YopConstants.USER_AGENT);
+    public YopRequest(String serverRoot) {
+        this(InternalConfig.APP_KEY, InternalConfig.SECRET_KEY, serverRoot);
     }
 
     /**
      * 同一个工程内部可支持多个开放应用发起调用
      */
     public YopRequest(String appKey, String secretKey) {
-        this();
-        this.appKey = appKey;
-        this.secretKey = secretKey;
-        paramMap.set(YopConstants.APP_KEY, appKey);
+        this(appKey, secretKey, InternalConfig.SERVER_ROOT);
     }
 
     /**
      * 同一个工程内部可支持多个开放应用发起调用，且支持调不同的服务器
      */
     public YopRequest(String appKey, String secretKey, String serverRoot) {
-        this(appKey, secretKey);
-        this.serverRoot = serverRoot;
+        notNull(appKey, "必须指定 appKey");
+//        notNull(secretKey, "必须指定 secretKey");
+        notNull(serverRoot, "必须指定 serverRoot");
+        this.appKey = appKey;
+        this.secretKey = secretKey;
+
+        if (StringUtils.endsWith(serverRoot, "/")) {
+            this.serverRoot = StringUtils.substring(serverRoot, 0, -1);
+        } else {
+            this.serverRoot = serverRoot;
+        }
+
+        headers.put(Headers.USER_AGENT, YopConstants.USER_AGENT);
+
+        paramMap.put(YopConstants.APP_KEY, this.appKey);
+        paramMap.put(YopConstants.LOCALE, locale);
+        paramMap.put(YopConstants.TIMESTAMP, String.valueOf(System.currentTimeMillis()));
+    }
+
+    public YopRequest setParam(String paramName, Object paramValue) {
+        removeParam(paramName);
+        addParam(paramName, paramValue, false);
+        return this;
     }
 
     public YopRequest addParam(String paramName, Object paramValue) {
@@ -101,15 +119,22 @@ public class YopRequest {
             logger.warn("param " + paramName + "is null or empty，ignore it");
             return this;
         }
+
+        // file
+        if (StringUtils.equals("_file", paramName)) {
+            this.addFile(paramValue);
+            return this;
+        }
+
         if (YopConstants.isProtectedKey(paramName)) {
-            paramMap.set(paramName, paramValue.toString());
+            paramMap.put(paramName, paramValue.toString());
             return this;
         }
         if (paramValue instanceof Collection<?>) {
             // 集合类
             for (Object o : (Collection<?>) paramValue) {
                 if (o != null) {
-                    paramMap.add(paramName, o.toString());
+                    paramMap.put(paramName, o.toString());
                 }
             }
         } else if (paramValue.getClass().isArray()) {
@@ -118,11 +143,11 @@ public class YopRequest {
             for (int i = 0; i < len; i++) {
                 Object o = Array.get(paramValue, i);
                 if (o != null) {
-                    paramMap.add(paramName, o.toString());
+                    paramMap.put(paramName, o.toString());
                 }
             }
         } else {
-            paramMap.add(paramName, paramValue.toString());
+            paramMap.put(paramName, paramValue.toString());
         }
 
         if (ignoreSign) {
@@ -132,7 +157,7 @@ public class YopRequest {
     }
 
     public List<String> getParam(String key) {
-        return paramMap.get(key);
+        return (List<String>) paramMap.get(key);
     }
 
     public String getParamValue(String key) {
@@ -140,13 +165,38 @@ public class YopRequest {
     }
 
     public String removeParam(String key) {
-        return StringUtils.join(paramMap.remove(key), ",");
+        return StringUtils.join(paramMap.removeAll(key), ",");
     }
 
-    public MultiValueMap<String, String> getParams() {
+    public Multimap<String, String> getParams() {
         return paramMap;
     }
 
+    public YopRequest addFile(Object file) {
+        addFile("_file", file);
+        return this;
+    }
+
+    public YopRequest addFile(String paramName, Object file) {
+        if (file instanceof String || file instanceof File || file instanceof InputStream) {
+            multiportFiles.put(paramName, file);
+        } else {
+            throw new YopClientException("Unsupported file object.");
+        }
+        return this;
+    }
+
+    public Multimap<String, Object> getMultiportFiles() {
+        return multiportFiles;
+    }
+
+    public boolean hasFiles() {
+        return null != multiportFiles && multiportFiles.size() > 0;
+    }
+
+    public Map<String, String> getHeaders() {
+        return headers;
+    }
 
     /**
      * customize header,but none system reserved headers
@@ -155,21 +205,16 @@ public class YopRequest {
      * @param value
      */
     public void addHeader(String name, String value) {
-        name = name.toLowerCase();
-        if (name.startsWith(Headers.YOP_PREFIX)) {
-            throw new IllegalArgumentException("illegal header name");
-        }
-        headers.add(name, value);
+        headers.put(name, value);
     }
 
     public void setRequestId(String requestId) {
-        headers.add(Headers.YOP_REQUEST_ID, requestId);
+        headers.put(Headers.YOP_REQUEST_ID, requestId);
     }
 
     public void setRequestSource(String source) {
-        headers.add(Headers.YOP_REQUEST_SOURCE, source);
+        headers.put(Headers.YOP_REQUEST_SOURCE, source);
     }
-
 
     public List<String> getIgnoreSignParams() {
         return ignoreSignParams;
@@ -177,7 +222,7 @@ public class YopRequest {
 
     public void setLocale(String locale) {
         this.locale = locale;
-        paramMap.set(YopConstants.LOCALE, this.locale);
+        paramMap.put(YopConstants.LOCALE, this.locale);
     }
 
     public String getLocale() {
@@ -209,6 +254,7 @@ public class YopRequest {
      */
     @Deprecated
     public void setSignRet(boolean signRet) {
+
     }
 
     public String getAppKey() {
@@ -227,25 +273,6 @@ public class YopRequest {
         return serverRoot;
     }
 
-    public void encoding() {
-        try {
-            for (String key : this.paramMap.keySet()) {
-                List<String> values = this.paramMap.get(key);
-                List<String> encoded = new ArrayList<String>(values.size());
-                for (String value : values) {
-                    if (StringUtils.isBlank(value)) {
-                        continue;
-                    }
-                    encoded.add(URLEncoder.encode(value, YopConstants.ENCODING));
-                }
-                values.clear();
-                values.addAll(encoded);
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     /**
      * 将参数转换成k=v拼接的形式
      *
@@ -254,7 +281,7 @@ public class YopRequest {
     public String toQueryString() {
         StringBuilder builder = new StringBuilder();
         for (String key : this.paramMap.keySet()) {
-            List<String> values = this.paramMap.get(key);
+            Collection<String> values = this.paramMap.get(key);
             for (String value : values) {
                 builder.append(builder.length() == 0 ? "" : "&");
                 builder.append(key);

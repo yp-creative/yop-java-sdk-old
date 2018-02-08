@@ -7,6 +7,7 @@ import com.yeepay.g3.frame.yop.ca.rsa.RSAKeyUtils;
 import com.yeepay.g3.frame.yop.ca.utils.Exceptions;
 import com.yeepay.g3.sdk.yop.config.CertConfig;
 import com.yeepay.g3.sdk.yop.config.CertStoreType;
+import com.yeepay.g3.sdk.yop.config.HttpClientConfig;
 import com.yeepay.g3.sdk.yop.config.SDKConfig;
 import com.yeepay.g3.sdk.yop.exception.YopClientException;
 import org.apache.commons.lang3.StringUtils;
@@ -57,6 +58,11 @@ public final class InternalConfig {
     public static int CONNECT_TIMEOUT = 30000;
     public static int READ_TIMEOUT = 60000;
 
+    public static int MAX_CONN_TOTAL = 200;
+    public static int MAX_CONN_PER_ROUTE = 100;
+
+    public static boolean TRUST_ALL_CERTS = false;
+
     private static Map<CertTypeEnum, PublicKey> yopPublicKeyMap = Maps.newEnumMap(CertTypeEnum.class);
 
     private static Map<CertTypeEnum, PrivateKey> isvPrivateKeyMap = Maps.newEnumMap(CertTypeEnum.class);
@@ -100,11 +106,34 @@ public final class InternalConfig {
         APP_KEY = config.getAppKey();
         SECRET_KEY = config.getAesSecretKey();
 
-        if (config.getConnectTimeout() != null && config.getConnectTimeout() >= 0) {
+        // HttpClient 配置
+        if (null != config.getConnectTimeout() && config.getConnectTimeout() >= 0) {
             CONNECT_TIMEOUT = config.getConnectTimeout();
         }
-        if (config.getReadTimeout() != null && config.getReadTimeout() >= 0) {
+        if (null != config.getReadTimeout() && config.getReadTimeout() >= 0) {
             READ_TIMEOUT = config.getReadTimeout();
+        }
+        HttpClientConfig httpClientConfig = config.getHttpClient();
+        if (null != httpClientConfig) {
+            if (httpClientConfig.getMaxConnTotal() != null && httpClientConfig.getMaxConnTotal() >= 0) {
+                MAX_CONN_TOTAL = httpClientConfig.getMaxConnTotal();
+            }
+            if (httpClientConfig.getMaxConnPerRoute() != null && httpClientConfig.getMaxConnPerRoute() >= 0) {
+                MAX_CONN_PER_ROUTE = httpClientConfig.getMaxConnPerRoute();
+            }
+            if (null != config.getConnectTimeout() && config.getConnectTimeout() >= 0) {
+                CONNECT_TIMEOUT = config.getConnectTimeout();
+            }
+            if (null != config.getReadTimeout() && config.getReadTimeout() >= 0) {
+                READ_TIMEOUT = config.getReadTimeout();
+            }
+        }
+
+        // 信任所有证书
+        if (config.getTrustAllCerts() != null) {
+            TRUST_ALL_CERTS = config.getTrustAllCerts();
+        } else {
+            TRUST_ALL_CERTS = Boolean.valueOf(System.getProperty("yop.sdk.trust.all.certs", "false"));
         }
 
         if (null != config.getYopPublicKey()) {
@@ -226,7 +255,7 @@ public final class InternalConfig {
         return isvPrivateKeyMap.get(certType);
     }
 
-    private static final void close(InputStream is) {
+    private static void close(InputStream is) {
         if (is == null) {
             return;
         }

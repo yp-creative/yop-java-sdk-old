@@ -35,11 +35,19 @@ public final class SDKConfig implements Serializable {
     @JsonProperty("isv_private_key")
     private CertConfig[] isvPrivateKey;
 
+    @Deprecated
     @JsonProperty("connect_timeout")
     private Integer connectTimeout;
 
+    @Deprecated
     @JsonProperty("read_timeout")
     private Integer readTimeout;
+
+    @JsonProperty("http_client")
+    private HttpClientConfig httpClient;
+
+    @JsonProperty("trust_all_certs")
+    private Boolean trustAllCerts;
 
     public CertConfig[] getYopPublicKey() {
         return yopPublicKey;
@@ -57,10 +65,6 @@ public final class SDKConfig implements Serializable {
         this.isvPrivateKey = isvPrivateKey;
     }
 
-    public String toString() {
-        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
-    }
-
     public Integer getConnectTimeout() {
         return connectTimeout;
     }
@@ -75,6 +79,22 @@ public final class SDKConfig implements Serializable {
 
     public void setReadTimeout(Integer readTimeout) {
         this.readTimeout = readTimeout;
+    }
+
+    public HttpClientConfig getHttpClient() {
+        return httpClient;
+    }
+
+    public void setHttpClient(HttpClientConfig httpClient) {
+        this.httpClient = httpClient;
+    }
+
+    public Boolean getTrustAllCerts() {
+        return trustAllCerts;
+    }
+
+    public void setTrustAllCerts(Boolean trustAllCerts) {
+        this.trustAllCerts = trustAllCerts;
     }
 
     public String getServerRoot() {
@@ -100,4 +120,10 @@ public final class SDKConfig implements Serializable {
     public void setAesSecretKey(String aesSecretKey) {
         this.aesSecretKey = aesSecretKey;
     }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+    }
+
 }
