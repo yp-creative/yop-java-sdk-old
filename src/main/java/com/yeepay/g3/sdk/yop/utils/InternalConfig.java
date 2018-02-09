@@ -35,7 +35,7 @@ public final class InternalConfig {
     public static int READ_TIMEOUT = 60000;
 
     public static int MAX_CONN_TOTAL = 200;
-    public static int MAX_CONN_PER_ROUTE = 0;
+    public static int MAX_CONN_PER_ROUTE = 100;
 
     public static boolean TRUST_ALL_CERTS = false;
 }
