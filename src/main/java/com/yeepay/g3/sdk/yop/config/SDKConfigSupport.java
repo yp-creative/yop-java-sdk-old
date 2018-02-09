@@ -140,6 +140,9 @@ public final class SDKConfigSupport {
                 }
             }
         }
+        if (StringUtils.endsWith(config.getServerRoot(), "/")) {
+            config.setServerRoot(StringUtils.substring(config.getServerRoot(), 0, -1));
+        }
         return config;
     }
 

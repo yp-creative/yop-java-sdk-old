@@ -89,7 +89,11 @@ public class YopRequest {
         Validate.notBlank(secretKey, "ServerRoot is blank.");
         this.appSDKConfig = new AppSDKConfig();
         this.appSDKConfig.setAppKey(appKey);
-        this.appSDKConfig.setServerRoot(serverRoot);
+        if (StringUtils.endsWith(serverRoot, "/")) {
+            this.appSDKConfig.setServerRoot(StringUtils.substring(serverRoot, 0, -1));
+        } else {
+            this.appSDKConfig.setServerRoot(serverRoot);
+        }
         this.secretKey = secretKey;
     }
 
