@@ -2,6 +2,7 @@ package com.yeepay.g3.sdk.yop;
 
 import com.TrustAllHttpsCertificates;
 import com.yeepay.g3.sdk.yop.client.YopClient;
+import com.yeepay.g3.sdk.yop.client.YopClient3;
 import com.yeepay.g3.sdk.yop.client.YopRequest;
 import com.yeepay.g3.sdk.yop.client.YopResponse;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -32,12 +33,13 @@ public class QaDemo {
     @Before
     public void setUp() throws Exception {
         TrustAllHttpsCertificates.setTrue();
+        System.setProperty("yop.sdk.config.file", "/config/yop_sdk_config_dev.json,/config/yop_sdk_config_dev1.json");
     }
 
     @Test
     public void testIdCard() throws Exception {
         int i = 0;
-        YopRequest request = new YopRequest(null, APP_SECRETS[i], BASE_URL);
+        YopRequest request = new YopRequest("jinkela");
         request.setEncrypt(true);
         request.setSignRet(true);
 //        request.setSignAlg("sha-256");
@@ -46,7 +48,7 @@ public class QaDemo {
         request.addParam("name", "张文康");
         request.addParam("idCardNumber", "370982199101186692");
         System.out.println(request.toQueryString());
-        YopResponse response = YopClient.get("/rest/v2.0/auth/idcard", request);
+        YopResponse response = YopClient3.postRsa("/rest/v2.0/auth/idcard", request);
         AssertUtils.assertYopResponse(response);
     }
 

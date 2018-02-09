@@ -90,7 +90,7 @@ public class JacksonJsonMarshallerTest {
 
 //            String response = YopClient.post("/rest/v1.0/merchant/queryPayOrder", request).toString();
 
-            YopRequest request = new YopRequest("TestAppKey002","Zj4xyBkgjd","http://127.0.0.1:8008/yop-center");
+            YopRequest request = new YopRequest("TestAppKey002","Zj4xyBkgjd");
             request.setSignAlg("SHA1");
 //            request.setSignAlg("MD5");//具体看api签名算法而定
             //request.setEncrypt(true);
