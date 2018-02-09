@@ -5,6 +5,7 @@ import com.google.common.collect.Multimap;
 import com.yeepay.g3.sdk.yop.YopServiceException;
 import com.yeepay.g3.sdk.yop.config.AppSDKConfig;
 import com.yeepay.g3.sdk.yop.config.AppSDKConfigSupport;
+import com.yeepay.g3.sdk.yop.config.ConfigUtils;
 import com.yeepay.g3.sdk.yop.exception.YopClientException;
 import com.yeepay.g3.sdk.yop.http.Headers;
 import com.yeepay.g3.sdk.yop.utils.Assert;
@@ -58,6 +59,7 @@ public class YopRequest {
             throw new YopServiceException("Default SDKConfig not found.");
         }
         this.secretKey = null;
+        init();
     }
 
     public YopRequest(String appKey) {
@@ -67,6 +69,7 @@ public class YopRequest {
             throw new YopServiceException("SDKConfig for appKey:" + appKey + " not found.");
         }
         this.secretKey = null;
+        init();
     }
 
     /**
@@ -79,8 +82,15 @@ public class YopRequest {
         this.appSDKConfig = new AppSDKConfig();
         this.appSDKConfig.setAppKey(appKey);
         AppSDKConfig defaultAppSDKConfig = AppSDKConfigSupport.getDefaultAppSDKConfig();
-        this.appSDKConfig.setServerRoot(defaultAppSDKConfig == null ? InternalConfig.SERVER_ROOT : defaultAppSDKConfig.getServerRoot());
+        if (defaultAppSDKConfig == null) {
+            this.appSDKConfig.setServerRoot(InternalConfig.SERVER_ROOT);
+            this.appSDKConfig.setYopPublicKey(ConfigUtils.getDefaultYopPublicKey());
+        } else {
+            this.appSDKConfig.setServerRoot(defaultAppSDKConfig.getServerRoot());
+            this.appSDKConfig.setYopPublicKey(defaultAppSDKConfig.getYopPublicKey());
+        }
         this.secretKey = secretKey;
+        init();
     }
 
     public YopRequest(String appKey, String secretKey, String serverRoot) {
@@ -94,7 +104,18 @@ public class YopRequest {
         } else {
             this.appSDKConfig.setServerRoot(serverRoot);
         }
+        AppSDKConfig defaultAppSDKConfig = AppSDKConfigSupport.getDefaultAppSDKConfig();
+        this.appSDKConfig.setYopPublicKey(defaultAppSDKConfig == null ?
+                ConfigUtils.getDefaultYopPublicKey() : defaultAppSDKConfig.getYopPublicKey());
         this.secretKey = secretKey;
+        init();
+    }
+
+    private void init() {
+        headers.put(Headers.USER_AGENT, YopConstants.USER_AGENT);
+        paramMap.put(YopConstants.APP_KEY, this.appSDKConfig.getAppKey());
+        paramMap.put(YopConstants.LOCALE, locale);
+        paramMap.put(YopConstants.TIMESTAMP, String.valueOf(System.currentTimeMillis()));
     }
 
     public YopRequest setParam(String paramName, Object paramValue) {
