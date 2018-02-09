@@ -1,5 +1,5 @@
 {
-  "app_key": "yop-boss",
+  "app_key": "",
   "aes_secret_key": "",
   "server_root": "https://open.yeepay.com/yop-center",
   "yop_public_key": [
@@ -17,6 +17,15 @@
       "value": "/10015004197.p12"
     }
   ],
+  "api": {
+    "/rest/v1.0/test/cfca": {
+      "cfca": true
+    }
+  },
+  "client_certificate": {
+    "password": "123456",
+    "path": "file://Users/zhangwenkang/Downloads/10000450379.pfx"
+  },
   "connect_timeout": 10000,
   "read_timeout": 30000
 }
