@@ -1,7 +1,7 @@
 {
-  "app_key": "yop-boss",
+  "app_key": "",
   "aes_secret_key": "",
-  "server_root": "http://10.151.30.88:8064/yop-center",
+  "server_root": "https://open.yeepay.com/yop-center",
   "yop_public_key": [
     {
       "store_type": "string",
@@ -13,9 +13,18 @@
     {
       "store_type": "string",
       "cert_type": "RSA2048",
-      "value" : "MIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQCsntPTa1OL6I+I0FMeTSn5uA43/Kr+WkIieS+iluJ+BRWaCLrGW3bhlTVNOzWqgMq9ipt+sJ7IRwODbPcoi5dvrBC5DfeC/65iRsolVIw4dgcU0+hoWRJ+/Sjo+G9oRT7MW7ZUVyHhBT6f4whJogZ0hIsTkdUXlU2dX3u65V9Wf6v9qMNAra+kO9sNYq0TpIx9sYcJjJXSasiKeGk+v1PPstWy3ii/glTdrFemJRw56bBNYwcKyS0ft08TvzaBPeLnafwqd9zv80yyNxFr5vOgCNk2IxDQT6uoZZolxmFl+bQr+fcwlojxrbQTOGVr8xQoiy8pvLHiiCVuiWvJMGzBAgMBAAECggEBAJNM5Q0gJKbayMDCpGrTBeKmANwdq/xoIM8yAkgH4TYQOKK8mETzf7p3jIhe4iigxmB/irjNFnFox8K6lR3wIEWW2p5PIMqUS8ZpCc5ZG16CuQA447VHbNUYSnSiqs6baD8Sc7/8qlhOFWZyYXwT2tZK1DLa2q/JI/YKqJaPbI9t8vW9jUCY8shGf8slcPfxs864QIBG0dC+b5YUsOZh8cM/v6PTXhFKL+iuvlIFw9L5VXUEre6beR7RrId3a8DoniYY86SGiGBpGGN1FMDjsqBNfw1De3dgDuKm9MWlyHU5MeLMx4Zn0znbFj3UeooOc3lM/4GtgBZaVcrQHpxytNECgYEA48ThJrLVf5GT4mlo0+7aprILN5vhlbA1dtSl0oB+/QIqbLmgTIPlse9+E8lwmw46KVhnI8ouKlCP2QRR0aGajznjHhz12rjoRyB3UyV7FIJiR1EsAPmESudz97glfZNr3leqCeUBj6aX883ExF48sf4Xc4eAO+OuZZ1WXlVokAcCgYEAwgQUX8DPnwwvx8fJKO9PQS59Y8TdsWHDWkuoHO1epHPXPft65id4FURIfYlyUl2O7rGgvhXOqpQSTBGko/0UZh9ZcwCgJMpKNTX876r/zgg1W8+HtkTchkvW4qivyPvWOJQHqa2VQmGiC9EFSbgIY7R+RrCyaNS09nNeCgs9WvcCgYEAwk+l3QPYC9rAFPnkSlmNA4UE+M3tZ2xKUDQduzWQIHyGgPbjgCNOA7zTDEJf5IgAqmEWrHvBYqwT7Ao5WuPJHcM+tOP0AkKZNoTGB5MEK30IJtti9PnpGJXYY08f/L+V2Ltk/sf1yv1OyNmUsgnLMfYZP6Arj+wvTdUqZ5PpfmUCgYAXQQPsIiEAcCZ97H040c4PAvJ2dc8Yhp4ygWTp6q1wSo4e2Lh3Q33KFsAVg9bW9m2+QD4C6nw1x7+VrHuuSBQc1V8UQJvxLOnODOV/GGDGogc7NNmQSBqiYg6kZhGDpmObrmpotOxx41/XyLq4hj1DLgwAjwcjN3NlIpi/3W8CKwKBgQDZSMtigg5+GuoTjM7Fmx84f7tKE5Bue9CPiMgCZEOQeK5FTk3AR2k32/8V8Mp0LZhVqXliCCCU5Ka/ZgPFA9Hdxn5gPpkAsvd/wbFsvdfITXSlW4i4vRFOKCv1FS5t2toWmeoYlE/9Du8NzwUSVpIsrhcyNcho7ixqnbPRq4d3eQ=="
-     }
+      "value": "<Your RSA2048 private key>"
+    }
   ],
+  "client_certificate": {
+    "password": "cfca1234",
+    "path": "/cer/cfca_client_test.pfx"
+  },
+  "api":{
+    "/rest/v2.2/auth/enterprise":{
+      "cfca":true
+    }
+  },
   "connect_timeout": 30000,
   "read_timeout": 60000
 }
