@@ -78,7 +78,7 @@ public class ConfigUtils {
             case FILE_P12:
                 try {
                     char[] password = certConfig.getPassword().toCharArray();
-                    KeyStore keystore = KeyStore.getInstance(CertStoreType.FILE_P12.getValue());
+                    KeyStore keystore = KeyStore.getInstance("PKCS12");
                     keystore.load(ConfigUtils.class.getResourceAsStream(certConfig.getValue()), password);
 
                     Enumeration aliases = keystore.aliases();
