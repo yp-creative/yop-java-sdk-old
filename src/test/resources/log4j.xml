@@ -27,8 +27,13 @@
         <appender-ref ref="CONSOLE"/>
     </logger>
 
+    <logger name="org.apache.http.wire" additivity="false">
+        <level value="info"/>
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+
     <root>
-        <priority value="DEBUG"/>
+        <priority value="INFO"/>
         <appender-ref ref="CONSOLE"/>
     </root>
 
