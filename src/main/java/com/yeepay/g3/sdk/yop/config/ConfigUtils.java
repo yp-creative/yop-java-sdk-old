@@ -24,25 +24,6 @@ import java.util.Enumeration;
  */
 public class ConfigUtils {
 
-    private static final String YOP_PUBLIC_KEY_STR = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA6p0XWjscY+gsyqKRhw9MeLsEmhFdBRhT2emOck/F1Omw38ZWhJxh9kDfs5HzFJMrVozgU+SJFDONxs8UB0wMILKRmqfLcfClG9MyCNuJkkfm0HFQv1hRGdOvZPXj3Bckuwa7FrEXBRYUhK7vJ40afumspthmse6bs6mZxNn/mALZ2X07uznOrrc2rk41Y2HftduxZw6T4EmtWuN2x4CZ8gwSyPAW5ZzZJLQ6tZDojBK4GZTAGhnn3bg5bBsBlw2+FLkCQBuDsJVsFPiGh/b6K/+zGTvWyUcu+LUj2MejYQELDO3i2vQXVDk7lVi2/TcUYefvIcssnzsfCfjaorxsuwIDAQAB";
-
-    private static volatile PublicKey yopPublicKey;
-
-    public static PublicKey getDefaultYopPublicKey() {
-        if (yopPublicKey == null) {
-            synchronized (ConfigUtils.class) {
-                if (yopPublicKey == null) {
-                    try {
-                        yopPublicKey = RSAKeyUtils.string2PublicKey(YOP_PUBLIC_KEY_STR);
-                    } catch (Exception ex) {
-                        throw new YopServiceException(ex, "Unexpected errors occurred when load default YopPublicKey.");
-                    }
-                }
-            }
-        }
-        return yopPublicKey;
-    }
-
     public static PublicKey loadPublicKey(CertConfig certConfig) {
         PublicKey publicKey;
         if (null == certConfig.getStoreType()) {
@@ -108,8 +89,11 @@ public class ConfigUtils {
     }
 
     public static InputStream getResourceAsStream(String resource) {
+        if (StringUtils.startsWith(resource, "/")) {
+            resource = StringUtils.substring(resource, 1);
+        }
         final InputStream in = getContextClassLoader().getResourceAsStream(resource);
-        return in == null ? ConfigUtils.class.getResourceAsStream(resource) : in;
+        return in == null ? ConfigUtils.class.getResourceAsStream("/" + resource) : in;
     }
 
     public static ClassLoader getContextClassLoader() {
