@@ -14,8 +14,18 @@
       "store_type": "string",
       "cert_type": "RSA2048",
       "value": "<Your RSA2048 private key>"
+    },
+    {
+      "store_type": "file_p12",
+      "cert_type": "RSA2048",
+      "password": "123456",
+      "value": "/10015004197.p12"
     }
   ],
-  "connect_timeout": 1000,
-  "read_timeout": 3000
+  "http_client": {
+    "connect_timeout": 10000,
+    "read_timeout": 30000,
+    "max_conn_total": 200,
+    "max_conn_per_route": 100
+  }
 }

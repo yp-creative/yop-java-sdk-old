@@ -2,6 +2,7 @@ package com.yeepay.g3.sdk.yop.config;
 
 import com.yeepay.g3.sdk.yop.YopServiceException;
 import com.yeepay.g3.sdk.yop.utils.JsonUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -33,7 +34,9 @@ public final class SDKConfigSupport {
 
     private static final String SDK_CONFIG_FILE_SEPARATOR = ",";
 
-    private static final String DEFAULT_SDK_CONFIG_DIR = "/config";
+    private static final String DEFAULT_SDK_CONFIG_DIR = "config";
+
+    private static final String DEFAULT_SDK_CONFIG_FILE_NAME = "yop_sdk_config_default.json";
 
     private static final String DEFAULT_SDK_CONFIG_KEY = "default";
 
@@ -41,21 +44,13 @@ public final class SDKConfigSupport {
 
     private static final ConcurrentMap<String, SDKConfig> CONFIGS = new ConcurrentHashMap<String, SDKConfig>();
 
-    private static volatile SDKConfig DEFAULT_SDK_CONFIG;
+    private static SDKConfig defaultSDKConfig;
 
     private static volatile boolean inited = false;
 
-    public static SDKConfig getConfig(String appKey) {
-        if (StringUtils.isEmpty(appKey)) {
-            throw new YopServiceException("AppKey must be specified.");
-        }
+    public static SDKConfig getDefaultSDKConfig() {
         initSDKConfig();
-        return CONFIGS.get(appKey);
-    }
-
-    public static SDKConfig getDefaultConfig() {
-        initSDKConfig();
-        return DEFAULT_SDK_CONFIG;
+        return defaultSDKConfig;
     }
 
     public static Map<String, SDKConfig> getSDKConfigs() {
@@ -78,30 +73,44 @@ public final class SDKConfigSupport {
                     String fileName = StringUtils.substringAfterLast(absolutePath, File.separator);
                     Matcher matcher = SDK_CONFIG_FILE_NAME_PATTERN.matcher(fileName);
                     if (matcher.matches()) {
-                        String appKey = matcher.group(1);
-                        CONFIGS.put(appKey, loadConfig(absolutePath));
+                        SDKConfig sdkConfig = loadConfig(absolutePath);
+                        String fileNameSuffix = matcher.group(1);
+                        if (StringUtils.equals(fileNameSuffix, DEFAULT_SDK_CONFIG_KEY)) {
+                            defaultSDKConfig = sdkConfig;
+                            if (StringUtils.isNotEmpty(sdkConfig.getAppKey())) {
+                                CONFIGS.put(sdkConfig.getAppKey(), sdkConfig);
+                            }
+                        } else {
+                            CONFIGS.put(fileNameSuffix, sdkConfig);
+                        }
                     } else {
                         LOGGER.warn("Illegal SDkConfig File Name:" + fileName);
                     }
                 }
             } else {
                 List<String> fileNames = loadConfigFilesFromClassPath();
-                for (String fileName : fileNames) {
-                    Matcher matcher = SDK_CONFIG_FILE_NAME_PATTERN.matcher(fileName);
-                    if (matcher.matches()) {
-                        String appKey = matcher.group(1);
-                        CONFIGS.put(appKey, loadConfig(DEFAULT_SDK_CONFIG_DIR + File.separator + fileName));
-                    } else {
-                        LOGGER.warn("Illegal SDkConfig File Name:" + fileName);
+                if (CollectionUtils.isNotEmpty(fileNames)) {
+                    for (String fileName : fileNames) {
+                        Matcher matcher = SDK_CONFIG_FILE_NAME_PATTERN.matcher(fileName);
+                        if (matcher.matches()) {
+                            SDKConfig sdkConfig = loadConfig(DEFAULT_SDK_CONFIG_DIR + File.separator + fileName);
+                            String fileNameSuffix = matcher.group(1);
+                            if (StringUtils.equals(fileNameSuffix, DEFAULT_SDK_CONFIG_KEY)) {
+                                defaultSDKConfig = sdkConfig;
+                                if (StringUtils.isNotEmpty(sdkConfig.getAppKey())) {
+                                    CONFIGS.put(sdkConfig.getAppKey(), sdkConfig);
+                                }
+                            } else {
+                                CONFIGS.put(fileNameSuffix, sdkConfig);
+                            }
+                        } else {
+                            LOGGER.warn("Illegal SDkConfig File Name:" + fileName);
+                        }
                     }
                 }
             }
-            if (CONFIGS.size() == 0) {
-                throw new YopServiceException("No Available SDKConfig File can be found.");
-            } else if (CONFIGS.size() == 1) {
-                DEFAULT_SDK_CONFIG = CONFIGS.values().iterator().next();
-            } else {
-                DEFAULT_SDK_CONFIG = CONFIGS.get(DEFAULT_SDK_CONFIG_KEY);
+            if (CONFIGS.size() == 1 && defaultSDKConfig == null) {
+                defaultSDKConfig = CONFIGS.values().iterator().next();
             }
             inited = true;
         }
@@ -110,18 +119,21 @@ public final class SDKConfigSupport {
     private static List<String> loadConfigFilesFromClassPath() {
         List<String> filenames = new ArrayList<String>();
         try {
-            InputStream in = ConfigUtils.getResourceAsStream(DEFAULT_SDK_CONFIG_DIR);
-            BufferedReader br = new BufferedReader(new InputStreamReader(in));
-            String resource;
-            while ((resource = br.readLine()) != null) {
-                filenames.add(resource);
+            //无法读取jar包的目录
+            InputStream in = ConfigUtils.getContextClassLoader().getResourceAsStream(DEFAULT_SDK_CONFIG_DIR);
+            if (in != null) {
+                BufferedReader br = new BufferedReader(new InputStreamReader(in));
+                String resource;
+                while ((resource = br.readLine()) != null) {
+                    filenames.add(resource);
+                }
             }
-        } catch (IOException ex) {
-            throw new YopServiceException(ex, "IoException occurred when load config file from classPath:" + DEFAULT_SDK_CONFIG_DIR);
+        } catch (Exception ex) {
+            LOGGER.debug("Unable to read sdk config dir.");
+            filenames.add(DEFAULT_SDK_CONFIG_FILE_NAME);
         }
         return filenames;
     }
-
 
     private static SDKConfig loadConfig(String configFile) {
         InputStream fis = null;
@@ -135,6 +147,27 @@ public final class SDKConfigSupport {
             if (null != fis) {
                 try {
                     fis.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        if (StringUtils.endsWith(config.getServerRoot(), "/")) {
+            config.setServerRoot(StringUtils.substring(config.getServerRoot(), 0, -1));
+        }
+        return config;
+    }
+
+    private static SDKConfig loadConfig(InputStream inputStream) {
+        SDKConfig config;
+        try {
+            config = JsonUtils.loadFrom(inputStream, SDKConfig.class);
+        } catch (Exception ex) {
+            throw new YopServiceException(ex, "Errors occurred when loading SDK Config.");
+        } finally {
+            if (null != inputStream) {
+                try {
+                    inputStream.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

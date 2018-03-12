@@ -15,7 +15,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.concurrent.CountDownLatch;
 
 /**
  * title: <br>
@@ -36,7 +35,8 @@ public class LocalDemo {
 
     @BeforeClass
     public static void setUp() throws Exception {
-        System.setProperty("yop.sdk.config.file", "/config/yop_sdk_config_dev.json");
+        System.setProperty("yop.sdk.config.file", "/config/yop_sdk_config_local.json");
+//        System.setProperty("yop.sdk.config.file", "/config/yop_sdk_config_dev.json");
 //        System.setProperty("yop.sdk.trust.all.certs", "true");
     }
 
@@ -266,35 +266,4 @@ public class LocalDemo {
         AssertUtils.assertYopResponse(response);
     }
 
-    @Test
-    public void testBackendLatency() throws IOException {
-        YopRequest request = new YopRequest(APP_KEYS[0], APP_SECRETS[0]);
-        request.setSignAlg("SHA-256");
-        request.addParam("backendLatency", "1000");
-
-        YopResponse response = YopClient.post("/rest/v1.0/test/mock-proxy/backend-latency", request);
-        AssertUtils.assertYopResponse(response);
-    }
-
-    //    @Test
-    public void testBatch() throws InterruptedException {
-        int N = 1000;
-        final CountDownLatch latch = new CountDownLatch(N);
-        for (int i = 0; i < N; i++) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        testBackendLatency();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    latch.countDown();
-                }
-            }).start();
-        }
-        latch.await();
-
-        Thread.sleep(999999L);
-    }
 }
