@@ -37,13 +37,13 @@ public class LocalDemo {
     public static void setUp() throws Exception {
         System.setProperty("yop.sdk.config.file", "/config/yop_sdk_config_local.json");
 //        System.setProperty("yop.sdk.config.file", "/config/yop_sdk_config_dev.json");
+//        System.setProperty("yop.sdk.config.file", "/config/yop_sdk_config_pro.json");
 //        System.setProperty("yop.sdk.trust.all.certs", "true");
     }
 
     @Test
     public void testAES_SHA1() throws Exception {
-        int i = 0;
-        YopRequest request = new YopRequest(APP_KEYS[i], APP_SECRETS[i]);
+        YopRequest request = new YopRequest();
         request.setSignAlg("sha1");
         request.addParam("requestFlowId", "test123456");//请求流水标识
         request.addParam("name", "张文康");
@@ -60,8 +60,7 @@ public class LocalDemo {
 
     @Test
     public void testAES_SHA256() throws Exception {
-        int i = 0;
-        YopRequest request = new YopRequest(APP_KEYS[i], APP_SECRETS[i]);
+        YopRequest request = new YopRequest();
         request.setSignAlg("sha-256");
         request.addParam("corpName", "安徽四创电子股份有限公司青海分公司");//企业名称
         request.addParam("regNo", "630104063035716");//工商注册号
@@ -96,8 +95,7 @@ public class LocalDemo {
 
     @Test
     public void testCreateToken() throws IOException {
-        int i = 0;
-        YopRequest request = new YopRequest(APP_KEYS[i], APP_SECRETS[i]);
+        YopRequest request = new YopRequest();
         request.setSignAlg("SHA-256");
 
         request.addParam("grant_type", "password");//请求流水标识
@@ -258,8 +256,7 @@ public class LocalDemo {
     @Ignore
     @Test
     public void testLoadClass() throws Exception {
-        int i = 0;
-        YopRequest request = new YopRequest(APP_KEYS[i], APP_SECRETS[i]);
+        YopRequest request = new YopRequest();
         request.addParam("className", "com.yeepay.g3.facade.ymf.facade.laike.OrderFacade");//这个写YOP就可以了
 
         YopResponse response = YopClient.post("/rest/v1.0/system/loader/methods", request);
