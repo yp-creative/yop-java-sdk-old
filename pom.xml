@@ -195,6 +195,7 @@
                                     <shadedPattern>com.yeepay.shade.org.apache</shadedPattern>
                                     <excludes>
                                         <exclude>org.apache.log4j.*</exclude>
+                                        <exclude>org.apache.commons.logging.*</exclude>
                                     </excludes>
                                 </relocation>
                                 <relocation>
