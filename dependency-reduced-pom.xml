@@ -180,10 +180,8 @@
     </snapshotRepository>
   </distributionManagement>
   <properties>
-      <yop-ca-facade.version>1.0</yop-ca-facade.version>
     <maven.compiler.compilerVersion>1.6</maven.compiler.compilerVersion>
     <fasterxml.jackson.version>2.8.9</fasterxml.jackson.version>
-    <yop-ca-frame.version>1.0</yop-ca-frame.version>
     <httpcomponents.version>4.5.4</httpcomponents.version>
     <maven.compiler.source>1.6</maven.compiler.source>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
