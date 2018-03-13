@@ -1,5 +1,8 @@
 package com.yeepay.g3.sdk.yop.utils;
 
+import com.yeepay.g3.sdk.yop.config.HttpClientConfig;
+import com.yeepay.g3.sdk.yop.config.SDKConfig;
+import com.yeepay.g3.sdk.yop.config.SDKConfigSupport;
 import org.apache.log4j.Logger;
 
 /**
@@ -38,4 +41,27 @@ public final class InternalConfig {
     public static int MAX_CONN_PER_ROUTE = 100;
 
     public static boolean TRUST_ALL_CERTS = false;
+
+    static {
+        init();
+    }
+
+    private static void init() {
+        SDKConfig sdkConfig = SDKConfigSupport.getDefaultSDKConfig();
+        if (sdkConfig != null && sdkConfig.getHttpClient() != null) {
+            HttpClientConfig clientConfig = sdkConfig.getHttpClient();
+            if (clientConfig.getConnectTimeout() != null) {
+                CONNECT_TIMEOUT = clientConfig.getConnectTimeout();
+            }
+            if (clientConfig.getReadTimeout() != null) {
+                READ_TIMEOUT = clientConfig.getReadTimeout();
+            }
+            if (clientConfig.getMaxConnTotal() != null) {
+                MAX_CONN_TOTAL = clientConfig.getMaxConnTotal();
+            }
+            if (clientConfig.getMaxConnPerRoute() != null) {
+                MAX_CONN_PER_ROUTE = clientConfig.getMaxConnPerRoute();
+            }
+        }
+    }
 }
