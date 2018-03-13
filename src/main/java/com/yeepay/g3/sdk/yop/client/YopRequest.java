@@ -285,6 +285,9 @@ public class YopRequest {
     }
 
     public String getSecretKey() {
+        if (StringUtils.isEmpty(secretKey)) {
+            return appSDKConfig.getAesSecretKey();
+        }
         return secretKey;
     }
 
