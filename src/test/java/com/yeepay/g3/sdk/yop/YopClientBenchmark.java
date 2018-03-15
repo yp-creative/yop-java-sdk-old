@@ -5,7 +5,7 @@ import com.yeepay.g3.core.yop.utils.test.benchmark.ConcurrentBenchmark;
 import com.yeepay.g3.sdk.yop.client.YopClient;
 import com.yeepay.g3.sdk.yop.client.YopRequest;
 import com.yeepay.g3.sdk.yop.client.YopResponse;
-import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.time.StopWatch;
 
 import java.io.IOException;
 import java.security.SecureRandom;
@@ -46,20 +46,24 @@ public class YopClientBenchmark extends ConcurrentBenchmark {
     public class InvokeTask extends BenchmarkTask {
         @Override
         protected void execute(int requestSequence) {
-            YopRequest request = new YopRequest(RandomStringUtils.randomAlphanumeric(20), "PdZ74F6sxapgOWJ31QKmYw==");
+            // RandomStringUtils.randomAlphanumeric(20)
+            YopRequest request = new YopRequest("yop-boss", "PdZ74F6sxapgOWJ31QKmYw==");
             request.setSignAlg("SHA-256");
 
-//        if (random.nextInt(100) >= 0) {// 20% 的请求超过20s
-//            request.addParam("backendLatency", "0");
-//        } else {
-            request.addParam("backendLatency", "200");
-//        }
+            if (random.nextInt(100) >= 20) {// 20% 的请求超过30s
+                request.addParam("backendLatency", "10000");
+            } else {
+                request.addParam("backendLatency", "20000");
+            }
 
             YopResponse response = null;
             try {
+                StopWatch stopWatch = StopWatch.createStarted();
                 response = YopClient.post("/rest/v1.0/yop/mock/backend-latency", request);
 //                assertTrue(response.isSuccess());
 //                assertTrue(response.isValidSign());
+                stopWatch.stop();
+                System.out.println("stopWatch:" + stopWatch.getTime() + "\t" + response.isValidSign());
             } catch (IOException e) {
                 e.printStackTrace();
             }
