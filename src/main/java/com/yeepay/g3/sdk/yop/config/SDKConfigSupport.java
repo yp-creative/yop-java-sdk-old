@@ -2,6 +2,7 @@ package com.yeepay.g3.sdk.yop.config;
 
 import com.yeepay.g3.sdk.yop.YopServiceException;
 import com.yeepay.g3.sdk.yop.utils.JsonUtils;
+import com.yeepay.g3.sdk.yop.utils.ValidateUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -34,9 +35,9 @@ public final class SDKConfigSupport {
 
     private static final String SDK_CONFIG_FILE_SEPARATOR = ",";
 
-    private static final String DEFAULT_SDK_CONFIG_DIR = "config";
+    private static final String SDK_CONFIG_DIR = "config";
 
-    private static final String DEFAULT_SDK_CONFIG_FILE_NAME = "yop_sdk_config_default.json";
+    private static final String DEFAULT_SDK_CONFIG_FILE_PATH = "config/yop_sdk_config_default.json";
 
     private static final String DEFAULT_SDK_CONFIG_KEY = "default";
 
@@ -45,6 +46,8 @@ public final class SDKConfigSupport {
     private static final ConcurrentMap<String, SDKConfig> CONFIGS = new ConcurrentHashMap<String, SDKConfig>();
 
     private static SDKConfig defaultSDKConfig;
+
+    private static boolean customDefault;
 
     private static volatile boolean inited = false;
 
@@ -56,6 +59,11 @@ public final class SDKConfigSupport {
     public static Map<String, SDKConfig> getSDKConfigs() {
         initSDKConfig();
         return Collections.unmodifiableMap(CONFIGS);
+    }
+
+    public static boolean isCustomDefault() {
+        initSDKConfig();
+        return customDefault;
     }
 
     private static void initSDKConfig() {
@@ -74,12 +82,11 @@ public final class SDKConfigSupport {
                     Matcher matcher = SDK_CONFIG_FILE_NAME_PATTERN.matcher(fileName);
                     if (matcher.matches()) {
                         SDKConfig sdkConfig = loadConfig(absolutePath);
+                        ValidateUtils.checkCustomSDKConfig(sdkConfig);
                         String fileNameSuffix = matcher.group(1);
                         if (StringUtils.equals(fileNameSuffix, DEFAULT_SDK_CONFIG_KEY)) {
                             defaultSDKConfig = sdkConfig;
-                            if (StringUtils.isNotEmpty(sdkConfig.getAppKey())) {
-                                CONFIGS.put(sdkConfig.getAppKey(), sdkConfig);
-                            }
+                            CONFIGS.put(StringUtils.replace(sdkConfig.getAppKey(), ":", ""), sdkConfig);
                         } else {
                             CONFIGS.put(fileNameSuffix, sdkConfig);
                         }
@@ -93,13 +100,12 @@ public final class SDKConfigSupport {
                     for (String fileName : fileNames) {
                         Matcher matcher = SDK_CONFIG_FILE_NAME_PATTERN.matcher(fileName);
                         if (matcher.matches()) {
-                            SDKConfig sdkConfig = loadConfig(DEFAULT_SDK_CONFIG_DIR + File.separator + fileName);
+                            SDKConfig sdkConfig = loadConfig(SDK_CONFIG_DIR + File.separator + fileName);
+                            ValidateUtils.checkCustomSDKConfig(sdkConfig);
                             String fileNameSuffix = matcher.group(1);
                             if (StringUtils.equals(fileNameSuffix, DEFAULT_SDK_CONFIG_KEY)) {
                                 defaultSDKConfig = sdkConfig;
-                                if (StringUtils.isNotEmpty(sdkConfig.getAppKey())) {
-                                    CONFIGS.put(sdkConfig.getAppKey(), sdkConfig);
-                                }
+                                CONFIGS.put(StringUtils.replace(sdkConfig.getAppKey(), ":", ""), sdkConfig);
                             } else {
                                 CONFIGS.put(fileNameSuffix, sdkConfig);
                             }
@@ -109,8 +115,16 @@ public final class SDKConfigSupport {
                     }
                 }
             }
-            if (CONFIGS.size() == 1 && defaultSDKConfig == null) {
-                defaultSDKConfig = CONFIGS.values().iterator().next();
+            if (defaultSDKConfig == null) {
+                if (CONFIGS.size() == 1) {
+                    defaultSDKConfig = CONFIGS.values().iterator().next();
+                    customDefault = true;
+                } else {
+                    defaultSDKConfig = loadConfig(DEFAULT_SDK_CONFIG_FILE_PATH);
+                    customDefault = false;
+                }
+            } else {
+                customDefault = true;
             }
             inited = true;
         }
@@ -120,7 +134,7 @@ public final class SDKConfigSupport {
         List<String> filenames = new ArrayList<String>();
         try {
             //无法读取jar包的目录
-            InputStream in = ConfigUtils.getContextClassLoader().getResourceAsStream(DEFAULT_SDK_CONFIG_DIR);
+            InputStream in = ConfigUtils.getContextClassLoader().getResourceAsStream(SDK_CONFIG_DIR);
             if (in != null) {
                 BufferedReader br = new BufferedReader(new InputStreamReader(in));
                 String resource;
@@ -130,7 +144,6 @@ public final class SDKConfigSupport {
             }
         } catch (Exception ex) {
             LOGGER.debug("Unable to read sdk config dir.");
-            filenames.add(DEFAULT_SDK_CONFIG_FILE_NAME);
         }
         return filenames;
     }
@@ -147,27 +160,6 @@ public final class SDKConfigSupport {
             if (null != fis) {
                 try {
                     fis.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        if (StringUtils.endsWith(config.getServerRoot(), "/")) {
-            config.setServerRoot(StringUtils.substring(config.getServerRoot(), 0, -1));
-        }
-        return config;
-    }
-
-    private static SDKConfig loadConfig(InputStream inputStream) {
-        SDKConfig config;
-        try {
-            config = JsonUtils.loadFrom(inputStream, SDKConfig.class);
-        } catch (Exception ex) {
-            throw new YopServiceException(ex, "Errors occurred when loading SDK Config.");
-        } finally {
-            if (null != inputStream) {
-                try {
-                    inputStream.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

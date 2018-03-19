@@ -189,7 +189,7 @@ public class YopClient extends AbstractClient {
 
         String canonicalQueryString = getCanonicalQueryString(request, true);
 
-        String secret = request.getSecretKey();
+        String secret = request.getAesSecretKey();
         String algName = request.getSignAlg();
         algName = StringUtils.isBlank(algName) ? YopConstants.ALG_SHA1 : algName;
 
@@ -229,9 +229,9 @@ public class YopClient extends AbstractClient {
     private static boolean verifySignature(YopRequest request, YopResponse response, String expectedSign) {
         String trimmedBizResult = response.getStringResult().replaceAll("[ \t\n]", "");
         StringBuilder sb = new StringBuilder();
-        sb.append(request.getSecretKey());
+        sb.append(request.getAesSecretKey());
         sb.append(StringUtils.trimToEmpty(response.getState() + trimmedBizResult + response.getTs()));
-        sb.append(request.getSecretKey());
+        sb.append(request.getAesSecretKey());
         String calculatedSign = Digest.digest(sb.toString(), StringUtils.isBlank(request.getSignAlg()) ? YopConstants.ALG_SHA1 : request.getSignAlg());
         return StringUtils.equalsIgnoreCase(expectedSign, calculatedSign);
     }

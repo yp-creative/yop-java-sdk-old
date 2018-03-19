@@ -1,9 +1,12 @@
 package com.yeepay.g3.sdk.yop.utils;
 
-import com.yeepay.g3.sdk.yop.config.HttpClientConfig;
-import com.yeepay.g3.sdk.yop.config.SDKConfig;
-import com.yeepay.g3.sdk.yop.config.SDKConfigSupport;
+import com.yeepay.g3.facade.yop.ca.enums.CertTypeEnum;
+import com.yeepay.g3.sdk.yop.YopServiceException;
+import com.yeepay.g3.sdk.yop.config.*;
 import org.apache.log4j.Logger;
+
+import java.security.PrivateKey;
+import java.security.PublicKey;
 
 /**
  * title: <br>
@@ -19,20 +22,7 @@ public final class InternalConfig {
 
     private static final Logger LOGGER = Logger.getLogger(InternalConfig.class);
 
-    private static final String SP_SDK_CONFIG_FILE = "yop.sdk.config.file";
-
-    /**
-     * 1.如果配置file://开头，则是系统绝对路径
-     * 2.如果是/开头，则是classpath下相对路径
-     */
-    private static final String DEFAULT_SDK_CONFIG_FILE = "/config/yop_sdk_config_default.json";
-
     public static final String PROTOCOL_VERSION = "yop-auth-v2";
-
-    private static final String CONFIG_FILE_ABSOLUTE_PATH_PREFIX = "file://";
-    private static final String CONFIG_FILE_CLASS_PATH_PREFIX = "classpath:";
-    private static final String SLASH = "/";
-    public static final String SERVER_ROOT = "https://open.yeepay.com/yop-center";
 
     public static int CONNECT_TIMEOUT = 30000;
     public static int READ_TIMEOUT = 60000;
@@ -64,4 +54,23 @@ public final class InternalConfig {
             }
         }
     }
+
+    public static PublicKey getYopPublicKey(CertTypeEnum certType) {
+        AppSDKConfig defaultAppSDKConfig = AppSDKConfigSupport.getDefaultAppSDKConfig();
+        return defaultAppSDKConfig.loadYopPublicKey(certType);
+    }
+
+    public static PrivateKey getISVPrivateKey(String appKey, CertTypeEnum certType) {
+        AppSDKConfig appSDKConfig = AppSDKConfigSupport.getConfig(appKey);
+        if (appSDKConfig == null) {
+            throw new YopServiceException("SDKConfig for appKey:" + appKey + " not exist.");
+        }
+        return appSDKConfig.loadPrivateKey(certType);
+    }
+
+    public static PrivateKey getISVPrivateKey(CertTypeEnum certType) {
+        AppSDKConfig defaultAppSDKConfig = AppSDKConfigSupport.getDefaultAppSDKConfig();
+        return defaultAppSDKConfig.loadPrivateKey(certType);
+    }
+
 }

@@ -1,8 +1,12 @@
 package com.yeepay.g3.sdk.yop.config;
 
+import com.google.common.collect.Maps;
+import com.yeepay.g3.facade.yop.ca.enums.CertTypeEnum;
+
 import java.io.Serializable;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.util.Map;
 
 /**
  * title: 应用SDKConfig<br/>
@@ -27,6 +31,10 @@ public class AppSDKConfig implements Serializable {
     private PublicKey yopPublicKey;
 
     private PrivateKey isvPrivateKey;
+
+    private Map<CertTypeEnum, PublicKey> yopPublicKeys;
+
+    private Map<CertTypeEnum, PrivateKey> isvPrivateKeys;
 
     public String getAppKey() {
         return appKey;
@@ -91,5 +99,31 @@ public class AppSDKConfig implements Serializable {
     public AppSDKConfig withIsvPrivateKey(PrivateKey isvPrivateKey) {
         this.isvPrivateKey = isvPrivateKey;
         return this;
+    }
+
+    public void storeYopPublicKey(CertConfig[] yopPublicKeys) {
+        this.yopPublicKey = ConfigUtils.loadPublicKey(yopPublicKeys[0]);
+        this.yopPublicKeys = Maps.newHashMap();
+        this.yopPublicKeys.put(yopPublicKeys[0].getCertType(), this.yopPublicKey);
+        for (int i = 1; i < yopPublicKeys.length; i++) {
+            this.yopPublicKeys.put(yopPublicKeys[i].getCertType(), ConfigUtils.loadPublicKey(yopPublicKeys[i]));
+        }
+    }
+
+    public void storeIsvPrivateKey(CertConfig[] isvPrivateKeys) {
+        this.isvPrivateKey = ConfigUtils.loadPrivateKey(isvPrivateKeys[0]);
+        this.isvPrivateKeys = Maps.newHashMap();
+        this.isvPrivateKeys.put(isvPrivateKeys[0].getCertType(), this.isvPrivateKey);
+        for (int i = 1; i < isvPrivateKeys.length; i++) {
+            this.isvPrivateKeys.put(isvPrivateKeys[i].getCertType(), ConfigUtils.loadPrivateKey(isvPrivateKeys[i]));
+        }
+    }
+
+    public PublicKey loadYopPublicKey(CertTypeEnum certType) {
+        return this.yopPublicKeys.get(certType);
+    }
+
+    public PrivateKey loadPrivateKey(CertTypeEnum certType) {
+        return this.isvPrivateKeys.get(certType);
     }
 }
