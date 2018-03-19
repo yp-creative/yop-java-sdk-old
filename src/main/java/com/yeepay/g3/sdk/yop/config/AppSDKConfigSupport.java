@@ -64,7 +64,7 @@ public class AppSDKConfigSupport {
             }
             SDKConfig sdkConfig = SDKConfigSupport.getDefaultSDKConfig();
             if (SDKConfigSupport.isCustomDefault()) {
-                defaultAppSDKConfig = APP_SDK_CONFIGS.get(sdkConfig.getAppKey());
+                defaultAppSDKConfig = APP_SDK_CONFIGS.get(formatAppKey(sdkConfig.getAppKey()));
             } else {
                 defaultAppSDKConfig = new Holder<AppSDKConfig>(new AppSDKConfigInitTask(sdkConfig));
             }
