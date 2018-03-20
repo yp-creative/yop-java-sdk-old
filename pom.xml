@@ -32,17 +32,6 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>com.yeepay.g3.utils</groupId>
-            <artifactId>yeepay-utils-common</artifactId>
-            <version>1.0</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
             <groupId>com.yeepay.g3.yop</groupId>
             <artifactId>yop-ca-frame</artifactId>
             <version>1.0</version>
@@ -125,6 +114,12 @@
             <artifactId>yop-utils</artifactId>
             <version>1.0</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.yeepay.g3.utils</groupId>
+                    <artifactId>yeepay-utils-common</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- test end -->
     </dependencies>
