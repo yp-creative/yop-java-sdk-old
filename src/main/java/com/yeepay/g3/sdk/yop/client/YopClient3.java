@@ -65,20 +65,6 @@ public class YopClient3 extends AbstractClient {
      * @return 响应对象
      */
     public static YopResponse postRsa(String apiUri, YopRequest request) throws IOException {
-        String content = postRsaString(apiUri, request);
-        YopResponse response = JacksonJsonMarshaller.unmarshal(content, YopResponse.class);
-        handleRsaResult(response, request.getAppSDKConfig());
-        return response;
-    }
-
-    /**
-     * 发起post请求，以字符串返回
-     *
-     * @param apiUri  目标地址或命名模式的method
-     * @param request 客户端请求对象
-     * @return 字符串形式的响应
-     */
-    public static String postRsaString(String apiUri, YopRequest request) throws IOException {
         String contentUrl = richRequest(apiUri, request);
         sign(apiUri, request);
 
@@ -91,7 +77,9 @@ public class YopClient3 extends AbstractClient {
         }
 
         HttpUriRequest httpPost = requestBuilder.build();
-        return fetchContentByApacheHttpClient(httpPost);
+        YopResponse response = fetchContentByApacheHttpClient(httpPost);
+        handleRsaResult(response, request.getAppSDKConfig());
+        return response;
     }
 
     /**
@@ -102,20 +90,6 @@ public class YopClient3 extends AbstractClient {
      * @return 响应对象
      */
     public static YopResponse uploadRsa(String apiUri, YopRequest request) throws IOException {
-        String content = uploadRsaForString(apiUri, request);
-        YopResponse response = JacksonJsonMarshaller.unmarshal(content, YopResponse.class);
-        handleRsaResult(response, request.getAppSDKConfig());
-        return response;
-    }
-
-    /**
-     * 发起文件上传请求，以字符串返回
-     *
-     * @param apiUri  目标地址或命名模式的method
-     * @param request 客户端请求对象
-     * @return 字符串形式的响应
-     */
-    public static String uploadRsaForString(String apiUri, YopRequest request) throws IOException {
         String contentUrl = richRequest(apiUri, request);
         sign(apiUri, request);
 
@@ -148,7 +122,9 @@ public class YopClient3 extends AbstractClient {
         }
 
         HttpUriRequest httpPost = requestBuilder.build();
-        return fetchContentByApacheHttpClient(httpPost);
+        YopResponse response = fetchContentByApacheHttpClient(httpPost);
+        handleRsaResult(response, request.getAppSDKConfig());
+        return response;
     }
 
     private static void sign(String apiUri, YopRequest request) {
@@ -192,7 +168,7 @@ public class YopClient3 extends AbstractClient {
         // Signing the canonical request using key with sha-256 algorithm.
 
         PrivateKey isvPrivateKey;
-        if (StringUtils.isNotBlank(request.getSecretKey())) {
+        if (StringUtils.length(request.getSecretKey()) > 128) {
             try {
                 isvPrivateKey = RSAKeyUtils.string2PrivateKey(request.getSecretKey());
             } catch (NoSuchAlgorithmException e) {

@@ -7,6 +7,7 @@ import com.yeepay.g3.sdk.yop.client.YopResponse;
 import com.yeepay.g3.sdk.yop.hbird.HbirdLoginToken;
 import com.yeepay.g3.sdk.yop.utils.mapper.JsonMapper;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.time.StopWatch;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -15,6 +16,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
+
+import static junit.framework.TestCase.assertTrue;
 
 /**
  * title: <br>
@@ -261,6 +264,27 @@ public class LocalDemo {
 
         YopResponse response = YopClient.post("/rest/v1.0/system/loader/methods", request);
         AssertUtils.assertYopResponse(response);
+    }
+
+    @Test
+    public void name() {
+        System.setProperty("yop.sdk.config.file", "/config/yop_sdk_config_local.json");
+
+        YopRequest request = new YopRequest("yop-boss", "PdZ74F6sxapgOWJ31QKmYw==");
+        request.setSignAlg("SHA-256");
+        request.addParam("backendLatency", "100");
+
+        YopResponse response = null;
+        try {
+            StopWatch stopWatch = StopWatch.createStarted();
+            response = YopClient.post("/rest/v1.0/yop/mock/backend-latency", request);
+            assertTrue(response.isSuccess());
+//                assertTrue(response.isValidSign());
+            stopWatch.stop();
+            System.out.println("stopWatch:" + stopWatch.getTime());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }

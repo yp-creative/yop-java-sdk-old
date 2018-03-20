@@ -235,6 +235,10 @@ public class YopRequest {
         headers.put(name, value);
     }
 
+    public String getRequestId() {
+        return headers.get(Headers.YOP_REQUEST_ID);
+    }
+
     public void setRequestId(String requestId) {
         headers.put(Headers.YOP_REQUEST_ID, requestId);
     }
@@ -285,10 +289,11 @@ public class YopRequest {
     }
 
     public String getSecretKey() {
-        if (StringUtils.isEmpty(secretKey)) {
-            return appSDKConfig.getAesSecretKey();
-        }
         return secretKey;
+    }
+
+    public String getAesSecretKey() {
+        return secretKey == null ? appSDKConfig.getAesSecretKey() : secretKey;
     }
 
     public AppSDKConfig getAppSDKConfig() {

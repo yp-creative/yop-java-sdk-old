@@ -1,6 +1,7 @@
 package com.yeepay.g3.sdk.yop.config;
 
 import com.yeepay.g3.sdk.yop.utils.Holder;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import java.util.Map;
@@ -31,19 +32,23 @@ public class AppSDKConfigSupport {
 
     public static AppSDKConfig getConfig(String appKey) {
         init();
-        Holder<AppSDKConfig> holder = APP_SDK_CONFIGS.get(appKey);
+        Holder<AppSDKConfig> holder = APP_SDK_CONFIGS.get(formatAppKey(appKey));
         return holder == null ? null : holder.getValue();
     }
 
     public static AppSDKConfig getConfigWithDefault(String appKey) {
         init();
-        Holder<AppSDKConfig> holder = APP_SDK_CONFIGS.get(appKey);
+        Holder<AppSDKConfig> holder = APP_SDK_CONFIGS.get(formatAppKey(appKey));
         return holder == null ? getDefaultAppSDKConfig() : holder.getValue();
     }
 
     public static AppSDKConfig getDefaultAppSDKConfig() {
         init();
-        return defaultAppSDKConfig == null ? null : defaultAppSDKConfig.getValue();
+        return defaultAppSDKConfig.getValue();
+    }
+
+    private static String formatAppKey(String appKey) {
+        return StringUtils.replace(appKey, ":", "");
     }
 
     private static void init() {
@@ -58,7 +63,9 @@ public class AppSDKConfigSupport {
                 APP_SDK_CONFIGS.putIfAbsent(entry.getKey(), new Holder<AppSDKConfig>(new AppSDKConfigInitTask(entry.getValue())));
             }
             SDKConfig sdkConfig = SDKConfigSupport.getDefaultSDKConfig();
-            if (sdkConfig != null) {
+            if (SDKConfigSupport.isCustomDefault()) {
+                defaultAppSDKConfig = APP_SDK_CONFIGS.get(formatAppKey(sdkConfig.getAppKey()));
+            } else {
                 defaultAppSDKConfig = new Holder<AppSDKConfig>(new AppSDKConfigInitTask(sdkConfig));
             }
             inited = true;
@@ -80,10 +87,10 @@ public class AppSDKConfigSupport {
             appSDKConfig.setAesSecretKey(sdkConfig.getAesSecretKey());
             appSDKConfig.setServerRoot(sdkConfig.getServerRoot());
             if (sdkConfig.getYopPublicKey() != null && sdkConfig.getYopPublicKey().length >= 1) {
-                appSDKConfig.setYopPublicKey(ConfigUtils.loadPublicKey(sdkConfig.getYopPublicKey()[0]));
+                appSDKConfig.storeYopPublicKey(sdkConfig.getYopPublicKey());
             }
             if (sdkConfig.getIsvPrivateKey() != null && sdkConfig.getIsvPrivateKey().length >= 1) {
-                appSDKConfig.setIsvPrivateKey(ConfigUtils.loadPrivateKey(sdkConfig.getIsvPrivateKey()[0]));
+                appSDKConfig.storeIsvPrivateKey(sdkConfig.getIsvPrivateKey());
             }
             return appSDKConfig;
         }

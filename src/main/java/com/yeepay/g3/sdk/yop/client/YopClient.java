@@ -47,20 +47,6 @@ public class YopClient extends AbstractClient {
      * @return 响应对象
      */
     public static YopResponse post(String apiUri, YopRequest request) throws IOException {
-        String content = postForString(apiUri, request);
-        YopResponse response = JacksonJsonMarshaller.unmarshal(content, YopResponse.class);
-        handleResult(request, response);
-        return response;
-    }
-
-    /**
-     * 发起post请求，以字符串返回
-     *
-     * @param apiUri  目标地址
-     * @param request 客户端请求对象
-     * @return 字符串形式的响应
-     */
-    public static String postForString(String apiUri, YopRequest request) throws IOException {
         String contentUrl = richRequest(apiUri, request);
         normalize(request);
         sign(request);
@@ -74,7 +60,9 @@ public class YopClient extends AbstractClient {
         }
 
         HttpUriRequest httpPost = requestBuilder.build();
-        return fetchContentByApacheHttpClient(httpPost);
+        YopResponse response = fetchContentByApacheHttpClient(httpPost);
+        handleResult(request, response);
+        return response;
     }
 
     /**
@@ -85,20 +73,6 @@ public class YopClient extends AbstractClient {
      * @return 响应对象
      */
     public static YopResponse get(String apiUri, YopRequest request) throws IOException {
-        String content = getForString(apiUri, request);
-        YopResponse response = JacksonJsonMarshaller.unmarshal(content, YopResponse.class);
-        handleResult(request, response);
-        return response;
-    }
-
-    /**
-     * 发起get请求，以字符串返回
-     *
-     * @param apiUri  目标地址或命名模式的method
-     * @param request 客户端请求对象
-     * @return 字符串形式的响应
-     */
-    public static String getForString(String apiUri, YopRequest request) throws IOException {
         String contentUrl = richRequest(apiUri, request);
         normalize(request);
         sign(request);
@@ -112,7 +86,9 @@ public class YopClient extends AbstractClient {
         }
 
         HttpUriRequest httpGet = requestBuilder.build();
-        return fetchContentByApacheHttpClient(httpGet);
+        YopResponse response = fetchContentByApacheHttpClient(httpGet);
+        handleResult(request, response);
+        return response;
     }
 
     /**
@@ -123,20 +99,6 @@ public class YopClient extends AbstractClient {
      * @return 响应对象
      */
     public static YopResponse upload(String apiUri, YopRequest request) throws IOException, URISyntaxException {
-        String content = uploadForString(apiUri, request);
-        YopResponse response = JacksonJsonMarshaller.unmarshal(content, YopResponse.class);
-        handleResult(request, response);
-        return response;
-    }
-
-    /**
-     * 发起文件上传请求，以字符串返回
-     *
-     * @param apiUri  目标地址或命名模式的method
-     * @param request 客户端请求对象
-     * @return 字符串形式的响应
-     */
-    public static String uploadForString(String apiUri, YopRequest request) throws IOException, URISyntaxException {
         String contentUrl = richRequest(apiUri, request);
         normalize(request);
         sign(request);
@@ -170,7 +132,9 @@ public class YopClient extends AbstractClient {
         }
 
         HttpUriRequest httpPost = requestBuilder.build();
-        return fetchContentByApacheHttpClient(httpPost);
+        YopResponse response = fetchContentByApacheHttpClient(httpPost);
+        handleResult(request, response);
+        return response;
     }
 
     /**
@@ -225,7 +189,7 @@ public class YopClient extends AbstractClient {
 
         String canonicalQueryString = getCanonicalQueryString(request, true);
 
-        String secret = request.getSecretKey();
+        String secret = request.getAesSecretKey();
         String algName = request.getSignAlg();
         algName = StringUtils.isBlank(algName) ? YopConstants.ALG_SHA1 : algName;
 
@@ -265,9 +229,9 @@ public class YopClient extends AbstractClient {
     private static boolean verifySignature(YopRequest request, YopResponse response, String expectedSign) {
         String trimmedBizResult = response.getStringResult().replaceAll("[ \t\n]", "");
         StringBuilder sb = new StringBuilder();
-        sb.append(request.getSecretKey());
+        sb.append(request.getAesSecretKey());
         sb.append(StringUtils.trimToEmpty(response.getState() + trimmedBizResult + response.getTs()));
-        sb.append(request.getSecretKey());
+        sb.append(request.getAesSecretKey());
         String calculatedSign = Digest.digest(sb.toString(), StringUtils.isBlank(request.getSignAlg()) ? YopConstants.ALG_SHA1 : request.getSignAlg());
         return StringUtils.equalsIgnoreCase(expectedSign, calculatedSign);
     }

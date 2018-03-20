@@ -1,6 +1,4 @@
 {
-  "app_key": "",
-  "aes_secret_key": "",
   "server_root": "https://open.yeepay.com/yop-center",
   "yop_public_key": [
     {

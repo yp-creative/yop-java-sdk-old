@@ -1,10 +1,12 @@
 package com.yeepay.g3.sdk.yop.client;
 
 import com.yeepay.g3.sdk.yop.exception.YopClientException;
+import com.yeepay.g3.sdk.yop.unmarshaller.JacksonJsonMarshaller;
 import com.yeepay.g3.sdk.yop.utils.Assert;
 import com.yeepay.g3.sdk.yop.utils.InternalConfig;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -75,7 +77,7 @@ public class AbstractClient {
         return sslConnectionSocketFactory;
     }
 
-    protected static String fetchContentByApacheHttpClient(HttpUriRequest request) throws IOException {
+    protected static YopResponse fetchContentByApacheHttpClient(HttpUriRequest request) throws IOException {
         CloseableHttpResponse remoteResponse = getHttpClient().execute(request);
         HttpEntity resEntity = null;
         try {
@@ -85,8 +87,14 @@ public class AbstractClient {
                 throw new YopClientException(Integer.toString(statusCode));
             }
 
-            resEntity = remoteResponse.getEntity();
-            return EntityUtils.toString(resEntity);
+            String content = EntityUtils.toString(remoteResponse.getEntity());
+            YopResponse response = JacksonJsonMarshaller.unmarshal(content, YopResponse.class);
+
+            Header requestIdHeader = remoteResponse.getFirstHeader("x-yop-request-id");
+            if (null != requestIdHeader) {
+                response.setRequestId(requestIdHeader.getValue());
+            }
+            return response;
         } finally {
             HttpClientUtils.closeQuietly(remoteResponse);
         }
