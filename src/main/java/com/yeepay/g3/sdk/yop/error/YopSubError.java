@@ -17,29 +17,29 @@ import javax.xml.bind.annotation.XmlAccessorType;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class YopSubError {
 
-	private String code;
+    private String code;
 
-	private String message;
+    private String message;
 
-	public YopSubError() {
-	}
+    public YopSubError() {
+    }
 
-	public YopSubError(String code, String message) {
-		this.code = code;
-		this.message = message;
-	}
+    public YopSubError(String code, String message) {
+        this.code = code;
+        this.message = message;
+    }
 
-	public String getCode() {
-		return code;
-	}
+    public String getCode() {
+        return code;
+    }
 
-	public String getMessage() {
-		return message;
-	}
+    public String getMessage() {
+        return message;
+    }
 
-	@Override
-	public String toString() {
-		return ToStringBuilder.reflectionToString(this,
-				ToStringStyle.SHORT_PREFIX_STYLE);
-	}
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this,
+                ToStringStyle.SHORT_PREFIX_STYLE);
+    }
 }

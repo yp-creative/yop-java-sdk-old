@@ -1,8 +1,8 @@
 package com.yeepay.g3.sdk.yop.utils;
 
-import com.yeepay.g3.facade.yop.ca.enums.CertTypeEnum;
 import com.yeepay.g3.sdk.yop.YopServiceException;
 import com.yeepay.g3.sdk.yop.config.*;
+import com.yeepay.g3.sdk.yop.encrypt.CertTypeEnum;
 import org.apache.log4j.Logger;
 
 import java.security.PrivateKey;

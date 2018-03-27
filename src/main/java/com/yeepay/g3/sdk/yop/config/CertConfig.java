@@ -1,7 +1,7 @@
 package com.yeepay.g3.sdk.yop.config;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.yeepay.g3.facade.yop.ca.enums.CertTypeEnum;
+import com.yeepay.g3.sdk.yop.encrypt.CertTypeEnum;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 

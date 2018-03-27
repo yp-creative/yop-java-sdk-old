@@ -79,14 +79,35 @@ public final class SDKConfigSupport {
                 String[] configFiles = StringUtils.split(configFileProperty, SDK_CONFIG_FILE_SEPARATOR);
                 for (String absolutePath : configFiles) {
                     String fileName = StringUtils.substringAfterLast(absolutePath, File.separator);
-                    storeSDKConfig(fileName, absolutePath);
+                    Matcher matcher = SDK_CONFIG_FILE_NAME_PATTERN.matcher(fileName);
+                    if (matcher.matches()) {
+                        SDKConfig sdkConfig = loadConfig(absolutePath);
+                        ValidateUtils.checkCustomSDKConfig(sdkConfig);
+                        String fileNameSuffix = matcher.group(1);
+                        if (StringUtils.equals(fileNameSuffix, DEFAULT_SDK_CONFIG_KEY)) {
+                            defaultSDKConfig = sdkConfig;
+                        }
+                        CONFIGS.put(StringUtils.replace(sdkConfig.getAppKey(), ":", ""), sdkConfig);
+                    } else {
+                        LOGGER.warn("Illegal SDkConfig File Name:" + fileName);
+                    }
                 }
             } else {
                 List<String> fileNames = loadConfigFilesFromClassPath();
                 if (CollectionUtils.isNotEmpty(fileNames)) {
                     for (String fileName : fileNames) {
-                        String filePath = SDK_CONFIG_DIR + File.separator + fileName;
-                        storeSDKConfig(fileName, filePath);
+                        Matcher matcher = SDK_CONFIG_FILE_NAME_PATTERN.matcher(fileName);
+                        if (matcher.matches()) {
+                            SDKConfig sdkConfig = loadConfig(SDK_CONFIG_DIR + File.separator + fileName);
+                            ValidateUtils.checkCustomSDKConfig(sdkConfig);
+                            String fileNameSuffix = matcher.group(1);
+                            if (StringUtils.equals(fileNameSuffix, DEFAULT_SDK_CONFIG_KEY)) {
+                                defaultSDKConfig = sdkConfig;
+                            }
+                            CONFIGS.put(StringUtils.replace(sdkConfig.getAppKey(), ":", ""), sdkConfig);
+                        } else {
+                            LOGGER.warn("Illegal SDkConfig File Name:" + fileName);
+                        }
                     }
                 }
             }
@@ -102,20 +123,6 @@ public final class SDKConfigSupport {
                 customDefault = true;
             }
             inited = true;
-        }
-    }
-
-    private static void storeSDKConfig(String fileName, String filePath) {
-        Matcher matcher = SDK_CONFIG_FILE_NAME_PATTERN.matcher(fileName);
-        if (matcher.matches()) {
-            SDKConfig sdkConfig = loadConfig(filePath);
-            ValidateUtils.checkCustomSDKConfig(sdkConfig);
-            if (StringUtils.equals(matcher.group(1), DEFAULT_SDK_CONFIG_KEY)) {
-                defaultSDKConfig = sdkConfig;
-            }
-            CONFIGS.put(StringUtils.replace(sdkConfig.getAppKey(), ":", ""), sdkConfig);
-        } else {
-            LOGGER.warn("Illegal SDkConfig File Name:" + fileName);
         }
     }
 

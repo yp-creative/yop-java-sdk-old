@@ -1,7 +1,7 @@
 package com.yeepay.g3.sdk.yop.config;
 
 import com.google.common.collect.Maps;
-import com.yeepay.g3.facade.yop.ca.enums.CertTypeEnum;
+import com.yeepay.g3.sdk.yop.encrypt.CertTypeEnum;
 
 import java.io.Serializable;
 import java.security.PrivateKey;

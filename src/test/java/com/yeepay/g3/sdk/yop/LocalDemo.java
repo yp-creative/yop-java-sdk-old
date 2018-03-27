@@ -38,8 +38,8 @@ public class LocalDemo {
 
     @BeforeClass
     public static void setUp() throws Exception {
-        System.setProperty("yop.sdk.config.file", "/config/yop_sdk_config_local.json");
-//        System.setProperty("yop.sdk.config.file", "/config/yop_sdk_config_dev.json");
+//        System.setProperty("yop.sdk.config.file", "/config/yop_sdk_config_local.json");
+        System.setProperty("yop.sdk.config.file", "/config/yop_sdk_config_dev.json");
 //        System.setProperty("yop.sdk.config.file", "/config/yop_sdk_config_pro.json");
 //        System.setProperty("yop.sdk.trust.all.certs", "true");
     }
@@ -80,7 +80,7 @@ public class LocalDemo {
 
     @Test
     public void testAES256_SHA256() throws Exception {
-        int i = 1;
+        int i = 0;
         YopRequest request = new YopRequest(APP_KEYS[i], APP_SECRETS[i]);
         request.setSignAlg("sha-256");
         request.addParam("corpName", "安徽四创电子股份有限公司青海分公司");//企业名称
@@ -268,8 +268,6 @@ public class LocalDemo {
 
     @Test
     public void name() {
-        System.setProperty("yop.sdk.config.file", "/config/yop_sdk_config_local.json");
-
         YopRequest request = new YopRequest("yop-boss", "PdZ74F6sxapgOWJ31QKmYw==");
         request.setSignAlg("SHA-256");
         request.addParam("backendLatency", "100");
