@@ -21,34 +21,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.yeepay.g3.yop</groupId>
-            <artifactId>yop-ca-facade</artifactId>
-            <version>1.0</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.yeepay.g3.utils</groupId>
-                    <artifactId>yeepay-utils-common</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>com.yeepay.g3.utils</groupId>
-            <artifactId>yeepay-utils-common</artifactId>
-            <version>1.0</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>com.yeepay.g3.yop</groupId>
-            <artifactId>yop-ca-frame</artifactId>
-            <version>1.0</version>
-        </dependency>
-
-        <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
             <version>${fasterxml.jackson.version}</version>
@@ -125,6 +97,12 @@
             <artifactId>yop-utils</artifactId>
             <version>1.0</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.yeepay.g3.utils</groupId>
+                    <artifactId>yeepay-utils-common</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- test end -->
     </dependencies>
@@ -170,7 +148,7 @@
                             <artifactSet>
                                 <excludes>
                                     <exclude>log4j:log4j:jar:</exclude>
-                                    <exclude>commons-logging:commons-logging:jar:</exclude>
+                                    <!--<exclude>commons-logging:commons-logging:jar:</exclude>-->
                                     <exclude>com.yeepay.infra:metrics-agent:jar:</exclude>
                                 </excludes>
                             </artifactSet>
@@ -283,6 +261,40 @@
                         <goals>
                             <goal>single</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-deploy</id>
+                        <phase>deploy</phase>
+                        <goals>
+                            <goal>deploy</goal>
+                        </goals>
+                        <!-- skip默认deploy插件的执行 -->
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>deploy-file</id>
+                        <phase>deploy</phase>
+                        <goals>
+                            <goal>deploy-file</goal>
+                        </goals>
+                        <configuration>
+                            <packaging>jar</packaging>
+                            <repositoryId>${project.distributionManagement.repository.id}</repositoryId>
+                            <url>${project.distributionManagement.repository.url}</url>
+                            <file>${project.build.directory}/${project.artifactId}-${project.version}.jar</file>
+                            <groupId>${project.groupId}</groupId>
+                            <artifactId>${project.artifactId}</artifactId>
+                            <version>${project.version}</version>
+                            <classifier>yeepay</classifier>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

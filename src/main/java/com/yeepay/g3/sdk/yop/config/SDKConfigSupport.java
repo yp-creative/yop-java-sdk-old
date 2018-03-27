@@ -86,10 +86,8 @@ public final class SDKConfigSupport {
                         String fileNameSuffix = matcher.group(1);
                         if (StringUtils.equals(fileNameSuffix, DEFAULT_SDK_CONFIG_KEY)) {
                             defaultSDKConfig = sdkConfig;
-                            CONFIGS.put(StringUtils.replace(sdkConfig.getAppKey(), ":", ""), sdkConfig);
-                        } else {
-                            CONFIGS.put(fileNameSuffix, sdkConfig);
                         }
+                        CONFIGS.put(StringUtils.replace(sdkConfig.getAppKey(), ":", ""), sdkConfig);
                     } else {
                         LOGGER.warn("Illegal SDkConfig File Name:" + fileName);
                     }
@@ -105,10 +103,8 @@ public final class SDKConfigSupport {
                             String fileNameSuffix = matcher.group(1);
                             if (StringUtils.equals(fileNameSuffix, DEFAULT_SDK_CONFIG_KEY)) {
                                 defaultSDKConfig = sdkConfig;
-                                CONFIGS.put(StringUtils.replace(sdkConfig.getAppKey(), ":", ""), sdkConfig);
-                            } else {
-                                CONFIGS.put(fileNameSuffix, sdkConfig);
                             }
+                            CONFIGS.put(StringUtils.replace(sdkConfig.getAppKey(), ":", ""), sdkConfig);
                         } else {
                             LOGGER.warn("Illegal SDkConfig File Name:" + fileName);
                         }

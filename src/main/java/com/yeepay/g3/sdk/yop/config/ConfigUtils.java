@@ -1,7 +1,7 @@
 package com.yeepay.g3.sdk.yop.config;
 
-import com.yeepay.g3.frame.yop.ca.rsa.RSAKeyUtils;
 import com.yeepay.g3.sdk.yop.YopServiceException;
+import com.yeepay.g3.sdk.yop.utils.RSAKeyUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.FileInputStream;

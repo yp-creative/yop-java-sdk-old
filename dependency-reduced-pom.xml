@@ -39,7 +39,6 @@
               <artifactSet>
                 <excludes>
                   <exclude>log4j:log4j:jar:</exclude>
-                  <exclude>commons-logging:commons-logging:jar:</exclude>
                   <exclude>com.yeepay.infra:metrics-agent:jar:</exclude>
                 </excludes>
               </artifactSet>
@@ -133,6 +132,38 @@
           </descriptors>
         </configuration>
       </plugin>
+      <plugin>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>default-deploy</id>
+            <phase>deploy</phase>
+            <goals>
+              <goal>deploy</goal>
+            </goals>
+            <configuration>
+              <skip>true</skip>
+            </configuration>
+          </execution>
+          <execution>
+            <id>deploy-file</id>
+            <phase>deploy</phase>
+            <goals>
+              <goal>deploy-file</goal>
+            </goals>
+            <configuration>
+              <packaging>jar</packaging>
+              <repositoryId>${project.distributionManagement.repository.id}</repositoryId>
+              <url>${project.distributionManagement.repository.url}</url>
+              <file>${project.build.directory}/${project.artifactId}-${project.version}.jar</file>
+              <groupId>${project.groupId}</groupId>
+              <artifactId>${project.artifactId}</artifactId>
+              <version>${project.version}</version>
+              <classifier>yeepay</classifier>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
   <dependencies>
@@ -160,6 +191,10 @@
       <version>1.0</version>
       <scope>test</scope>
       <exclusions>
+        <exclusion>
+          <artifactId>yeepay-utils-common</artifactId>
+          <groupId>com.yeepay.g3.utils</groupId>
+        </exclusion>
         <exclusion>
           <artifactId>yeepay-rmi</artifactId>
           <groupId>com.yeepay.g3.utils</groupId>

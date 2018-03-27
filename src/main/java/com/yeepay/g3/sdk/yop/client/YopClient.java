@@ -4,7 +4,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.yeepay.g3.sdk.yop.encrypt.AESEncrypter;
-import com.yeepay.g3.sdk.yop.encrypt.Digest;
+import com.yeepay.g3.sdk.yop.encrypt.Digests;
 import com.yeepay.g3.sdk.yop.http.Headers;
 import com.yeepay.g3.sdk.yop.unmarshaller.JacksonJsonMarshaller;
 import com.yeepay.g3.sdk.yop.utils.DateUtils;
@@ -194,7 +194,7 @@ public class YopClient extends AbstractClient {
         algName = StringUtils.isBlank(algName) ? YopConstants.ALG_SHA1 : algName;
 
         String sb = secret + canonicalQueryString + secret;
-        String signature = Digest.digest(sb, algName);
+        String signature = Digests.digest2Hex(sb, algName);
         if (32 == Base64.decodeBase64(secret).length) {
             request.addHeader("Authorization", "YOP-HMAC-AES256 " + signature);
         } else {
@@ -232,7 +232,7 @@ public class YopClient extends AbstractClient {
         sb.append(request.getAesSecretKey());
         sb.append(StringUtils.trimToEmpty(response.getState() + trimmedBizResult + response.getTs()));
         sb.append(request.getAesSecretKey());
-        String calculatedSign = Digest.digest(sb.toString(), StringUtils.isBlank(request.getSignAlg()) ? YopConstants.ALG_SHA1 : request.getSignAlg());
+        String calculatedSign = Digests.digest2Hex(sb.toString(), StringUtils.isBlank(request.getSignAlg()) ? YopConstants.ALG_SHA1 : request.getSignAlg());
         return StringUtils.equalsIgnoreCase(expectedSign, calculatedSign);
     }
 
@@ -262,7 +262,7 @@ public class YopClient extends AbstractClient {
         }
 
         //签名是必须的...
-        String localSignature = Digest.digest(key + encryption + key, signatureAlg);
+        String localSignature = Digests.digest2Hex(key + encryption + key, signatureAlg);
         //验签失败...
         if (!localSignature.equals(signature)) {
             return null;

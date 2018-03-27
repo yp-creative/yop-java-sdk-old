@@ -17,9 +17,7 @@
 
 ````
 +- docs                           // 其他文档或工具
-|  +- jce_policy-6.zip            // 支持 SHA-256 的 JCE for JDK6
-|  +- jce_policy-8.zip            // 支持 SHA-256 的 JCE for JDK8
-|  +- UnlimitedJCEPolicyJDK7.zip  // 支持 SHA-256 的 JCE for JDK7
+|  +- tz.jsp                      // 环境探针
 +- lib                            // 依赖包，采用All in One时请忽略本目录
 +- LICENSE                        // 授权协议，请勿删除
 +- original-yop-sdk-${version}.jar // 未将lib目录shade打包的原始jar包

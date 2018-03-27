@@ -32,7 +32,8 @@ public class YopClientBenchmark extends ConcurrentBenchmark {
     }
 
     public static void main(String[] args) throws Exception {
-        System.setProperty("yop.sdk.config.file", "/config/yop_sdk_config_local.json");
+//        System.setProperty("yop.sdk.config.file", "/config/yop_sdk_config_local.json");
+        System.setProperty("yop.sdk.config.file", "/config/yop_sdk_config_dev.json");
 
         YopClientBenchmark benchmark = new YopClientBenchmark();
         benchmark.execute();
@@ -47,13 +48,13 @@ public class YopClientBenchmark extends ConcurrentBenchmark {
         @Override
         protected void execute(int requestSequence) {
             // RandomStringUtils.randomAlphanumeric(20)
-            YopRequest request = new YopRequest("yop-boss", "PdZ74F6sxapgOWJ31QKmYw==");
+            YopRequest request = new YopRequest();
             request.setSignAlg("SHA-256");
 
             if (random.nextInt(100) >= 20) {// 20% 的请求超过30s
-                request.addParam("backendLatency", "10000");
+                request.addParam("backendLatency", "100");
             } else {
-                request.addParam("backendLatency", "20000");
+                request.addParam("backendLatency", "200");
             }
 
             YopResponse response = null;
