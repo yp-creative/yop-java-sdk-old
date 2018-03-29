@@ -148,7 +148,7 @@
                             <artifactSet>
                                 <excludes>
                                     <exclude>log4j:log4j:jar:</exclude>
-                                    <!--<exclude>commons-logging:commons-logging:jar:</exclude>-->
+                                    <exclude>commons-logging:commons-logging:jar:</exclude>
                                     <exclude>com.yeepay.infra:metrics-agent:jar:</exclude>
                                 </excludes>
                             </artifactSet>
