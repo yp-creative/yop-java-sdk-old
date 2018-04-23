@@ -145,7 +145,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>3.1.1</version>
                 <configuration>
                     <!-- put your configurations here -->
                 </configuration>
@@ -158,11 +158,13 @@
                         <configuration>
                             <!-- 将所有不使用的类全部排除掉 -->
                             <minimizeJar>true</minimizeJar>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>${shaded.classifier.name}</shadedClassifierName>
                             <artifactSet>
                                 <excludes>
                                     <exclude>log4j:log4j:jar:</exclude>
-                                    <!--<exclude>commons-logging:commons-logging:jar:</exclude>-->
-                                    <exclude>com.yeepay.infra:metrics-agent:jar:</exclude>
+                                    <exclude>commons-logging:commons-logging</exclude>
+                                    <exclude>com.yeepay.infra:metrics-agent</exclude>
                                 </excludes>
                             </artifactSet>
                             <filters>
@@ -179,7 +181,23 @@
                                         <exclude>rebel.xml</exclude>
                                     </excludes>
                                 </filter>
+                                <filter>
+                                    <artifact>commons-logging:commons-logging</artifact>
+                                    <includes>
+                                        <include>**</include>
+                                    </includes>
+                                </filter>
                             </filters>
+                            <transformers>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/spring.handlers</resource>
+                                </transformer>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/spring.schemas</resource>
+                                </transformer>
+                            </transformers>
                             <relocations>
                                 <relocation>
                                     <pattern>com.fasterxml</pattern>
@@ -264,8 +282,9 @@
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
                     <descriptors>
-                        <descriptor>assembly.xml</descriptor>
+                        <descriptor>${assembly.file}</descriptor>
                     </descriptors>
+                    <appendAssemblyId>true</appendAssemblyId>
                 </configuration>
                 <executions>
                     <execution>
@@ -325,61 +344,34 @@
                 <maven.compiler.target>1.8</maven.compiler.target>
                 <maven.compiler.compilerVersion>1.8</maven.compiler.compilerVersion>
 
+                <assembly.file>assembly.xml</assembly.file>
+                <shaded.classifier.name>jdk18</shaded.classifier.name>
+
                 <commons-lang3.version>3.6</commons-lang3.version>
             </properties>
         </profile>
         <profile>
             <id>jdk17</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-jar-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                                <configuration>
-                                    <classifier>jdk17</classifier>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
             <properties>
                 <maven.compiler.source>1.7</maven.compiler.source>
                 <maven.compiler.target>1.7</maven.compiler.target>
                 <maven.compiler.compilerVersion>1.7</maven.compiler.compilerVersion>
+
+                <assembly.file>assembly-jdk17.xml</assembly.file>
+                <shaded.classifier.name>jdk17</shaded.classifier.name>
 
                 <commons-lang3.version>3.5</commons-lang3.version>
             </properties>
         </profile>
         <profile>
             <id>jdk16</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-jar-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                                <configuration>
-                                    <classifier>jdk16</classifier>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
             <properties>
                 <maven.compiler.source>1.6</maven.compiler.source>
                 <maven.compiler.target>1.6</maven.compiler.target>
                 <maven.compiler.compilerVersion>1.6</maven.compiler.compilerVersion>
+
+                <assembly.file>assembly-jdk16.xml</assembly.file>
+                <shaded.classifier.name>jdk16</shaded.classifier.name>
 
                 <commons-lang3.version>3.5</commons-lang3.version>
             </properties>
