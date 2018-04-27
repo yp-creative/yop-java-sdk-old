@@ -8,6 +8,7 @@ import com.yeepay.g3.sdk.yop.hbird.HbirdLoginToken;
 import com.yeepay.g3.sdk.yop.utils.mapper.JsonMapper;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.time.StopWatch;
+import org.apache.http.client.utils.URLEncodedUtils;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -16,6 +17,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
 
 import static junit.framework.TestCase.assertTrue;
 
@@ -40,8 +42,23 @@ public class LocalDemo {
     public static void setUp() throws Exception {
 //        System.setProperty("yop.sdk.config.file", "/config/yop_sdk_config_local.json");
         System.setProperty("yop.sdk.config.file", "/config/yop_sdk_config_dev.json");
+//        System.setProperty("yop.sdk.config.file", "/config/yop_sdk_config_qa.json");
 //        System.setProperty("yop.sdk.config.file", "/config/yop_sdk_config_pro.json");
 //        System.setProperty("yop.sdk.trust.all.certs", "true");
+    }
+
+    @Test
+    public void testAES_BASE64_URLEncode() throws Exception {
+        YopRequest request = new YopRequest();
+        request.addParam("requestFlowId", "test123456");//请求流水标识
+        request.addParam("name", "张文康");
+        request.addParam("idCardNumber", "czr+7xY");
+
+//        YopResponse response = YopClient.get("/rest/v2.0/auth/idcard", request);
+//        AssertUtils.assertYopResponse(response);
+
+        YopResponse response = YopClient.post("/rest/v2.0/auth/idcard", request);
+        AssertUtils.assertYopResponse(response);
     }
 
     @Test
