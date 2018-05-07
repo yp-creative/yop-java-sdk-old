@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import java.io.*;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -130,13 +131,22 @@ public final class SDKConfigSupport {
         List<String> filenames = new ArrayList<String>();
         try {
             //无法读取jar包的目录
-            InputStream in = ConfigUtils.getContextClassLoader().getResourceAsStream(SDK_CONFIG_DIR);
-            if (in != null) {
-                BufferedReader br = new BufferedReader(new InputStreamReader(in));
-                String resource;
-                while ((resource = br.readLine()) != null) {
-                    filenames.add(resource);
+//            InputStream in = ConfigUtils.getContextClassLoader().getResourceAsStream(SDK_CONFIG_DIR);
+            URL url = ConfigUtils.getContextClassLoader().getResource(SDK_CONFIG_DIR);
+            if (url != null) {
+                File file = new File(url.toURI());
+                if (file.isDirectory()) {
+                    InputStream in = url.openStream();
+                    BufferedReader br = new BufferedReader(new InputStreamReader(in));
+                    String resource;
+                    while ((resource = br.readLine()) != null) {
+                        filenames.add(resource);
+                    }
+                } else {
+                    LOGGER.warn("Sdk config directory is a file.");
                 }
+            } else {
+                LOGGER.warn("SDK config directory does't exist.");
             }
         } catch (Exception ex) {
             LOGGER.debug("Unable to read sdk config dir.");
