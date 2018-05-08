@@ -16,18 +16,20 @@
 将下载好的压缩包解压，内容如下：
 
 ````
-+- docs                           // 其他文档或工具
-|  +- tz.jsp                      // 环境探针
-+- lib                            // 依赖包，采用All in One时请忽略本目录
-+- LICENSE                        // 授权协议，请勿删除
-+- original-yop-sdk-${version}.jar // 未将lib目录shade打包的原始jar包
-+- pom.xml                        // maven 依赖管理文件
-+- README.md                      // README 文档
-+- yop_sdk_config_default.json    // 默认用配置文件
-+- yop_sdk_config_template.json   // 配置文件模版
++- docs                            // 其他文档或工具
+|  +- tz.jsp                       // 环境探针
++- LICENSE                         // 授权协议，请勿删除
++- pom.xml                         // maven 依赖管理文件
++- README.md                       // README 文档
++- yop-sdk-${version}-jdk18.jar    // (推荐) All in One for JDK 1.8，已将lib目录shade打包
++- yop-sdk-${version}-jdk17.jar    // All in One for JDK 1.7，已将lib目录shade打包
++- yop-sdk-${version}-jdk16.jar    // All in One for JDK 1.6，已将lib目录shade打包
 +- yop-sdk-${version}-sources.jar  // 源码包
 +- yop-sdk-${version}-tests.jar    // 单元测试
-+- yop-sdk-${version}.jar          // All in One，已将lib目录shade打包
++- yop_sdk_config_default.json     // 默认用配置文件
++- yop_sdk_config_template.json    // 配置文件模版
++- yop-sdk-${version}.jar          // 未将lib目录shade打包的原始jar包
++- lib                             // 依赖包，采用All in One时请忽略本目录
 ````
 
 ````xml

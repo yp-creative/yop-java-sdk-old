@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.util.*;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -56,7 +57,7 @@ public class YopClient extends AbstractClient {
             requestBuilder.addHeader(entry.getKey(), entry.getValue());
         }
         for (Map.Entry<String, String> entry : request.getParams().entries()) {
-            requestBuilder.addParameter(entry.getKey(), entry.getValue());
+            requestBuilder.addParameter(entry.getKey(), URLEncoder.encode(entry.getValue()));
         }
 
         HttpUriRequest httpPost = requestBuilder.build();
@@ -82,7 +83,7 @@ public class YopClient extends AbstractClient {
             requestBuilder.addHeader(entry.getKey(), entry.getValue());
         }
         for (Map.Entry<String, String> entry : request.getParams().entries()) {
-            requestBuilder.addParameter(entry.getKey(), entry.getValue());
+            requestBuilder.addParameter(entry.getKey(), URLEncoder.encode(entry.getValue()));
         }
 
         HttpUriRequest httpGet = requestBuilder.build();
@@ -110,7 +111,7 @@ public class YopClient extends AbstractClient {
 
         if (!request.hasFiles()) {
             for (Map.Entry<String, String> entry : request.getParams().entries()) {
-                requestBuilder.addParameter(entry.getKey(), entry.getValue());
+                requestBuilder.addParameter(entry.getKey(), URLEncoder.encode(entry.getValue()));
             }
         } else {
             MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create();

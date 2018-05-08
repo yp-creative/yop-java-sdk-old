@@ -5,17 +5,13 @@
 
     <groupId>com.yeepay.g3.yop</groupId>
     <artifactId>yop-java-sdk</artifactId>
-    <version>2.1.8</version>
+    <version>2.2.0</version>
     <packaging>jar</packaging>
     <name>YOP :: SDK</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>1.6</maven.compiler.source>
-        <maven.compiler.target>1.6</maven.compiler.target>
-        <maven.compiler.compilerVersion>1.6</maven.compiler.compilerVersion>
 
-        <fasterxml.jackson.version>2.8.9</fasterxml.jackson.version>
         <httpcomponents.version>4.5.4</httpcomponents.version>
     </properties>
 
@@ -55,7 +51,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.6</version>
+            <version>${commons-lang3.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -131,8 +127,24 @@
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.7.0</version>
+                <configuration>
+                    <failOnError>true</failOnError>
+                    <verbose>true</verbose>
+                    <fork>true</fork>
+                    <compilerArgument>-nowarn</compilerArgument>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+                    <compilerVersion>${maven.compiler.compilerVersion}</compilerVersion>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>3.1.1</version>
                 <configuration>
                     <!-- put your configurations here -->
                 </configuration>
@@ -145,11 +157,13 @@
                         <configuration>
                             <!-- 将所有不使用的类全部排除掉 -->
                             <minimizeJar>true</minimizeJar>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>${shaded.classifier.name}</shadedClassifierName>
                             <artifactSet>
                                 <excludes>
                                     <exclude>log4j:log4j:jar:</exclude>
-                                    <!--<exclude>commons-logging:commons-logging:jar:</exclude>-->
-                                    <exclude>com.yeepay.infra:metrics-agent:jar:</exclude>
+                                    <exclude>commons-logging:commons-logging</exclude>
+                                    <exclude>com.yeepay.infra:metrics-agent</exclude>
                                 </excludes>
                             </artifactSet>
                             <filters>
@@ -166,7 +180,23 @@
                                         <exclude>rebel.xml</exclude>
                                     </excludes>
                                 </filter>
+                                <filter>
+                                    <artifact>commons-logging:commons-logging</artifact>
+                                    <includes>
+                                        <include>**</include>
+                                    </includes>
+                                </filter>
                             </filters>
+                            <transformers>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/spring.handlers</resource>
+                                </transformer>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/spring.schemas</resource>
+                                </transformer>
+                            </transformers>
                             <relocations>
                                 <relocation>
                                     <pattern>com.fasterxml</pattern>
@@ -251,8 +281,9 @@
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
                     <descriptors>
-                        <descriptor>assembly.xml</descriptor>
+                        <descriptor>${assembly.file}</descriptor>
                     </descriptors>
+                    <appendAssemblyId>true</appendAssemblyId>
                 </configuration>
                 <executions>
                     <execution>
@@ -300,6 +331,54 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <maven.compiler.source>1.8</maven.compiler.source>
+                <maven.compiler.target>1.8</maven.compiler.target>
+                <maven.compiler.compilerVersion>1.8</maven.compiler.compilerVersion>
+
+                <assembly.file>assembly.xml</assembly.file>
+                <shaded.classifier.name>jdk18</shaded.classifier.name>
+
+                <commons-lang3.version>3.6</commons-lang3.version>
+                <fasterxml.jackson.version>2.8.9</fasterxml.jackson.version>
+            </properties>
+        </profile>
+        <profile>
+            <id>jdk17</id>
+            <properties>
+                <maven.compiler.source>1.7</maven.compiler.source>
+                <maven.compiler.target>1.7</maven.compiler.target>
+                <maven.compiler.compilerVersion>1.7</maven.compiler.compilerVersion>
+
+                <assembly.file>assembly-jdk17.xml</assembly.file>
+                <shaded.classifier.name>jdk17</shaded.classifier.name>
+
+                <commons-lang3.version>3.5</commons-lang3.version>
+                <fasterxml.jackson.version>2.6.6</fasterxml.jackson.version>
+            </properties>
+        </profile>
+        <profile>
+            <id>jdk16</id>
+            <properties>
+                <maven.compiler.source>1.6</maven.compiler.source>
+                <maven.compiler.target>1.6</maven.compiler.target>
+                <maven.compiler.compilerVersion>1.6</maven.compiler.compilerVersion>
+
+                <assembly.file>assembly-jdk16.xml</assembly.file>
+                <shaded.classifier.name>jdk16</shaded.classifier.name>
+
+                <commons-lang3.version>3.5</commons-lang3.version>
+                <fasterxml.jackson.version>2.2.2</fasterxml.jackson.version>
+            </properties>
+        </profile>
+    </profiles>
 
     <distributionManagement>
         <repository>
