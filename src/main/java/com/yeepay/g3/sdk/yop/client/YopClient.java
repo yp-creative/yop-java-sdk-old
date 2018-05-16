@@ -57,7 +57,7 @@ public class YopClient extends AbstractClient {
             requestBuilder.addHeader(entry.getKey(), entry.getValue());
         }
         for (Map.Entry<String, String> entry : request.getParams().entries()) {
-            requestBuilder.addParameter(entry.getKey(), URLEncoder.encode(entry.getValue()));
+            requestBuilder.addParameter(entry.getKey(), URLEncoder.encode(entry.getValue(), YopConstants.ENCODING));
         }
 
         HttpUriRequest httpPost = requestBuilder.build();
@@ -83,7 +83,7 @@ public class YopClient extends AbstractClient {
             requestBuilder.addHeader(entry.getKey(), entry.getValue());
         }
         for (Map.Entry<String, String> entry : request.getParams().entries()) {
-            requestBuilder.addParameter(entry.getKey(), URLEncoder.encode(entry.getValue()));
+            requestBuilder.addParameter(entry.getKey(), URLEncoder.encode(entry.getValue(), YopConstants.ENCODING));
         }
 
         HttpUriRequest httpGet = requestBuilder.build();
@@ -111,7 +111,7 @@ public class YopClient extends AbstractClient {
 
         if (!request.hasFiles()) {
             for (Map.Entry<String, String> entry : request.getParams().entries()) {
-                requestBuilder.addParameter(entry.getKey(), URLEncoder.encode(entry.getValue()));
+                requestBuilder.addParameter(entry.getKey(), URLEncoder.encode(entry.getValue(), YopConstants.ENCODING));
             }
         } else {
             MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create();
@@ -127,7 +127,7 @@ public class YopClient extends AbstractClient {
                 }
             }
             for (Map.Entry<String, String> entry : request.getParams().entries()) {
-                multipartEntityBuilder.addTextBody(entry.getKey(), entry.getValue());
+                multipartEntityBuilder.addTextBody(entry.getKey(), URLEncoder.encode(entry.getValue(), YopConstants.ENCODING));
             }
             requestBuilder.setEntity(multipartEntityBuilder.build());
         }
