@@ -1,6 +1,7 @@
-package com.yeepay.g3.sdk.yop.config;
+package com.yeepay.g3.sdk.yop.config.support;
 
 import com.yeepay.g3.sdk.yop.YopServiceException;
+import com.yeepay.g3.sdk.yop.config.CertConfig;
 import com.yeepay.g3.sdk.yop.utils.RSAKeyUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -22,7 +23,7 @@ import java.util.Enumeration;
  * @version 1.0.0
  * @since 17/9/18 17:08
  */
-public class ConfigUtils {
+public final class ConfigUtils {
 
     public static PublicKey loadPublicKey(CertConfig certConfig) {
         PublicKey publicKey;
@@ -99,4 +100,5 @@ public class ConfigUtils {
     public static ClassLoader getContextClassLoader() {
         return Thread.currentThread().getContextClassLoader();
     }
+
 }

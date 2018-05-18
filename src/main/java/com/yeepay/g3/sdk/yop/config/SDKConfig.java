@@ -49,6 +49,9 @@ public final class SDKConfig implements Serializable {
     @JsonProperty("trust_all_certs")
     private Boolean trustAllCerts;
 
+    @JsonProperty("default")
+    private Boolean defaulted;
+
     public CertConfig[] getYopPublicKey() {
         return yopPublicKey;
     }
@@ -119,6 +122,14 @@ public final class SDKConfig implements Serializable {
 
     public void setAesSecretKey(String aesSecretKey) {
         this.aesSecretKey = aesSecretKey;
+    }
+
+    public Boolean getDefaulted() {
+        return defaulted;
+    }
+
+    public void setDefaulted(Boolean defaulted) {
+        this.defaulted = defaulted;
     }
 
     @Override
