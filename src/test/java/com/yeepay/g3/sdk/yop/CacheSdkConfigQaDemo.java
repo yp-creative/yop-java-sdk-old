@@ -24,19 +24,13 @@ import java.util.concurrent.TimeUnit;
  * @version 1.0.0
  * @since 18/5/18 15:04
  */
-public class MultiSdkConfigQaDemo {
+public class CacheSdkConfigQaDemo {
 
     //CustomCachedAppSdkProvider
     @BeforeClass
     public static void setUp() throws Exception {
-        AppSdkConfigProviderRegistry.registerCustomProvider(new MockCacheAppSdkConfigProvider(30L, TimeUnit.SECONDS));
+        AppSdkConfigProviderRegistry.registerCustomProvider(new MockCacheAppSdkConfigProvider("yop-boss", 30L, TimeUnit.SECONDS));
     }
-
-//    //DefaultCachedAppSdkprovider
-//    @BeforeClass
-//    public static void setUp() throws Exception {
-//        System.setProperty("yop.sdk.config.file", "/multiconfig/yop_sdk_config_app1.json,/multiconfig/yop_sdk_config_app2.json");
-//    }
 
 
     static class MockCacheAppSdkConfigProvider extends BaseCachedAppSdkConfigProvider {

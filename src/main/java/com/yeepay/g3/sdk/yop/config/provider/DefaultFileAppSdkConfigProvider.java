@@ -3,15 +3,14 @@ package com.yeepay.g3.sdk.yop.config.provider;
 import com.yeepay.g3.sdk.yop.config.SDKConfig;
 import com.yeepay.g3.sdk.yop.config.support.ConfigUtils;
 import com.yeepay.g3.sdk.yop.config.support.SDKConfigUtils;
+import com.yeepay.g3.sdk.yop.exception.YopClientException;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -30,6 +29,8 @@ public final class DefaultFileAppSdkConfigProvider extends BaseFixedAppSdkConfig
 
     private static final String SDK_CONFIG_FILE_PROPERTY_KEY = "yop.sdk.config.file";
 
+    private static final String SDK_CONFIG_DIR_PROPERTY_KEY = "yop.sdk.config.dir";
+
     private static final String SDK_CONFIG_FILE_SEPARATOR = ",";
 
     private static final String SDK_CONFIG_DIR = "config";
@@ -39,14 +40,13 @@ public final class DefaultFileAppSdkConfigProvider extends BaseFixedAppSdkConfig
     @Override
     protected List<SDKConfig> loadCustomSdkConfig() {
         List<SDKConfig> customSdkConfigs = new ArrayList<SDKConfig>();
-        String configFileProperty = System.getProperty(SDK_CONFIG_FILE_PROPERTY_KEY);
-        if (StringUtils.isNotEmpty(configFileProperty)) {
-            String[] configFiles = StringUtils.split(configFileProperty, SDK_CONFIG_FILE_SEPARATOR);
-            for (String absolutePath : configFiles) {
-                String fileName = StringUtils.substringAfterLast(absolutePath, File.separator);
+        List<String> files = loadSystemConfigSdkFiles();
+        if (CollectionUtils.isNotEmpty(files)) {
+            for (String filePath : files) {
+                String fileName = StringUtils.substringAfterLast(filePath, File.separator);
                 Matcher matcher = SDK_CONFIG_FILE_NAME_PATTERN.matcher(fileName);
                 if (matcher.matches()) {
-                    customSdkConfigs.add(SDKConfigUtils.loadConfig(absolutePath));
+                    customSdkConfigs.add(SDKConfigUtils.loadConfig(filePath));
                 } else {
                     logger.warn("Illegal SDkConfig File Name:" + fileName);
                 }
@@ -57,7 +57,7 @@ public final class DefaultFileAppSdkConfigProvider extends BaseFixedAppSdkConfig
                 for (String fileName : fileNames) {
                     Matcher matcher = SDK_CONFIG_FILE_NAME_PATTERN.matcher(fileName);
                     if (matcher.matches()) {
-                        customSdkConfigs.add(SDKConfigUtils.loadConfig(SDK_CONFIG_DIR + File.separator + fileName));
+                        customSdkConfigs.add(SDKConfigUtils.loadConfig(fileName));
                     } else {
                         logger.warn("Illegal SDkConfig File Name:" + fileName);
                     }
@@ -67,29 +67,41 @@ public final class DefaultFileAppSdkConfigProvider extends BaseFixedAppSdkConfig
         return customSdkConfigs;
     }
 
-    private List<String> loadConfigFilesFromClassPath() {
-        List<String> filenames = new ArrayList<String>();
-        try {
-            URL url = ConfigUtils.getContextClassLoader().getResource(SDK_CONFIG_DIR);
-            if (url != null) {
-                File file = new File(url.toURI());
-                if (file.isDirectory()) {
-                    InputStream in = url.openStream();
-                    BufferedReader br = new BufferedReader(new InputStreamReader(in));
-                    String resource;
-                    while ((resource = br.readLine()) != null) {
-                        filenames.add(resource);
-                    }
-                } else {
-                    logger.warn("Sdk config directory is a file.");
-                }
-            } else {
-                logger.warn("SDK config directory does't exist.");
-            }
-        } catch (Exception ex) {
-            logger.debug("Unable to read sdk config dir.");
+    private List<String> loadSystemConfigSdkFiles() {
+        String configDir = System.getProperty(SDK_CONFIG_DIR_PROPERTY_KEY);
+        String configFile = System.getProperty(SDK_CONFIG_FILE_PROPERTY_KEY);
+        if (StringUtils.isEmpty(configDir) && StringUtils.isEmpty(configFile)) {
+            return Collections.EMPTY_LIST;
         }
-        return filenames;
+        if (StringUtils.isEmpty(configFile)) {
+            try {
+                return ConfigUtils.listFiles(configDir);
+            } catch (Exception ex) {
+                logger.error("Unexpected exception occurred when loaded configFiles from dir:" + configDir, ex);
+                throw new YopClientException("unable to load configFiles from dir:" + configDir, ex);
+            }
+        }
+        String[] subFiles = StringUtils.split(configFile, SDK_CONFIG_FILE_SEPARATOR);
+        if (subFiles == null || subFiles.length == 0) {
+            return Collections.EMPTY_LIST;
+        }
+        if (StringUtils.isEmpty(configDir)) {
+            return Arrays.asList(subFiles);
+        }
+        List<String> files = new ArrayList<String>(subFiles.length);
+        for (String subFile : subFiles) {
+            files.add(configDir + File.separator + subFile);
+        }
+        return files;
+    }
+
+    private List<String> loadConfigFilesFromClassPath() {
+        try {
+            return ConfigUtils.listFiles(SDK_CONFIG_DIR);
+        } catch (Exception ex) {
+            logger.error("Unexpected exception occurred when loaded configFiles from dir:" + SDK_CONFIG_DIR, ex);
+            throw new YopClientException("unable to load configFiles from dir:" + SDK_CONFIG_DIR, ex);
+        }
     }
 
 }

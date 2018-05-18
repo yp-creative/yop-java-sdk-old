@@ -4,14 +4,17 @@ import com.yeepay.g3.sdk.yop.YopServiceException;
 import com.yeepay.g3.sdk.yop.config.CertConfig;
 import com.yeepay.g3.sdk.yop.utils.RSAKeyUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
+import java.io.*;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 
 /**
  * title: 配置工具<br/>
@@ -24,6 +27,8 @@ import java.util.Enumeration;
  * @since 17/9/18 17:08
  */
 public final class ConfigUtils {
+
+    private static final Logger LOGGER = Logger.getLogger(ConfigUtils.class);
 
     public static PublicKey loadPublicKey(CertConfig certConfig) {
         PublicKey publicKey;
@@ -77,6 +82,36 @@ public final class ConfigUtils {
                 throw new RuntimeException("Not support cert store type.");
         }
         return privateKey;
+    }
+
+    /**
+     * 获取dir下面的所有文件
+     *
+     * @param dir 路径
+     * @return 文件全路径集合
+     * @throws IOException io异常
+     * @throws URISyntaxException uri异常
+     */
+    public static List<String> listFiles(String dir) throws IOException, URISyntaxException {
+        URL url = StringUtils.startsWith(dir, "file://") ? new URL(dir) :
+                ConfigUtils.getContextClassLoader().getResource(dir);
+        if (url != null) {
+            File file = new File(url.toURI());
+            if (file.isDirectory()) {
+                List<String> files = new ArrayList<String>();
+                InputStream in = url.openStream();
+                BufferedReader br = new BufferedReader(new InputStreamReader(in));
+                String resource;
+                while ((resource = br.readLine()) != null) {
+                    files.add(dir + File.separator + resource);
+                }
+                return files;
+            } else {
+                throw new IllegalArgumentException(dir + " is not a dir.");
+            }
+        } else {
+            throw new IllegalArgumentException(dir + " does't exist.");
+        }
     }
 
     public static InputStream getInputStream(String location) throws FileNotFoundException {
