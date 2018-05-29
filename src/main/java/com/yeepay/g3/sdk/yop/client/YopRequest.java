@@ -3,8 +3,9 @@ package com.yeepay.g3.sdk.yop.client;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.yeepay.g3.sdk.yop.YopServiceException;
-import com.yeepay.g3.sdk.yop.config.AppSDKConfig;
-import com.yeepay.g3.sdk.yop.config.AppSDKConfigSupport;
+import com.yeepay.g3.sdk.yop.config.AppSdkConfig;
+import com.yeepay.g3.sdk.yop.config.AppSdkConfigProviderRegistry;
+import com.yeepay.g3.sdk.yop.config.support.BackUpAppSdkConfigManager;
 import com.yeepay.g3.sdk.yop.exception.YopClientException;
 import com.yeepay.g3.sdk.yop.http.Headers;
 import com.yeepay.g3.sdk.yop.utils.Assert;
@@ -44,7 +45,7 @@ public class YopRequest {
     /**
      * app对应的sdkConfig
      */
-    private final AppSDKConfig appSDKConfig;
+    private final AppSdkConfig appSdkConfig;
 
     /**
      * 可支持不同请求使用不同的appKey及secretKey,secretKey只用于本地签名，不会被提交
@@ -52,8 +53,8 @@ public class YopRequest {
     private final String secretKey;
 
     public YopRequest() {
-        this.appSDKConfig = AppSDKConfigSupport.getDefaultAppSDKConfig();
-        if (this.appSDKConfig == null) {
+        this.appSdkConfig = AppSdkConfigProviderRegistry.getProvider().getDefaultConfig();
+        if (this.appSdkConfig == null) {
             throw new YopServiceException("Default SDKConfig not found.");
         }
         this.secretKey = null;
@@ -62,8 +63,8 @@ public class YopRequest {
 
     public YopRequest(String appKey) {
         Validate.notBlank(appKey, "AppKey is blank.");
-        this.appSDKConfig = AppSDKConfigSupport.getConfig(appKey);
-        if (this.appSDKConfig == null) {
+        this.appSdkConfig = AppSdkConfigProviderRegistry.getProvider().getConfig(appKey);
+        if (this.appSdkConfig == null) {
             throw new YopServiceException("SDKConfig for appKey:" + appKey + " not found.");
         }
         this.secretKey = null;
@@ -77,16 +78,15 @@ public class YopRequest {
         Validate.notBlank(appKey, "AppKey is blank.");
         Validate.notBlank(secretKey, "SecretKey is blank.");
 
-        this.appSDKConfig = new AppSDKConfig();
-        this.appSDKConfig.setAppKey(appKey);
+        this.appSdkConfig = new AppSdkConfig();
+        this.appSdkConfig.setAppKey(appKey);
 
-        AppSDKConfig appSDKConfig = AppSDKConfigSupport.getConfigWithDefault(appKey);
-        if (appSDKConfig == null) {
-            throw new YopServiceException("SDKConfig not found.");
-        } else {
-            this.appSDKConfig.setServerRoot(appSDKConfig.getServerRoot());
-            this.appSDKConfig.setYopPublicKey(appSDKConfig.getYopPublicKey());
+        AppSdkConfig appSdkConfig = AppSdkConfigProviderRegistry.getProvider().getConfigWithDefault(appKey);
+        if (appSdkConfig == null) {
+            appSdkConfig = BackUpAppSdkConfigManager.getBackUpConfig();
         }
+        this.appSdkConfig.setServerRoot(appSdkConfig.getServerRoot());
+        this.appSdkConfig.setDefaultYopPublicKey(appSdkConfig.getDefaultYopPublicKey());
         this.secretKey = secretKey;
         init();
     }
@@ -95,27 +95,25 @@ public class YopRequest {
         Validate.notBlank(appKey, "AppKey is blank.");
         Validate.notBlank(secretKey, "SecretKey is blank.");
         Validate.notBlank(secretKey, "ServerRoot is blank.");
-        this.appSDKConfig = new AppSDKConfig();
-        this.appSDKConfig.setAppKey(appKey);
+        this.appSdkConfig = new AppSdkConfig();
+        this.appSdkConfig.setAppKey(appKey);
         if (StringUtils.endsWith(serverRoot, "/")) {
-            this.appSDKConfig.setServerRoot(StringUtils.substring(serverRoot, 0, -1));
+            this.appSdkConfig.setServerRoot(StringUtils.substring(serverRoot, 0, -1));
         } else {
-            this.appSDKConfig.setServerRoot(serverRoot);
+            this.appSdkConfig.setServerRoot(serverRoot);
         }
-
-        AppSDKConfig appSDKConfig = AppSDKConfigSupport.getConfigWithDefault(appKey);
-        if (appSDKConfig == null) {
-            throw new YopServiceException("SDKConfig not found.");
-        } else {
-            this.appSDKConfig.setYopPublicKey(appSDKConfig.getYopPublicKey());
+        AppSdkConfig appSdkConfig = AppSdkConfigProviderRegistry.getProvider().getConfigWithDefault(appKey);
+        if (appSdkConfig == null) {
+            appSdkConfig = BackUpAppSdkConfigManager.getBackUpConfig();
         }
+        this.appSdkConfig.setDefaultYopPublicKey(appSdkConfig.getDefaultYopPublicKey());
         this.secretKey = secretKey;
         init();
     }
 
     private void init() {
         headers.put(Headers.USER_AGENT, YopConstants.USER_AGENT);
-        paramMap.put(YopConstants.APP_KEY, this.appSDKConfig.getAppKey());
+        paramMap.put(YopConstants.APP_KEY, this.appSdkConfig.getAppKey());
         paramMap.put(YopConstants.LOCALE, locale);
         paramMap.put(YopConstants.TIMESTAMP, String.valueOf(System.currentTimeMillis()));
     }
@@ -293,11 +291,11 @@ public class YopRequest {
     }
 
     public String getAesSecretKey() {
-        return secretKey == null ? appSDKConfig.getAesSecretKey() : secretKey;
+        return secretKey == null ? appSdkConfig.getAesSecretKey() : secretKey;
     }
 
-    public AppSDKConfig getAppSDKConfig() {
-        return appSDKConfig;
+    public AppSdkConfig getAppSdkConfig() {
+        return appSdkConfig;
     }
 
     /**

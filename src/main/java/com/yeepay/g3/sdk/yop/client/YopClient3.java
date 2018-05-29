@@ -4,7 +4,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.yeepay.g3.sdk.yop.config.AppSDKConfig;
+import com.yeepay.g3.sdk.yop.config.AppSdkConfig;
 import com.yeepay.g3.sdk.yop.encrypt.CertTypeEnum;
 import com.yeepay.g3.sdk.yop.encrypt.DigestAlgEnum;
 import com.yeepay.g3.sdk.yop.encrypt.DigitalSignatureDTO;
@@ -75,7 +75,7 @@ public class YopClient3 extends AbstractClient {
 
         HttpUriRequest httpPost = requestBuilder.build();
         YopResponse response = fetchContentByApacheHttpClient(httpPost);
-        handleRsaResult(response, request.getAppSDKConfig());
+        handleRsaResult(response, request.getAppSdkConfig());
         return response;
     }
 
@@ -120,12 +120,12 @@ public class YopClient3 extends AbstractClient {
 
         HttpUriRequest httpPost = requestBuilder.build();
         YopResponse response = fetchContentByApacheHttpClient(httpPost);
-        handleRsaResult(response, request.getAppSDKConfig());
+        handleRsaResult(response, request.getAppSdkConfig());
         return response;
     }
 
     private static void sign(String apiUri, YopRequest request) {
-        String appKey = request.getAppSDKConfig().getAppKey();
+        String appKey = request.getAppSdkConfig().getAppKey();
         String timestamp = DateUtils.formatCompressedIso8601Timestamp(System.currentTimeMillis());
 
 //        authorization  yop-auth-v2/openSmsApi/2016-02-25T08:57:48Z/1800/host/a57365cb4bf6cd83c91dfae214c1404aa0cc74f2ade95f121530fcb9c91f3c9d
@@ -174,7 +174,7 @@ public class YopClient3 extends AbstractClient {
                 throw Exceptions.unchecked(e);
             }
         } else {
-            isvPrivateKey = request.getAppSDKConfig().getIsvPrivateKey();
+            isvPrivateKey = request.getAppSdkConfig().getDefaultIsvPrivateKey();
         }
         if (null == isvPrivateKey) {
             throw new YopClientException("Can't init ISV private key!");
@@ -193,7 +193,7 @@ public class YopClient3 extends AbstractClient {
         headers.put(Headers.AUTHORIZATION, "YOP-RSA2048-SHA256 " + InternalConfig.PROTOCOL_VERSION + "/" + appKey + "/" + timestamp + "/" + EXPIRED_SECONDS + "/" + signedHeaders + "/" + digitalSignatureDTO.getSignature());
     }
 
-    private static void handleRsaResult(YopResponse response, AppSDKConfig appSDKConfig) {
+    private static void handleRsaResult(YopResponse response, AppSdkConfig appSdkConfig) {
         String stringResult = response.getStringResult();
         if (StringUtils.isNotBlank(stringResult)) {
             response.setResult(JacksonJsonMarshaller.unmarshal(stringResult, Object.class));
@@ -201,14 +201,14 @@ public class YopClient3 extends AbstractClient {
 
         String sign = response.getSign();
         if (StringUtils.isNotBlank(sign)) {
-            response.setValidSign(verifySignature(stringResult, sign, appSDKConfig));
+            response.setValidSign(verifySignature(stringResult, sign, appSdkConfig));
         }
     }
 
     /**
      * 对业务结果签名进行校验
      */
-    public static boolean verifySignature(String result, String expectedSign, AppSDKConfig appSDKConfig) {
+    public static boolean verifySignature(String result, String expectedSign, AppSdkConfig appSdkConfig) {
         String trimmedBizResult = result.replaceAll("[ \t\n]", "");
 
         StringBuilder sb = new StringBuilder();
@@ -220,7 +220,7 @@ public class YopClient3 extends AbstractClient {
         digitalSignatureDTO.setPlainText(sb.toString());
 
         try {
-            DigitalEnvelopeUtils.verify(digitalSignatureDTO, appSDKConfig.getYopPublicKey());
+            DigitalEnvelopeUtils.verify(digitalSignatureDTO, appSdkConfig.getDefaultYopPublicKey());
         } catch (Exception e) {
             LOGGER.error("error verify sign", e);
             return false;
