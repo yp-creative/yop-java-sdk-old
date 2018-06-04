@@ -5,10 +5,12 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.yeepay.g3.sdk.yop.encrypt.AESEncrypter;
 import com.yeepay.g3.sdk.yop.encrypt.Digests;
+import com.yeepay.g3.sdk.yop.exception.YopClientException;
 import com.yeepay.g3.sdk.yop.http.Headers;
 import com.yeepay.g3.sdk.yop.unmarshaller.JacksonJsonMarshaller;
 import com.yeepay.g3.sdk.yop.utils.DateUtils;
 import com.yeepay.g3.sdk.yop.utils.JsonUtils;
+import com.yeepay.g3.sdk.yop.utils.checksum.CRC64Utils;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -115,7 +117,7 @@ public class YopClient extends AbstractClient {
             }
         } else {
             MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create();
-            for (Map.Entry<String, Object> entry : request.getMultiportFiles().entries()) {
+            for (Map.Entry<String, Object> entry : request.getMultipartFiles().entrySet()) {
                 String paramName = entry.getKey();
                 Object file = entry.getValue();
                 if (file instanceof String) {
@@ -186,6 +188,14 @@ public class YopClient extends AbstractClient {
     private static void sign(YopRequest request) {
         if (request.getHeaders().containsKey("Authorization")) {
             return;
+        }
+        if (request.hasFiles()) {
+            try {
+                request.addHeader(Headers.YOP_HASH_CRC64ECMA, CRC64Utils.calculateMultiPartFileCrc64ecma(request.getMultipartFiles()));
+            } catch (IOException ex) {
+                LOGGER.error("IOException occurred when generate crc64ecma.", ex);
+                throw new YopClientException("IOException occurred when generate crc64ecma.", ex);
+            }
         }
 
         String canonicalQueryString = getCanonicalQueryString(request, true);
