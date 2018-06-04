@@ -77,4 +77,9 @@ public interface Headers {
     /*请求来源*/
     String YOP_REQUEST_SOURCE = "x-yop-request-source";
 
+    /**
+     * 文件校验头
+     */
+    String YOP_HASH_CRC64ECMA = "x-yop-hash-crc64ecma";
+
 }

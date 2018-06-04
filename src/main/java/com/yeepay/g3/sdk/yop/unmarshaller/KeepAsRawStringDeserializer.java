@@ -25,16 +25,15 @@ public class KeepAsRawStringDeserializer extends JsonDeserializer<String> {
 
     @Override
     public String deserialize(JsonParser jp, DeserializationContext context) throws IOException {
-        String rawJson = getStringFromSource(jp.getCurrentLocation().getSourceRef());
-        int startLocation = (int) jp.getCurrentLocation().getCharOffset();
-        jp.skipChildren();
-        int endLocation = (int) jp.getCurrentLocation().getCharOffset();
-
-        // jp.skipChildren() 跳过子节点，但纯文本 Value 不属于子节点
-        if (endLocation <= startLocation) {
-            endLocation = startLocation + jp.getTextLength() + 1;
+        if (jp.isExpectedStartObjectToken() || jp.isExpectedStartArrayToken()) {
+            String rawJson = getStringFromSource(jp.getCurrentLocation().getSourceRef());
+            int startLocation = (int) jp.getCurrentLocation().getCharOffset();
+            jp.skipChildren();
+            int endLocation = (int) jp.getCurrentLocation().getCharOffset();
+            return rawJson.substring(startLocation - 1, endLocation);
+        } else {
+            return jp.getText();
         }
-        return rawJson.substring(startLocation - 1, endLocation);
     }
 
     /**
