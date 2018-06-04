@@ -1,7 +1,10 @@
 package com.yeepay.g3.sdk.yop.utils;
 
 import com.yeepay.g3.sdk.yop.YopServiceException;
-import com.yeepay.g3.sdk.yop.config.*;
+import com.yeepay.g3.sdk.yop.config.AppSdkConfig;
+import com.yeepay.g3.sdk.yop.config.AppSdkConfigProviderRegistry;
+import com.yeepay.g3.sdk.yop.config.HttpClientConfig;
+import com.yeepay.g3.sdk.yop.config.support.BackUpAppSdkConfigManager;
 import com.yeepay.g3.sdk.yop.encrypt.CertTypeEnum;
 import org.apache.log4j.Logger;
 
@@ -37,9 +40,9 @@ public final class InternalConfig {
     }
 
     private static void init() {
-        SDKConfig sdkConfig = SDKConfigSupport.getDefaultSDKConfig();
-        if (sdkConfig != null && sdkConfig.getHttpClient() != null) {
-            HttpClientConfig clientConfig = sdkConfig.getHttpClient();
+        AppSdkConfig config = AppSdkConfigProviderRegistry.getProvider().getDefaultConfig();
+        if (config != null && config.getHttpClientConfig() != null) {
+            HttpClientConfig clientConfig = config.getHttpClientConfig();
             if (clientConfig.getConnectTimeout() != null) {
                 CONNECT_TIMEOUT = clientConfig.getConnectTimeout();
             }
@@ -56,21 +59,24 @@ public final class InternalConfig {
     }
 
     public static PublicKey getYopPublicKey(CertTypeEnum certType) {
-        AppSDKConfig defaultAppSDKConfig = AppSDKConfigSupport.getDefaultAppSDKConfig();
-        return defaultAppSDKConfig.loadYopPublicKey(certType);
+        AppSdkConfig defaultAppSdkConfig = AppSdkConfigProviderRegistry.getProvider().getDefaultConfig();
+        if (defaultAppSdkConfig == null) {
+            defaultAppSdkConfig = BackUpAppSdkConfigManager.getBackUpConfig();
+        }
+        return defaultAppSdkConfig.loadYopPublicKey(certType);
     }
 
     public static PrivateKey getISVPrivateKey(String appKey, CertTypeEnum certType) {
-        AppSDKConfig appSDKConfig = AppSDKConfigSupport.getConfig(appKey);
-        if (appSDKConfig == null) {
+        AppSdkConfig appSdkConfig = AppSdkConfigProviderRegistry.getProvider().getConfig(appKey);
+        if (appSdkConfig == null) {
             throw new YopServiceException("SDKConfig for appKey:" + appKey + " not exist.");
         }
-        return appSDKConfig.loadPrivateKey(certType);
+        return appSdkConfig.loadPrivateKey(certType);
     }
 
     public static PrivateKey getISVPrivateKey(CertTypeEnum certType) {
-        AppSDKConfig defaultAppSDKConfig = AppSDKConfigSupport.getDefaultAppSDKConfig();
-        return defaultAppSDKConfig.loadPrivateKey(certType);
+        AppSdkConfig defaultAppSdkConfig = AppSdkConfigProviderRegistry.getProvider().getDefaultConfig();
+        return defaultAppSdkConfig.loadPrivateKey(certType);
     }
 
 }
