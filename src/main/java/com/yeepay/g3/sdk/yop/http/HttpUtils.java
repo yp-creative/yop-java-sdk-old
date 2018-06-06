@@ -176,7 +176,7 @@ public final class HttpUtils {
             String key = entry.getKey();
             checkNotNull(key, "parameter key should not be null");
             String[] value = entry.getValue();
-            if (0 == value.length) {
+            if (null == value || 0 == value.length) {
                 if (forSignature) {
                     parameterStrings.add(normalize(key) + '=');
                 } else {
