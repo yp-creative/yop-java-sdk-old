@@ -1,9 +1,11 @@
 package com.yeepay.g3.sdk.yop.unmarshaller;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
+import com.yeepay.g3.sdk.yop.exception.YopClientException;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -37,7 +39,16 @@ public class JacksonJsonMarshaller {
         try {
             return objectMapper.readValue(content, objectType);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new YopClientException(e.getMessage(), e);
         }
     }
+
+    public static String marshal(Object content) {
+        try {
+            return objectMapper.writeValueAsString(content);
+        } catch (JsonProcessingException e) {
+            throw new YopClientException(e.getMessage(), e);
+        }
+    }
+
 }

@@ -116,10 +116,11 @@ public class JacksonJsonMarshallerTest {
     public void test2(){
         String responseStr = "{\n" +
                 "  \"state\" : \"SUCCESS\",\n" +
-                "  \"result\" : [\"123\"],\n" +
+                "  \"result\" : \"123\",\n" +
                 "  \"ts\" : 1528101318717\n" +
                 "}";
         YopResponse response = JacksonJsonMarshaller.unmarshal(responseStr, YopResponse.class);
+        response.setStringResult(JacksonJsonMarshaller.marshal(response.getResult()));
         System.out.println(response);
     }
 

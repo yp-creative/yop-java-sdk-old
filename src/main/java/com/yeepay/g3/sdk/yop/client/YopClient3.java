@@ -205,14 +205,13 @@ public class YopClient3 extends AbstractClient {
     }
 
     private static void handleRsaResult(YopResponse response, AppSdkConfig appSdkConfig) {
-        String stringResult = response.getStringResult();
-        if (StringUtils.isNotBlank(stringResult)) {
-            response.setResult(JacksonJsonMarshaller.unmarshal(stringResult, Object.class));
+        Object result = response.getResult();
+        if (result != null) {
+            response.setStringResult(JacksonJsonMarshaller.marshal(result));
         }
-
         String sign = response.getSign();
         if (StringUtils.isNotBlank(sign)) {
-            response.setValidSign(verifySignature(stringResult, sign, appSdkConfig));
+            response.setValidSign(verifySignature(response.getStringResult(), sign, appSdkConfig));
         }
     }
 
