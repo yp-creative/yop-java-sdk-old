@@ -1,12 +1,9 @@
 package com.yeepay.g3.sdk.yop.client;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import com.yeepay.g3.sdk.yop.error.YopError;
 import com.yeepay.g3.sdk.yop.unmarshaller.JacksonJsonMarshaller;
-import com.yeepay.g3.sdk.yop.unmarshaller.KeepAsRawStringDeserializer;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -38,7 +35,6 @@ public class YopResponse {
     /**
      * 业务结果，非简单类型解析后为LinkedHashMap
      */
-    @JsonIgnore
     private Object result;
 
     /**
@@ -62,8 +58,7 @@ public class YopResponse {
     /**
      * 字符串形式的业务结果，客户可自定义java类，使用YopMarshallerUtils.unmarshal做参数绑定
      */
-    @JsonProperty("result")
-    @JsonDeserialize(using = KeepAsRawStringDeserializer.class)
+    @JsonIgnore
     private String stringResult;
 
     /**
