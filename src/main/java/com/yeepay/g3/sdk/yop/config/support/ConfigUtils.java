@@ -13,6 +13,7 @@ import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 
@@ -95,7 +96,9 @@ public final class ConfigUtils {
     public static List<String> listFiles(String dir) throws IOException, URISyntaxException {
         URL url = StringUtils.startsWith(dir, "file://") ? new URL(dir) :
                 ConfigUtils.getContextClassLoader().getResource(dir);
-        if (url != null) {
+        if (url == null) {
+            return Collections.emptyList();
+        } else if (StringUtils.equals(url.getProtocol(), "file")) {
             File file = new File(url.toURI());
             if (file.isDirectory()) {
                 List<String> files = new ArrayList<String>();
@@ -110,7 +113,8 @@ public final class ConfigUtils {
                 throw new IllegalArgumentException(dir + " is not a dir.");
             }
         } else {
-            throw new IllegalArgumentException(dir + " does't exist.");
+            LOGGER.info("can't read dir from protocol:" + url.getProtocol());
+            return Collections.emptyList();
         }
     }
 

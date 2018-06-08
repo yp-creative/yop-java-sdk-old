@@ -71,7 +71,7 @@ public final class DefaultFileAppSdkConfigProvider extends BaseFixedAppSdkConfig
         String configDir = System.getProperty(SDK_CONFIG_DIR_PROPERTY_KEY);
         String configFile = System.getProperty(SDK_CONFIG_FILE_PROPERTY_KEY);
         if (StringUtils.isEmpty(configDir) && StringUtils.isEmpty(configFile)) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
         if (StringUtils.isEmpty(configFile)) {
             try {
@@ -83,7 +83,7 @@ public final class DefaultFileAppSdkConfigProvider extends BaseFixedAppSdkConfig
         }
         String[] subFiles = StringUtils.split(configFile, SDK_CONFIG_FILE_SEPARATOR);
         if (subFiles == null || subFiles.length == 0) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
         if (StringUtils.isEmpty(configDir)) {
             return Arrays.asList(subFiles);
@@ -99,8 +99,8 @@ public final class DefaultFileAppSdkConfigProvider extends BaseFixedAppSdkConfig
         try {
             return ConfigUtils.listFiles(SDK_CONFIG_DIR);
         } catch (Exception ex) {
-            logger.error("Unexpected exception occurred when loaded configFiles from dir:" + SDK_CONFIG_DIR, ex);
-            throw new YopClientException("unable to load configFiles from dir:" + SDK_CONFIG_DIR, ex);
+            logger.warn("Unexpected exception occurred when loaded configFiles from dir:" + SDK_CONFIG_DIR, ex);
+            return Collections.emptyList();
         }
     }
 
