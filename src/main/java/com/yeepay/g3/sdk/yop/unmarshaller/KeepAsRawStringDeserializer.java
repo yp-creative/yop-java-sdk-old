@@ -32,7 +32,7 @@ public class KeepAsRawStringDeserializer extends JsonDeserializer<String> {
             jp.skipChildren();
             int endLocation = (int) jp.getCurrentLocation().getCharOffset();
             return rawJson.substring(startLocation - 1, endLocation);
-        } else if (jp.currentToken() == JsonToken.VALUE_STRING) {
+        } else if (jp.getCurrentToken() == JsonToken.VALUE_STRING) {
             return "\"" + jp.getText() + "\"";
         } else {
             return jp.getText();
