@@ -39,33 +39,26 @@ public final class DefaultFileAppSdkConfigProvider extends BaseFixedAppSdkConfig
 
     @Override
     protected List<SDKConfig> loadCustomSdkConfig() {
-        List<SDKConfig> customSdkConfigs = new ArrayList<SDKConfig>();
         List<String> files = loadSystemConfigSdkFiles();
-        if (CollectionUtils.isNotEmpty(files)) {
-            for (String filePath : files) {
-                String fileName = StringUtils.substringAfterLast(filePath, File.separator);
-                Matcher matcher = SDK_CONFIG_FILE_NAME_PATTERN.matcher(fileName);
-                if (matcher.matches()) {
-                    customSdkConfigs.add(SDKConfigUtils.loadConfig(filePath));
-                } else {
-                    logger.warn("Illegal SDkConfig File Name:" + fileName);
-                }
-            }
-        } else {
-            List<String> fileNames = loadConfigFilesFromClassPath();
-            if (CollectionUtils.isNotEmpty(fileNames)) {
-                for (String fileName : fileNames) {
-                    Matcher matcher = SDK_CONFIG_FILE_NAME_PATTERN.matcher(fileName);
-                    if (matcher.matches()) {
-                        customSdkConfigs.add(SDKConfigUtils.loadConfig(fileName));
-                    } else {
-                        logger.warn("Illegal SDkConfig File Name:" + fileName);
-                    }
-                }
+        if (CollectionUtils.isEmpty(files)) {
+            files = loadConfigFilesFromClassPath();
+        }
+        if (CollectionUtils.isEmpty(files)) {
+            return Collections.emptyList();
+        }
+        List<SDKConfig> customSdkConfigs = new ArrayList<SDKConfig>(files.size());
+        for (String filePath : files) {
+            String fileName = StringUtils.substringAfterLast(filePath, File.separator);
+            Matcher matcher = SDK_CONFIG_FILE_NAME_PATTERN.matcher(fileName);
+            if (matcher.matches()) {
+                customSdkConfigs.add(SDKConfigUtils.loadConfig(filePath));
+            } else {
+                logger.warn("Illegal SDkConfig File Name:" + fileName);
             }
         }
         return customSdkConfigs;
     }
+
 
     private List<String> loadSystemConfigSdkFiles() {
         String configDir = System.getProperty(SDK_CONFIG_DIR_PROPERTY_KEY);
@@ -81,6 +74,7 @@ public final class DefaultFileAppSdkConfigProvider extends BaseFixedAppSdkConfig
                 throw new YopClientException("unable to load configFiles from dir:" + configDir, ex);
             }
         }
+
         String[] subFiles = StringUtils.split(configFile, SDK_CONFIG_FILE_SEPARATOR);
         if (subFiles == null || subFiles.length == 0) {
             return Collections.emptyList();

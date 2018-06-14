@@ -219,9 +219,9 @@ public class YopClient extends AbstractClient {
     }
 
     private static void handleResult(YopRequest request, YopResponse response) {
-        Object result = response.getResult();
-        if (result != null) {
-            response.setStringResult(JacksonJsonMarshaller.marshal(result));
+        String stringResult = response.getStringResult();
+        if (StringUtils.isNotBlank(stringResult)) {
+            response.setResult(JacksonJsonMarshaller.unmarshal(stringResult, Object.class));
         }
 
         String sign = response.getSign();
