@@ -120,7 +120,31 @@ public class JacksonJsonMarshallerTest {
                 "  \"ts\" : 1528101318717\n" +
                 "}";
         YopResponse response = JacksonJsonMarshaller.unmarshal(responseStr, YopResponse.class);
-        response.setStringResult(JacksonJsonMarshaller.marshal(response.getResult()));
+        response.setResult(JacksonJsonMarshaller.unmarshal(response.getStringResult(), Object.class));
+        System.out.println(response);
+    }
+
+    @Test
+    public void test3() {
+        String responseStr = "{\n" +
+                "  \"state\" : \"SUCCESS\",\n" +
+                "  \"result\" : true,\n" +
+                "  \"ts\" : 1528101318717\n" +
+                "}";
+        YopResponse response = JacksonJsonMarshaller.unmarshal(responseStr, YopResponse.class);
+        response.setResult(JacksonJsonMarshaller.unmarshal(response.getStringResult(), Object.class));
+        System.out.println(response);
+    }
+
+    @Test
+    public void test4() {
+        String responseStr = "{\n" +
+                "  \"state\" : \"SUCCESS\",\n" +
+                "  \"result\" : {\"name\":\"xx\"},\n" +
+                "  \"ts\" : 1528101318717\n" +
+                "}";
+        YopResponse response = JacksonJsonMarshaller.unmarshal(responseStr, YopResponse.class);
+        response.setResult(JacksonJsonMarshaller.unmarshal(response.getStringResult(), Object.class));
         System.out.println(response);
     }
 
