@@ -111,8 +111,11 @@ public class YopClient3 extends AbstractClient {
                     multipartEntityBuilder.addBinaryBody(paramName, new File((String) file));
                 } else if (file instanceof File) {
                     multipartEntityBuilder.addBinaryBody(paramName, (File) file);
+                } else if (file instanceof InputStream) {
+                    String fileName = FileUtils.getFileName((InputStream) file);
+                    multipartEntityBuilder.addBinaryBody(paramName, (InputStream) file, ContentType.DEFAULT_BINARY, fileName);
                 } else {
-                    multipartEntityBuilder.addBinaryBody(paramName, (InputStream) file, ContentType.DEFAULT_BINARY, generateFileName());
+                    throw new YopClientException("不支持的上传文件类型");
                 }
             }
             for (Map.Entry<String, String> entry : request.getParams().entries()) {

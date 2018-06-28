@@ -4,7 +4,6 @@ import com.yeepay.g3.sdk.yop.exception.YopClientException;
 import com.yeepay.g3.sdk.yop.unmarshaller.JacksonJsonMarshaller;
 import com.yeepay.g3.sdk.yop.utils.Assert;
 import com.yeepay.g3.sdk.yop.utils.InternalConfig;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -102,10 +101,6 @@ public class AbstractClient {
 
     public static CloseableHttpClient getHttpClient() {
         return httpClient;
-    }
-
-    protected static String generateFileName() {
-        return System.currentTimeMillis() + "-yop-" + RandomStringUtils.randomNumeric(8) + ".bin";
     }
 
     protected static String richRequest(String methodOrUri, YopRequest request) {

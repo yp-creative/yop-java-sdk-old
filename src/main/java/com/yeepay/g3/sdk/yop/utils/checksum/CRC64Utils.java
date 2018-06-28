@@ -26,7 +26,6 @@ public class CRC64Utils {
 
     private static final Logger LOGGER = Logger.getLogger(CRC64Utils.class);
 
-
     public static String calculateMultiPartFileCrc64ecma(Map<String, Object> multiPartFiles) throws IOException {
         Map<String, Object> sortedFiles = new TreeMap<String, Object>(multiPartFiles);
         List<String> crc64ecmas = new ArrayList<String>(multiPartFiles.size());
@@ -34,8 +33,20 @@ public class CRC64Utils {
             Object value = entry.getValue();
             if (value instanceof File) {
                 crc64ecmas.add(getCRCValue((File) value));
-            } else if (entry.getValue() instanceof InputStream) {
-                crc64ecmas.add(getCRCValue((InputStream) value));
+            } else if (value instanceof FileInputStream) {
+                crc64ecmas.add(getCRCValue((FileInputStream) value));
+            } else if (value instanceof InputStream) {
+                InputStream in = (InputStream) value;
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                byte[] buffer = new byte[1024];
+                int len;
+                while ((len = in.read(buffer)) > -1) {
+                    baos.write(buffer, 0, len);
+                }
+                baos.flush();
+                crc64ecmas.add(getCRCValue(new ByteArrayInputStream(baos.toByteArray())));
+
+                multiPartFiles.put(entry.getKey(), new ByteArrayInputStream(baos.toByteArray()));
             } else if (value instanceof String) {
                 crc64ecmas.add(getCRCValue((String) value));
             } else {
@@ -53,11 +64,19 @@ public class CRC64Utils {
         return getCRCValue(new ByteArrayInputStream(str.getBytes(YopConstants.ENCODING)));
     }
 
+    public static String getCRCValue(FileInputStream in) throws IOException {
+        CheckedInputStream checkedInputStream = new CheckedInputStream(in, new CRC64());
+        int skip = 0;
+        while (checkedInputStream.read() != -1) {
+            skip--;
+        }
+
+        in.skip(skip);
+        return UnsignedLong.fromLongBits(checkedInputStream.getChecksum().getValue()).toString();
+    }
+
     public static String getCRCValue(InputStream in) throws IOException {
         CheckedInputStream checkedInputStream = new CheckedInputStream(in, new CRC64());
-        while (checkedInputStream.read() != -1) {
-
-        }
         return UnsignedLong.fromLongBits(checkedInputStream.getChecksum().getValue()).toString();
     }
 }

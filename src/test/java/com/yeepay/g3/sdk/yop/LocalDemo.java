@@ -7,8 +7,8 @@ import com.yeepay.g3.sdk.yop.client.YopResponse;
 import com.yeepay.g3.sdk.yop.hbird.HbirdLoginToken;
 import com.yeepay.g3.sdk.yop.utils.mapper.JsonMapper;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
-import org.apache.http.client.utils.URLEncodedUtils;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -17,7 +17,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.net.URLEncoder;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 import static junit.framework.TestCase.assertTrue;
 
@@ -41,10 +43,26 @@ public class LocalDemo {
     @BeforeClass
     public static void setUp() throws Exception {
 //        System.setProperty("yop.sdk.config.file", "/config/yop_sdk_config_local.json");
-        System.setProperty("yop.sdk.config.file", "/config/yop_sdk_config_dev.json");
-//        System.setProperty("yop.sdk.config.file", "/config/yop_sdk_config_qa.json");
+//        System.setProperty("yop.sdk.config.file", "/config/yop_sdk_config_dev.json");
+        System.setProperty("yop.sdk.config.file", "/config/yop_sdk_config_qa.json");
+//        System.setProperty("yop.sdk.config.file", "/config/yop_sdk_config_qa_docker.json");
 //        System.setProperty("yop.sdk.config.file", "/config/yop_sdk_config_pro.json");
 //        System.setProperty("yop.sdk.trust.all.certs", "true");
+    }
+
+    @Test
+    public void test112() throws IOException {
+        String merchant = "B112345678901239";
+        String key = "DMGF1AOw+EpoXV/vF99vvg==";
+        String url = "http://10.151.32.27:30228/yop-center";
+        YopRequest request = new YopRequest(merchant, key, url);
+//        request.setEncrypt(true);
+//        request.setSignRet(true);
+        request.setSignAlg("sha-256");
+        request.addParam("requestNo", "trx" + RandomStringUtils.randomNumeric(10));
+        request.addParam("merchantUserId", merchant);
+        YopResponse response = YopClient.post("/rest/v1.0/payplus/user/register", request);
+        System.out.println(response);
     }
 
     @Test
@@ -136,9 +154,10 @@ public class LocalDemo {
 
         YopResponse response = YopClient.upload("/rest/v1.0/file/upload", request);
         AssertUtils.assertYopResponse(response);
+        assertTrue(StringUtils.endsWith((String) ((HashMap) (((ArrayList) ((HashMap) response.getResult()).get("files")).get(0))).get("fileName"), ".bin"));
     }
 
-    @Test(timeout = 5000)
+    @Test(timeout = 30000)
     public void testUpLoadFileNew1() throws IOException, URISyntaxException {
         YopRequest request = new YopRequest(APP_KEYS[0], APP_SECRETS[0]);
         request.addParam("fileType", "IMAGE");
@@ -147,9 +166,10 @@ public class LocalDemo {
 
         YopResponse response = YopClient.upload("/rest/v1.0/file/upload", request);
         AssertUtils.assertYopResponse(response);
+        assertTrue(StringUtils.endsWith((String) ((HashMap) (((ArrayList) ((HashMap) response.getResult()).get("files")).get(0))).get("fileName"), ".bin"));
     }
 
-    @Test(timeout = 5000)
+    @Test(timeout = 30000)
     public void testUpLoadFileNew2() throws IOException, URISyntaxException {
         YopRequest request = new YopRequest(APP_KEYS[0], APP_SECRETS[0]);
         request.addParam("fileType", "IMAGE");
@@ -158,17 +178,21 @@ public class LocalDemo {
 
         YopResponse response = YopClient.upload("/rest/v1.0/file/upload", request);
         AssertUtils.assertYopResponse(response);
+        assertTrue(StringUtils.endsWith((String) ((HashMap) (((ArrayList) ((HashMap) response.getResult()).get("files")).get(0))).get("fileName"), ".bin"));
     }
 
-    @Test(timeout = 5000)
+    @Test(timeout = 30000)
     public void testUpLoadFileNew3() throws IOException, URISyntaxException {
         YopRequest request = new YopRequest(APP_KEYS[0], APP_SECRETS[0]);
         request.addParam("fileType", "IMAGE");
 
-        request.addFile(new FileInputStream(new File("src/test/resources/log4j.xml")));
+        FileInputStream stream = new FileInputStream(new File("/Users/dreambt/SiteMesh Flow Diagram.png"));
+        request.addFile(stream);
 
         YopResponse response = YopClient.upload("/rest/v1.0/file/upload", request);
+
         AssertUtils.assertYopResponse(response);
+        assertTrue(StringUtils.endsWith((String) ((HashMap) (((ArrayList) ((HashMap) response.getResult()).get("files")).get(0))).get("fileName"), ".png"));
     }
 
     @Test(timeout = 50000)
@@ -226,51 +250,66 @@ public class LocalDemo {
         AssertUtils.assertYopResponse(response);
     }
 
-    @Test
+    @Test(timeout = 30000)
     public void testRsaUploadFile() throws IOException {
-        int i = 2;
-        YopRequest request = new YopRequest(APP_KEYS[i], APP_SECRETS[i]);
+        YopRequest request = new YopRequest();
         request.addParam("fileType", "IMAGE");
 //        request.addParam("_file", "file:/Users/dreambt/xuekun-3.pfx");
         request.addParam("_file", "src/test/resources/log4j.xml");
+
         YopResponse response = YopClient3.uploadRsa("/rest/v1.0/file/upload", request);
         AssertUtils.assertYopResponse(response);
+        assertTrue(StringUtils.endsWith((String) ((HashMap) (((ArrayList) ((HashMap) response.getResult()).get("files")).get(0))).get("fileName"), ".bin"));
     }
 
-    @Test(timeout = 5000)
+    @Test(timeout = 30000)
     public void testRsaUploadFileNew1() throws IOException {
-        int i = 2;
-        YopRequest request = new YopRequest(APP_KEYS[i], APP_SECRETS[i]);
+        YopRequest request = new YopRequest();
         request.addParam("fileType", "IMAGE");
 
         request.addFile("src/test/resources/log4j.xml");
 
         YopResponse response = YopClient3.uploadRsa("/rest/v1.0/file/upload", request);
         AssertUtils.assertYopResponse(response);
+        assertTrue(StringUtils.endsWith((String) ((HashMap) (((ArrayList) ((HashMap) response.getResult()).get("files")).get(0))).get("fileName"), ".bin"));
     }
 
-    @Test(timeout = 5000)
+    @Test(timeout = 30000)
     public void testRsaUploadFileNew2() throws IOException {
-        int i = 2;
-        YopRequest request = new YopRequest(APP_KEYS[i], APP_SECRETS[i]);
+        YopRequest request = new YopRequest();
         request.addParam("fileType", "IMAGE");
 
         request.addFile(new File("src/test/resources/log4j.xml"));
 
         YopResponse response = YopClient3.uploadRsa("/rest/v1.0/file/upload", request);
         AssertUtils.assertYopResponse(response);
+        assertTrue(StringUtils.endsWith((String) ((HashMap) (((ArrayList) ((HashMap) response.getResult()).get("files")).get(0))).get("fileName"), ".bin"));
     }
 
-    @Test(timeout = 5000)
-    public void testRsaUploadFileNew3() throws IOException {
-        int i = 2;
-        YopRequest request = new YopRequest(APP_KEYS[i], APP_SECRETS[i]);
+    @Test(timeout = 30000)
+    public void testRsaUploadFileNew3() throws IOException, URISyntaxException {
+        YopRequest request = new YopRequest();
         request.addParam("fileType", "IMAGE");
 
-        request.addFile(new FileInputStream(new File("src/test/resources/log4j.xml")));
+        FileInputStream stream = new FileInputStream(new File("/Users/dreambt/SiteMesh Flow Diagram.png"));
+        request.addFile(stream);
+
+        YopResponse response = YopClient3.uploadRsa("/rest/v1.0/file/upload", request);
+
+        AssertUtils.assertYopResponse(response);
+        assertTrue(StringUtils.endsWith((String) ((HashMap) (((ArrayList) ((HashMap) response.getResult()).get("files")).get(0))).get("fileName"), ".png"));
+    }
+
+    @Test(timeout = 30000)
+    public void testRsaUploadFileNewUseURL() throws IOException, URISyntaxException {
+        YopRequest request = new YopRequest();
+        request.addParam("fileType", "IMAGE");
+
+        request.addFile(new URL("https://www.baidu.com/img/bd_logo1.png").openStream());
 
         YopResponse response = YopClient3.uploadRsa("/rest/v1.0/file/upload", request);
         AssertUtils.assertYopResponse(response);
+        assertTrue(StringUtils.endsWith((String) ((HashMap) (((ArrayList) ((HashMap) response.getResult()).get("files")).get(0))).get("fileName"), ".png"));
     }
 
     @Ignore
