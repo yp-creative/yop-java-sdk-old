@@ -52,6 +52,8 @@ public final class SDKConfig implements Serializable {
     @JsonProperty("default")
     private Boolean defaulted;
 
+    private ProxyConfig proxy;
+
     public CertConfig[] getYopPublicKey() {
         return yopPublicKey;
     }
@@ -130,6 +132,14 @@ public final class SDKConfig implements Serializable {
 
     public void setDefaulted(Boolean defaulted) {
         this.defaulted = defaulted;
+    }
+
+    public ProxyConfig getProxy() {
+        return proxy;
+    }
+
+    public void setProxy(ProxyConfig proxy) {
+        this.proxy = proxy;
     }
 
     @Override

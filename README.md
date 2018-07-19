@@ -42,6 +42,50 @@
 
 ## 3. 示例
 
+### 3.0. 配置文件说明
+
+app_key：应用标识
+
+aes_secret_key：应用密钥，当认证鉴权机制为对称、OAuth2、Basic时需要提供
+
+yop_public_key（list）：YOP平台公钥，当认证鉴权机制为非对称时需要提供
+- store_type
+    - string：密钥文本<br>
+    - file_p12：p12格式的密钥文件<br>
+- cert_type: RSA2048/RSA4096<br>
+- value: 如果store_type为string，则该值为密钥文本；如果store_type为file_*，则该值为密钥文件路径<br>
+
+isv_private_key（list）：ISV 私钥，当认证鉴权机制为非对称时需要提供<br>
+- store_type<br>
+    - string：密钥文本<br>
+    - file_p12：p12格式的密钥文件<br>
+- cert_type: RSA2048/RSA4096<br>
+- value: 如果store_type为string，则该值为密钥文本；如果store_type为file_*，则该值为密钥文件路径<br>
+- password：如果p12需要密码<br>
+
+httpclient:<br>
+- connect_timeout：全局连接超时，默认值：30*1000
+- read_timeout：全局读取超时时间，默认值：30*1000
+- max_connections: 最大连接数，默认值：50
+
+server_root:
+- yop: YOP 服务器请求地址。默认值：https://open.yeepay.com/yop-center<br>
+- yos: YOS 服务器请求地址。默认值：https://yos.yeepay.com/yop-center<br>
+
+region: 区域，默认值：空<br>
+
+proxy:<br>
+- host: 代理服务器IP<br>
+- port:  代理服务器端口，默认值：-1<br>
+- username: 代理账号<br>
+- password: 代理密码<br>
+- domain: 代理域<br>
+- workstation: 代理工作站<br>
+
+protocol_version：协议版本，默认：yop-auth-v2<br>
+
+config_version: 配置文件版本<br>
+
 ### 3.1. 对称加密接口
 
 代码示例：

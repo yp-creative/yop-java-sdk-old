@@ -4,6 +4,7 @@ import com.yeepay.g3.sdk.yop.YopServiceException;
 import com.yeepay.g3.sdk.yop.config.AppSdkConfig;
 import com.yeepay.g3.sdk.yop.config.AppSdkConfigProviderRegistry;
 import com.yeepay.g3.sdk.yop.config.HttpClientConfig;
+import com.yeepay.g3.sdk.yop.config.ProxyConfig;
 import com.yeepay.g3.sdk.yop.config.support.BackUpAppSdkConfigManager;
 import com.yeepay.g3.sdk.yop.encrypt.CertTypeEnum;
 import org.apache.log4j.Logger;
@@ -35,6 +36,8 @@ public final class InternalConfig {
 
     public static boolean TRUST_ALL_CERTS = false;
 
+    public static ProxyConfig proxy;
+
     static {
         init();
     }
@@ -56,6 +59,7 @@ public final class InternalConfig {
                 MAX_CONN_PER_ROUTE = clientConfig.getMaxConnPerRoute();
             }
         }
+        proxy = config.getProxy();
     }
 
     public static PublicKey getYopPublicKey(CertTypeEnum certType) {
