@@ -4,19 +4,28 @@ import com.yeepay.g3.sdk.yop.exception.YopClientException;
 import com.yeepay.g3.sdk.yop.unmarshaller.JacksonJsonMarshaller;
 import com.yeepay.g3.sdk.yop.utils.Assert;
 import com.yeepay.g3.sdk.yop.utils.InternalConfig;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpHost;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.NTCredentials;
+import org.apache.http.client.AuthCache;
+import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLContextBuilder;
 import org.apache.http.conn.ssl.TrustStrategy;
+import org.apache.http.impl.auth.BasicScheme;
+import org.apache.http.impl.client.BasicAuthCache;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
 
@@ -31,6 +40,10 @@ public class AbstractClient {
     private static final String REST_PREFIX = "/rest/v";
 
     private static CloseableHttpClient httpClient;
+
+    private static org.apache.http.client.config.RequestConfig.Builder requestConfigBuilder;
+    private static CredentialsProvider credentialsProvider;
+    private static HttpHost proxyHttpHost;
 
     static {
         initApacheHttpClient();
@@ -49,6 +62,31 @@ public class AbstractClient {
                 .setSSLSocketFactory(InternalConfig.TRUST_ALL_CERTS ? getTrustedAllSSLConnectionSocketFactory() : null)
                 .setDefaultRequestConfig(requestConfig)
                 .build();
+
+        requestConfigBuilder = org.apache.http.client.config.RequestConfig.custom();
+        requestConfigBuilder.setConnectTimeout(InternalConfig.CONNECT_TIMEOUT);
+        requestConfigBuilder.setStaleConnectionCheckEnabled(true);
+        /*if (InternalConfig.getLocalAddress() != null) {
+            requestConfigBuilder.setLocalAddress(config.getLocalAddress());
+        }*/
+
+        String proxyHost = InternalConfig.proxy.getHost();
+        int proxyPort = InternalConfig.proxy.getPort();
+        if (proxyHost != null && proxyPort > 0) {
+            proxyHttpHost = new HttpHost(proxyHost, proxyPort);
+            requestConfigBuilder.setProxy(proxyHttpHost);
+
+            credentialsProvider = new BasicCredentialsProvider();
+            String proxyUsername = InternalConfig.proxy.getUsername();
+            String proxyPassword = InternalConfig.proxy.getPassword();
+            String proxyDomain = InternalConfig.proxy.getDomain();
+            String proxyWorkstation = InternalConfig.proxy.getWorkstation();
+            if (proxyUsername != null && proxyPassword != null) {
+                credentialsProvider.setCredentials(new AuthScope(proxyHost, proxyPort),
+                        new NTCredentials(proxyUsername, proxyPassword,
+                                proxyWorkstation, proxyDomain));
+            }
+        }
     }
 
     public static void destroyApacheHttpClient() {
@@ -78,7 +116,8 @@ public class AbstractClient {
     }
 
     protected static YopResponse fetchContentByApacheHttpClient(HttpUriRequest request) throws IOException {
-        CloseableHttpResponse remoteResponse = getHttpClient().execute(request);
+        HttpContext httpContext = createHttpContext();
+        CloseableHttpResponse remoteResponse = getHttpClient().execute(request, httpContext);
         HttpEntity resEntity = null;
         try {
             // 判断返回值
@@ -100,12 +139,27 @@ public class AbstractClient {
         }
     }
 
-    public static CloseableHttpClient getHttpClient() {
-        return httpClient;
+    /**
+     * Creates HttpClient Context object based on the internal request.
+     *
+     * @return HttpClient Context object.
+     */
+    private static HttpClientContext createHttpContext() {
+        HttpClientContext context = HttpClientContext.create();
+        context.setRequestConfig(requestConfigBuilder.build());
+        if (credentialsProvider != null) {
+            context.setCredentialsProvider(credentialsProvider);
+        }
+        /*if (config.isProxyPreemptiveAuthenticationEnabled()) {
+            AuthCache authCache = new BasicAuthCache();
+            authCache.put(proxyHttpHost, new BasicScheme());
+            context.setAuthCache(authCache);
+        }*/
+        return context;
     }
 
-    protected static String generateFileName() {
-        return System.currentTimeMillis() + "-yop-" + RandomStringUtils.randomNumeric(8) + ".bin";
+    public static CloseableHttpClient getHttpClient() {
+        return httpClient;
     }
 
     protected static String richRequest(String methodOrUri, YopRequest request) {

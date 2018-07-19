@@ -9,6 +9,7 @@ import com.yeepay.g3.sdk.yop.exception.YopClientException;
 import com.yeepay.g3.sdk.yop.http.Headers;
 import com.yeepay.g3.sdk.yop.unmarshaller.JacksonJsonMarshaller;
 import com.yeepay.g3.sdk.yop.utils.DateUtils;
+import com.yeepay.g3.sdk.yop.utils.FileUtils;
 import com.yeepay.g3.sdk.yop.utils.JsonUtils;
 import com.yeepay.g3.sdk.yop.utils.checksum.CRC64Utils;
 import org.apache.commons.codec.binary.Base64;
@@ -124,8 +125,11 @@ public class YopClient extends AbstractClient {
                     multipartEntityBuilder.addBinaryBody(paramName, new File((String) file));
                 } else if (file instanceof File) {
                     multipartEntityBuilder.addBinaryBody(paramName, (File) file);
+                } else if (file instanceof InputStream) {
+                    String fileName = FileUtils.getFileName((InputStream) file);
+                    multipartEntityBuilder.addBinaryBody(paramName, (InputStream) file, ContentType.DEFAULT_BINARY, fileName);
                 } else {
-                    multipartEntityBuilder.addBinaryBody(paramName, (InputStream) file, ContentType.DEFAULT_BINARY, generateFileName());
+                    throw new YopClientException("不支持的上传文件类型");
                 }
             }
             for (Map.Entry<String, String> entry : request.getParams().entries()) {
@@ -163,6 +167,12 @@ public class YopClient extends AbstractClient {
             checkNotNull(key, "parameter key should not be null");
             Collection<String> values = entry.getValue();
             for (String value : values) {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("=============\nkey:" + key
+                            + "\nvalue:" + value
+                            + "\nbase64(key):" + com.yeepay.g3.sdk.yop.encrypt.Base64.encode(key)
+                            + "\nbase64(value):" + com.yeepay.g3.sdk.yop.encrypt.Base64.encode(value));
+                }
                 if (value == null) {
                     parameterStrings.add(key);
                 } else {
@@ -213,8 +223,9 @@ public class YopClient extends AbstractClient {
         }
 //        request.getParams().put("sign", signature);
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("canonicalQueryString:" + canonicalQueryString);
-            LOGGER.debug("signature:" + signature);
+            LOGGER.debug("========\ncanonicalQueryString:" + canonicalQueryString
+                    + "\nmd5(secret):" + Digests.digest2Hex(secret, "md5")
+                    + "\nsignature:" + signature);
         }
     }
 

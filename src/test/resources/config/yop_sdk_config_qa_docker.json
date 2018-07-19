@@ -1,7 +1,7 @@
 {
   "app_key": "yop-boss",
   "aes_secret_key": "PdZ74F6sxapgOWJ31QKmYw==",
-  "server_root": "http://10.151.30.88:8064/yop-center",
+  "server_root": "http://10.151.32.27:30228/yop-center",
   "yop_public_key": [
     {
       "store_type": "string",

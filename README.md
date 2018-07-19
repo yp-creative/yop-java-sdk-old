@@ -21,11 +21,11 @@
 +- LICENSE                         // 授权协议，请勿删除
 +- pom.xml                         // maven 依赖管理文件
 +- README.md                       // README 文档
-+- yop-sdk-${version}-jdk18.jar    // (推荐) All in One for JDK 1.8，已将lib目录shade打包
-+- yop-sdk-${version}-jdk17.jar    // All in One for JDK 1.7，已将lib目录shade打包
-+- yop-sdk-${version}-jdk16.jar    // All in One for JDK 1.6，已将lib目录shade打包
-+- yop-sdk-${version}-sources.jar  // 源码包
-+- yop-sdk-${version}-tests.jar    // 单元测试
++- yop-java-sdk-${version}-jdk18.jar    // All in One for JDK 1.8，已将lib目录shade打包
++- yop-java-sdk-${version}-jdk17.jar    // All in One for JDK 1.7，已将lib目录shade打包
++- yop-java-sdk-${version}-jdk16.jar    // All in One for JDK 1.6，已将lib目录shade打包
++- yop-java-sdk-${version}-sources.jar  // 源码包
++- yop-java-sdk-${version}-tests.jar    // 单元测试
 +- yop_sdk_config_default.json     // 默认用配置文件
 +- yop_sdk_config_template.json    // 配置文件模版
 +- yop-sdk-${version}.jar          // 未将lib目录shade打包的原始jar包
@@ -35,26 +35,83 @@
 ````xml
 <dependency>
 	<groupId>com.yeepay.g3.yop</groupId>
-	<artifactId>yop-sdk</artifactId>
+	<artifactId>yop-java-sdk</artifactId>
 	<version>${具体版本见SDK包}</version>
 </dependency>
 ````
 
 ## 3. 示例
 
+### 3.0. 配置文件说明
+
+app_key：应用标识
+
+aes_secret_key：应用密钥，当认证鉴权机制为对称、OAuth2、Basic时需要提供
+
+yop_public_key（list）：YOP平台公钥，当认证鉴权机制为非对称时需要提供
+- store_type
+    - string：密钥文本<br>
+    - file_p12：p12格式的密钥文件<br>
+- cert_type: RSA2048/RSA4096<br>
+- value: 如果store_type为string，则该值为密钥文本；如果store_type为file_*，则该值为密钥文件路径<br>
+
+isv_private_key（list）：ISV 私钥，当认证鉴权机制为非对称时需要提供<br>
+- store_type<br>
+    - string：密钥文本<br>
+    - file_p12：p12格式的密钥文件<br>
+- cert_type: RSA2048/RSA4096<br>
+- value: 如果store_type为string，则该值为密钥文本；如果store_type为file_*，则该值为密钥文件路径<br>
+- password：如果p12需要密码<br>
+
+httpclient:<br>
+- connect_timeout：全局连接超时，默认值：30*1000
+- read_timeout：全局读取超时时间，默认值：30*1000
+- max_connections: 最大连接数，默认值：50
+
+server_root:
+- yop: YOP 服务器请求地址。默认值：https://open.yeepay.com/yop-center<br>
+- yos: YOS 服务器请求地址。默认值：https://yos.yeepay.com/yop-center<br>
+
+region: 区域，默认值：空<br>
+
+proxy:<br>
+- host: 代理服务器IP<br>
+- port:  代理服务器端口，默认值：-1<br>
+- username: 代理账号<br>
+- password: 代理密码<br>
+- domain: 代理域<br>
+- workstation: 代理工作站<br>
+
+protocol_version：协议版本，默认：yop-auth-v2<br>
+
+config_version: 配置文件版本<br>
+
 ### 3.1. 对称加密接口
 
 代码示例：
 
 ````java
-// 初始化 SDK
-YopConfig.setAppKey("<Your appKey>");
-YopConfig.setAesSecretKey("<Your appSecret>");
+// 初始化 SDK（建议不要设置，自动会走配置读取）
+//YopConfig.setAppKey("<Your appKey>");
+//YopConfig.setAesSecretKey("<Your appSecret>");
 
 // 发起调用
 YopRequest request = new YopRequest();// 注意重载方法可以支持不同请求使用不同的密钥
+
+// 演示普通参数传递
 request.addParam("address", "13812345678");
-YopResponse response = YopClient.get("/rest/v1.0/notifier/blacklist/add", request);
+
+// 演示本地文件参数传递
+request.addFile(new File("src/test/resources/log4j.xml"));
+
+// 演示本地文件流参数传递
+FileInputStream stream = new FileInputStream(new File("/Users/dreambt/SiteMesh Flow Diagram.png"));
+request.addFile(stream);
+
+// 演示远程文件参数传递
+request.addFile(new URL("https://www.yeepay.com/logo.png").openStream());
+
+YopResponse response = YopClient.post("/rest/v1.0/notifier/send", request);
 ````
 
 ### 3.2. 非对称签名接口
@@ -114,14 +171,22 @@ YopResponse response = YopClient.get("/rest/v1.0/notifier/blacklist/add", reques
 
 ```java
 // QA 环境
-// String BASE_URL = "http://open.yeepay.com:18064/yop-center/";
-// YopRequest request = new YopRequest("<Your appKey>", "<Your appSecret>", BASE_URL);
-YopRequest request = new YopRequest("<Your appKey>", "<Your appSecret>");
-request.addParam("name", "安徽四创");
-request.addParam("idCardNumber", "630104063035716");
-request.addParam("requestCustomerId", "yop");//子商户编号
-request.addParam("requestFlowId", "test-" + RandomStringUtils.randomNumeric(15));//请求流水标识
-request.addParam("requestSystem", "auth2-boss");
+// YopRequest request = new YopRequest("<Your appKey>", "<Your appSecret>");
+YopRequest request = new YopRequest();
+
+// 演示普通参数传递
+request.addParam("address", "13812345678");
+
+// 演示本地文件参数传递
+request.addFile(new File("src/test/resources/log4j.xml"));
+
+// 演示本地文件流参数传递
+FileInputStream stream = new FileInputStream(new File("/Users/dreambt/SiteMesh Flow Diagram.png"));
+request.addFile(stream);
+
+// 演示远程文件参数传递
+request.addFile(new URL("https://www.yeepay.com/logo.png").openStream());
+
 System.out.println(request.toQueryString());
 YopResponse response = YopClient3.postRsa("/rest/v2.0/auth/idcard", request);
 ```

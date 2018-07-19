@@ -39,6 +39,8 @@ public class AppSdkConfig implements Serializable {
 
     private Map<CertTypeEnum, PrivateKey> isvPrivateKeys;
 
+    private ProxyConfig proxy;
+
     public String getAppKey() {
         return appKey;
     }
@@ -128,6 +130,13 @@ public class AppSdkConfig implements Serializable {
         return this.isvPrivateKeys.get(certType);
     }
 
+    public ProxyConfig getProxy() {
+        return proxy;
+    }
+
+    public void setProxy(ProxyConfig proxy) {
+        this.proxy = proxy;
+    }
 
     public static final class Builder {
         private SDKConfig sdkConfig;
@@ -157,6 +166,7 @@ public class AppSdkConfig implements Serializable {
                 appSdkConfig.storeIsvPrivateKey(sdkConfig.getIsvPrivateKey());
             }
             appSdkConfig.setHttpClientConfig(sdkConfig.getHttpClient());
+            appSdkConfig.setProxy(sdkConfig.getProxy());
             return appSdkConfig;
         }
     }
