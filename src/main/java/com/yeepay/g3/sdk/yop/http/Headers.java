@@ -72,6 +72,10 @@ public interface Headers {
 
     String YOP_REQUEST_ID = "x-yop-request-id";
 
+    String YOP_SDK_VERSION = "x-yop-sdk-version";
+
+    String YOP_SDK_LANGS = "x-yop-sdk-langs";
+
     String YOP_SECURE_TOKEN = "x-yop-secure-token";
 
     /*请求来源*/
