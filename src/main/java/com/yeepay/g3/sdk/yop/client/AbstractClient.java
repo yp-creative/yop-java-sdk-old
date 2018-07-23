@@ -10,7 +10,6 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.NTCredentials;
-import org.apache.http.client.AuthCache;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -20,8 +19,6 @@ import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLContextBuilder;
 import org.apache.http.conn.ssl.TrustStrategy;
-import org.apache.http.impl.auth.BasicScheme;
-import org.apache.http.impl.client.BasicAuthCache;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -70,21 +67,22 @@ public class AbstractClient {
             requestConfigBuilder.setLocalAddress(config.getLocalAddress());
         }*/
 
-        String proxyHost = InternalConfig.proxy.getHost();
-        int proxyPort = InternalConfig.proxy.getPort();
-        if (proxyHost != null && proxyPort > 0) {
-            proxyHttpHost = new HttpHost(proxyHost, proxyPort);
-            requestConfigBuilder.setProxy(proxyHttpHost);
-
-            credentialsProvider = new BasicCredentialsProvider();
-            String proxyUsername = InternalConfig.proxy.getUsername();
-            String proxyPassword = InternalConfig.proxy.getPassword();
-            String proxyDomain = InternalConfig.proxy.getDomain();
-            String proxyWorkstation = InternalConfig.proxy.getWorkstation();
-            if (proxyUsername != null && proxyPassword != null) {
-                credentialsProvider.setCredentials(new AuthScope(proxyHost, proxyPort),
-                        new NTCredentials(proxyUsername, proxyPassword,
-                                proxyWorkstation, proxyDomain));
+        if (InternalConfig.proxy != null) {
+            String proxyHost = InternalConfig.proxy.getHost();
+            int proxyPort = InternalConfig.proxy.getPort();
+            if (proxyHost != null && proxyPort > 0) {
+                proxyHttpHost = new HttpHost(proxyHost, proxyPort);
+                requestConfigBuilder.setProxy(proxyHttpHost);
+                credentialsProvider = new BasicCredentialsProvider();
+                String proxyUsername = InternalConfig.proxy.getUsername();
+                String proxyPassword = InternalConfig.proxy.getPassword();
+                String proxyDomain = InternalConfig.proxy.getDomain();
+                String proxyWorkstation = InternalConfig.proxy.getWorkstation();
+                if (proxyUsername != null && proxyPassword != null) {
+                    credentialsProvider.setCredentials(new AuthScope(proxyHost, proxyPort),
+                            new NTCredentials(proxyUsername, proxyPassword,
+                                    proxyWorkstation, proxyDomain));
+                }
             }
         }
     }
