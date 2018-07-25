@@ -58,8 +58,9 @@ public final class InternalConfig {
             if (clientConfig.getMaxConnPerRoute() != null) {
                 MAX_CONN_PER_ROUTE = clientConfig.getMaxConnPerRoute();
             }
+            proxy = config.getProxy();
         }
-        proxy = config.getProxy();
+
     }
 
     public static PublicKey getYopPublicKey(CertTypeEnum certType) {
