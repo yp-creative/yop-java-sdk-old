@@ -30,7 +30,7 @@ public class YopConstants {
                 .replace(' ', '_');
     }
 
-    public static final String CLIENT_VERSION = "2.3.1";// old 版本末尾只能为奇数
+    public static final String CLIENT_VERSION = "2.3.2";// old 版本末尾只能为奇数
     public static final String CLIENT_LANGS = "java";
 
     public static String USER_AGENT;
