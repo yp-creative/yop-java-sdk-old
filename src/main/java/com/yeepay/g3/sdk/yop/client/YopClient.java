@@ -163,7 +163,7 @@ public class YopClient extends AbstractClient {
             }
             String key = entry.getKey();
             checkNotNull(key, "parameter key should not be null");
-            List<String> list = new ArrayList<>(entry.getValue());
+            List<String> list = new ArrayList<String>(entry.getValue());
             Collections.sort(list);
             signParams.put(key, StringUtils.join(list, ","));
 
