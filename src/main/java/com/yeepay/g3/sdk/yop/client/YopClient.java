@@ -1,7 +1,6 @@
 package com.yeepay.g3.sdk.yop.client;
 
 import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.yeepay.g3.sdk.yop.encrypt.AESEncrypter;
 import com.yeepay.g3.sdk.yop.encrypt.Digests;
@@ -156,8 +155,7 @@ public class YopClient extends AbstractClient {
         if (parameters.isEmpty()) {
             return "";
         }
-
-        List<String> parameterStrings = Lists.newArrayList();
+        Map<String, String> signParams = new TreeMap<String, String>();
         for (Map.Entry<String, Collection<String>> entry : parameters.asMap().entrySet()) {
             if (forSignature &&
                     (Headers.AUTHORIZATION.equalsIgnoreCase(entry.getKey()) || request.getIgnoreSignParams().contains(entry.getKey()))) {
@@ -165,24 +163,16 @@ public class YopClient extends AbstractClient {
             }
             String key = entry.getKey();
             checkNotNull(key, "parameter key should not be null");
-            Collection<String> values = entry.getValue();
-            for (String value : values) {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("=============\nkey:" + key
-                            + "\nvalue:" + value
-                            + "\nbase64(key):" + com.yeepay.g3.sdk.yop.encrypt.Base64.encode(key)
-                            + "\nbase64(value):" + com.yeepay.g3.sdk.yop.encrypt.Base64.encode(value));
-                }
-                if (value == null) {
-                    parameterStrings.add(key);
-                } else {
-                    parameterStrings.add(key + value);
-                }
-            }
-        }
-        Collections.sort(parameterStrings);
+            List<String> list = new ArrayList<String>(entry.getValue());
+            Collections.sort(list);
+            signParams.put(key, StringUtils.join(list, ","));
 
-        return queryStringOldJoiner.join(parameterStrings);
+        }
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<String, String> entry : signParams.entrySet()) {
+            sb.append(entry.getKey()).append(entry.getValue());
+        }
+        return sb.toString();
     }
 
     private static void normalize(YopRequest request) {

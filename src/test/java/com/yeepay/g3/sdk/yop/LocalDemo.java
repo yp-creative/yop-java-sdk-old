@@ -5,6 +5,7 @@ import com.yeepay.g3.sdk.yop.client.YopClient3;
 import com.yeepay.g3.sdk.yop.client.YopRequest;
 import com.yeepay.g3.sdk.yop.client.YopResponse;
 import com.yeepay.g3.sdk.yop.hbird.HbirdLoginToken;
+import com.yeepay.g3.sdk.yop.http.Headers;
 import com.yeepay.g3.sdk.yop.utils.mapper.JsonMapper;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -44,8 +45,7 @@ public class LocalDemo {
     public static void setUp() throws Exception {
 //        System.setProperty("yop.sdk.config.file", "/config/yop_sdk_config_local.json");
 //        System.setProperty("yop.sdk.config.file", "/config/yop_sdk_config_dev.json");
-        System.setProperty("yop.sdk.config.file", "/config/yop_sdk_config_qa.json");
-//        System.setProperty("yop.sdk.config.file", "/config/yop_sdk_config_qa_docker.json");
+        System.setProperty("yop.sdk.config.file", "/config/yop_sdk_config_qa_docker.json");
 //        System.setProperty("yop.sdk.config.file", "/config/yop_sdk_config_pro.json");
 //        System.setProperty("yop.sdk.trust.all.certs", "true");
     }
@@ -54,8 +54,8 @@ public class LocalDemo {
     public void test112() throws IOException {
         String merchant = "B112345678901239";
         String key = "DMGF1AOw+EpoXV/vF99vvg==";
-        String url = "http://10.151.32.27:30228/yop-center";
-        YopRequest request = new YopRequest(merchant, key, url);
+//        String url = "http://10.151.32.27:30228/yop-center";
+        YopRequest request = new YopRequest(merchant, key);
 //        request.setEncrypt(true);
 //        request.setSignRet(true);
         request.setSignAlg("sha-256");
@@ -145,7 +145,7 @@ public class LocalDemo {
         AssertUtils.assertYopResponse(response);
     }
 
-    @Test(timeout = 5000)
+    @Test(timeout = 30000)
     public void testUpLoadFileOld() throws IOException, URISyntaxException {
         YopRequest request = new YopRequest(APP_KEYS[0], APP_SECRETS[0]);
         request.addParam("fileType", "IMAGE");
@@ -154,7 +154,7 @@ public class LocalDemo {
 
         YopResponse response = YopClient.upload("/rest/v1.0/file/upload", request);
         AssertUtils.assertYopResponse(response);
-        assertTrue(StringUtils.endsWith((String) ((HashMap) (((ArrayList) ((HashMap) response.getResult()).get("files")).get(0))).get("fileName"), ".bin"));
+        assertTrue(StringUtils.endsWith((String) ((HashMap) (((ArrayList) ((HashMap) response.getResult()).get("files")).get(0))).get("fileName"), ".xml"));
     }
 
     @Test(timeout = 30000)
@@ -166,7 +166,7 @@ public class LocalDemo {
 
         YopResponse response = YopClient.upload("/rest/v1.0/file/upload", request);
         AssertUtils.assertYopResponse(response);
-        assertTrue(StringUtils.endsWith((String) ((HashMap) (((ArrayList) ((HashMap) response.getResult()).get("files")).get(0))).get("fileName"), ".bin"));
+        assertTrue(StringUtils.endsWith((String) ((HashMap) (((ArrayList) ((HashMap) response.getResult()).get("files")).get(0))).get("fileName"), ".xml"));
     }
 
     @Test(timeout = 30000)
@@ -178,7 +178,7 @@ public class LocalDemo {
 
         YopResponse response = YopClient.upload("/rest/v1.0/file/upload", request);
         AssertUtils.assertYopResponse(response);
-        assertTrue(StringUtils.endsWith((String) ((HashMap) (((ArrayList) ((HashMap) response.getResult()).get("files")).get(0))).get("fileName"), ".bin"));
+        assertTrue(StringUtils.endsWith((String) ((HashMap) (((ArrayList) ((HashMap) response.getResult()).get("files")).get(0))).get("fileName"), ".xml"));
     }
 
     @Test(timeout = 30000)
@@ -259,7 +259,7 @@ public class LocalDemo {
 
         YopResponse response = YopClient3.uploadRsa("/rest/v1.0/file/upload", request);
         AssertUtils.assertYopResponse(response);
-        assertTrue(StringUtils.endsWith((String) ((HashMap) (((ArrayList) ((HashMap) response.getResult()).get("files")).get(0))).get("fileName"), ".bin"));
+        assertTrue(StringUtils.endsWith((String) ((HashMap) (((ArrayList) ((HashMap) response.getResult()).get("files")).get(0))).get("fileName"), ".xml"));
     }
 
     @Test(timeout = 30000)
@@ -271,7 +271,7 @@ public class LocalDemo {
 
         YopResponse response = YopClient3.uploadRsa("/rest/v1.0/file/upload", request);
         AssertUtils.assertYopResponse(response);
-        assertTrue(StringUtils.endsWith((String) ((HashMap) (((ArrayList) ((HashMap) response.getResult()).get("files")).get(0))).get("fileName"), ".bin"));
+        assertTrue(StringUtils.endsWith((String) ((HashMap) (((ArrayList) ((HashMap) response.getResult()).get("files")).get(0))).get("fileName"), ".xml"));
     }
 
     @Test(timeout = 30000)
@@ -283,7 +283,7 @@ public class LocalDemo {
 
         YopResponse response = YopClient3.uploadRsa("/rest/v1.0/file/upload", request);
         AssertUtils.assertYopResponse(response);
-        assertTrue(StringUtils.endsWith((String) ((HashMap) (((ArrayList) ((HashMap) response.getResult()).get("files")).get(0))).get("fileName"), ".bin"));
+        assertTrue(StringUtils.endsWith((String) ((HashMap) (((ArrayList) ((HashMap) response.getResult()).get("files")).get(0))).get("fileName"), ".xml"));
     }
 
     @Test(timeout = 30000)
@@ -310,6 +310,15 @@ public class LocalDemo {
         YopResponse response = YopClient3.uploadRsa("/rest/v1.0/file/upload", request);
         AssertUtils.assertYopResponse(response);
         assertTrue(StringUtils.endsWith((String) ((HashMap) (((ArrayList) ((HashMap) response.getResult()).get("files")).get(0))).get("fileName"), ".png"));
+    }
+
+    @Test
+    public void testOAuth2() throws Exception {
+        YopRequest request = new YopRequest();
+        request.addHeader(Headers.AUTHORIZATION, "Bearer eyJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJ5b3AiLCJqdGkiOiJhcHBfeE5UVTRORE13TURRMTphMzM1ZTMwNS1jYjUzLTQ4N2ItYmNhOS1kZGIwODhkYzFjMmEiLCJzdWIiOiJkODVlNzM2Yy0wNDZmLTRmMzctYjQyMC1jZjlhMTI1NDc0MjciLCJleHAiOjE1MjA0NzY0MTQsImNpZCI6IjQzIiwic2NvcGUiOltdLCJha19leHAiOjQzMjAwLCJya19leHAiOjI1OTIwMDAsInR5cGUiOiJyayIsInZlciI6IjIuMCJ9.tq87qVP2eOmr3em1MdwVwH0vkuET8MmQxJlkI-BM7IdgfNjMjB-yfJmtkAbgI6D7lOdsXmZxW13ZqS1j2WpWbQ");
+
+        YopResponse response = YopClient.post("/rest/v2.0/hbird/qr/create-qr", request);
+        AssertUtils.assertYopResponse(response);
     }
 
     @Ignore
