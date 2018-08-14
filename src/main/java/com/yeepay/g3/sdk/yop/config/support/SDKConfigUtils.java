@@ -40,6 +40,9 @@ public final class SDKConfigUtils {
         if (StringUtils.endsWith(config.getServerRoot(), "/")) {
             config.setServerRoot(StringUtils.substring(config.getServerRoot(), 0, -1));
         }
+        if (StringUtils.endsWith(config.getYosServerRoot(), "/")) {
+            config.setYosServerRoot(StringUtils.substring(config.getYosServerRoot(), 0, -1));
+        }
         return config;
     }
 

@@ -27,6 +27,8 @@ public class AppSdkConfig implements Serializable {
 
     private String serverRoot;
 
+    private String yosServerRoot;
+
     private String aesSecretKey;
 
     private PublicKey defaultYopPublicKey;
@@ -64,6 +66,19 @@ public class AppSdkConfig implements Serializable {
 
     public AppSdkConfig withServerRoot(String serverRoot) {
         this.serverRoot = serverRoot;
+        return this;
+    }
+
+    public String getYosServerRoot() {
+        return yosServerRoot;
+    }
+
+    public void setYosServerRoot(String yosServerRoot) {
+        this.yosServerRoot = yosServerRoot;
+    }
+
+    public AppSdkConfig withYosServerRot(String yosServerRoot) {
+        this.yosServerRoot = yosServerRoot;
         return this;
     }
 
@@ -154,11 +169,11 @@ public class AppSdkConfig implements Serializable {
         }
 
         public AppSdkConfig build() {
-            AppSdkConfig appSdkConfig = new AppSdkConfig();
-            appSdkConfig.setAppKey(sdkConfig.getAppKey());
-            appSdkConfig.setAesSecretKey(sdkConfig.getAesSecretKey());
-            appSdkConfig.setServerRoot(sdkConfig.getServerRoot());
-
+            AppSdkConfig appSdkConfig = new AppSdkConfig()
+                    .withAppKey(sdkConfig.getAppKey())
+                    .withAesSecretKey(sdkConfig.getAesSecretKey())
+                    .withServerRoot(sdkConfig.getServerRoot())
+                    .withYosServerRot(sdkConfig.getYosServerRoot());
             if (sdkConfig.getYopPublicKey() != null && sdkConfig.getYopPublicKey().length >= 1) {
                 appSdkConfig.storeYopPublicKey(sdkConfig.getYopPublicKey());
             }

@@ -87,6 +87,7 @@ public class YopRequest {
             appSdkConfig = BackUpAppSdkConfigManager.getBackUpConfig();
         }
         this.appSdkConfig.setServerRoot(appSdkConfig.getServerRoot());
+        this.appSdkConfig.setYosServerRoot(appSdkConfig.getYosServerRoot());
         this.appSdkConfig.setDefaultYopPublicKey(appSdkConfig.getDefaultYopPublicKey());
         this.secretKey = secretKey;
         init();
@@ -98,11 +99,13 @@ public class YopRequest {
         Validate.notBlank(secretKey, "ServerRoot is blank.");
         this.appSdkConfig = new AppSdkConfig();
         this.appSdkConfig.setAppKey(appKey);
-        if (StringUtils.endsWith(serverRoot, "/")) {
-            this.appSdkConfig.setServerRoot(StringUtils.substring(serverRoot, 0, -1));
-        } else {
-            this.appSdkConfig.setServerRoot(serverRoot);
-        }
+        String requestServerRoot = StringUtils.endsWith(serverRoot, "/") ?
+                StringUtils.substring(serverRoot, 0, -1) : serverRoot;
+        //这里把serverRoot和yosServerRoot都设置为用户自定义的地址，因为目前不清楚用户的请求类型(普通api还是文件上传)
+        this.appSdkConfig.setServerRoot(requestServerRoot);
+        this.appSdkConfig.setYosServerRoot(requestServerRoot);
+
+
         AppSdkConfig appSdkConfig = AppSdkConfigProviderRegistry.getProvider().getConfigWithDefault(appKey);
         if (appSdkConfig == null) {
             appSdkConfig = BackUpAppSdkConfigManager.getBackUpConfig();

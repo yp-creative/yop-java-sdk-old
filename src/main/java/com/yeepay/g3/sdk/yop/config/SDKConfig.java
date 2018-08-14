@@ -29,6 +29,9 @@ public final class SDKConfig implements Serializable {
     @JsonProperty("server_root")
     private String serverRoot;
 
+    @JsonProperty("yos_server_root")
+    private String yosServerRoot;
+
     @JsonProperty("yop_public_key")
     private CertConfig[] yopPublicKey;
 
@@ -53,6 +56,38 @@ public final class SDKConfig implements Serializable {
     private Boolean defaulted;
 
     private ProxyConfig proxy;
+
+    public String getAppKey() {
+        return appKey;
+    }
+
+    public void setAppKey(String appKey) {
+        this.appKey = appKey;
+    }
+
+    public String getAesSecretKey() {
+        return aesSecretKey;
+    }
+
+    public void setAesSecretKey(String aesSecretKey) {
+        this.aesSecretKey = aesSecretKey;
+    }
+
+    public String getServerRoot() {
+        return serverRoot;
+    }
+
+    public void setServerRoot(String serverRoot) {
+        this.serverRoot = serverRoot;
+    }
+
+    public String getYosServerRoot() {
+        return yosServerRoot;
+    }
+
+    public void setYosServerRoot(String yosServerRoot) {
+        this.yosServerRoot = yosServerRoot;
+    }
 
     public CertConfig[] getYopPublicKey() {
         return yopPublicKey;
@@ -100,30 +135,6 @@ public final class SDKConfig implements Serializable {
 
     public void setTrustAllCerts(Boolean trustAllCerts) {
         this.trustAllCerts = trustAllCerts;
-    }
-
-    public String getServerRoot() {
-        return serverRoot;
-    }
-
-    public void setServerRoot(String serverRoot) {
-        this.serverRoot = serverRoot;
-    }
-
-    public String getAppKey() {
-        return appKey;
-    }
-
-    public void setAppKey(String appKey) {
-        this.appKey = appKey;
-    }
-
-    public String getAesSecretKey() {
-        return aesSecretKey;
-    }
-
-    public void setAesSecretKey(String aesSecretKey) {
-        this.aesSecretKey = aesSecretKey;
     }
 
     public Boolean getDefaulted() {

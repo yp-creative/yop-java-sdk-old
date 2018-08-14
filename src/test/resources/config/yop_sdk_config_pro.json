@@ -1,7 +1,8 @@
 {
   "app_key": "yop-boss",
   "aes_secret_key": "NWNZQslh36xJP2a5rodX1Q==",
-  "server_root": "https://open.yeepay.com/yop-center",
+  "server_root": "https://openapi.yeepay.com/yop-center",
+  "yos_server_root": "https://yos.yeepay.com/yop-center",
   "yop_public_key": [
     {
       "store_type": "string",
