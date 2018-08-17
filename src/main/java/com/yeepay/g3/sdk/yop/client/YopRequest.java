@@ -87,26 +87,7 @@ public class YopRequest {
             appSdkConfig = BackUpAppSdkConfigManager.getBackUpConfig();
         }
         this.appSdkConfig.setServerRoot(appSdkConfig.getServerRoot());
-        this.appSdkConfig.setDefaultYopPublicKey(appSdkConfig.getDefaultYopPublicKey());
-        this.secretKey = secretKey;
-        init();
-    }
-
-    public YopRequest(String appKey, String secretKey, String serverRoot) {
-        Validate.notBlank(appKey, "AppKey is blank.");
-        Validate.notBlank(secretKey, "SecretKey is blank.");
-        Validate.notBlank(secretKey, "ServerRoot is blank.");
-        this.appSdkConfig = new AppSdkConfig();
-        this.appSdkConfig.setAppKey(appKey);
-        if (StringUtils.endsWith(serverRoot, "/")) {
-            this.appSdkConfig.setServerRoot(StringUtils.substring(serverRoot, 0, -1));
-        } else {
-            this.appSdkConfig.setServerRoot(serverRoot);
-        }
-        AppSdkConfig appSdkConfig = AppSdkConfigProviderRegistry.getProvider().getConfigWithDefault(appKey);
-        if (appSdkConfig == null) {
-            appSdkConfig = BackUpAppSdkConfigManager.getBackUpConfig();
-        }
+        this.appSdkConfig.setYosServerRoot(appSdkConfig.getYosServerRoot());
         this.appSdkConfig.setDefaultYopPublicKey(appSdkConfig.getDefaultYopPublicKey());
         this.secretKey = secretKey;
         init();

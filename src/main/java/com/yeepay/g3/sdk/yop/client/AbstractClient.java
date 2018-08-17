@@ -4,6 +4,7 @@ import com.yeepay.g3.sdk.yop.exception.YopClientException;
 import com.yeepay.g3.sdk.yop.unmarshaller.JacksonJsonMarshaller;
 import com.yeepay.g3.sdk.yop.utils.Assert;
 import com.yeepay.g3.sdk.yop.utils.InternalConfig;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -162,11 +163,13 @@ public class AbstractClient {
 
     protected static String richRequest(String methodOrUri, YopRequest request) {
         Assert.hasText(methodOrUri, "method name or rest uri");
-        String serverRoot = request.getAppSdkConfig().getServerRoot();
+
+        String requestRoot = MapUtils.isNotEmpty(request.getMultipartFiles()) ? request.getAppSdkConfig().getYosServerRoot() :
+                request.getAppSdkConfig().getServerRoot();
 
         String path = methodOrUri;
-        if (StringUtils.startsWith(methodOrUri, serverRoot)) {
-            path = StringUtils.substringAfter(methodOrUri, serverRoot);
+        if (StringUtils.startsWith(methodOrUri, requestRoot)) {
+            path = StringUtils.substringAfter(methodOrUri, requestRoot);
         }
 
         if (!StringUtils.startsWith(path, REST_PREFIX)) {
@@ -176,7 +179,7 @@ public class AbstractClient {
         /*v and method are always needed because of old signature implementation...*/
         request.setParam(YopConstants.VERSION, StringUtils.substringBetween(methodOrUri, REST_PREFIX, "/"));
         request.setParam(YopConstants.METHOD, methodOrUri);
-        return serverRoot + path;
+        return requestRoot + path;
     }
 
 }
