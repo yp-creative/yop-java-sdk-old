@@ -81,6 +81,11 @@ public class YopConstants {
     public static final String ALG_SHA = "SHA";
     public static final String ALG_SHA1 = "SHA1";
 
+
+    public static final String DEFAULT_SERVER_ROOT = "https://openapi.yeepay.com/yop-center";
+
+    public static final String DEFAULT_YOS_SERVER_ROOT = "https://yos.yeepay.com/yop-center";
+
     /**
      * 判断是否为保护参数
      *

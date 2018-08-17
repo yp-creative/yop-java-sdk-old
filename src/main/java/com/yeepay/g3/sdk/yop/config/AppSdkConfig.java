@@ -1,8 +1,10 @@
 package com.yeepay.g3.sdk.yop.config;
 
 import com.google.common.collect.Maps;
+import com.yeepay.g3.sdk.yop.client.YopConstants;
 import com.yeepay.g3.sdk.yop.config.support.ConfigUtils;
 import com.yeepay.g3.sdk.yop.encrypt.CertTypeEnum;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;
 import java.security.PrivateKey;
@@ -172,8 +174,8 @@ public class AppSdkConfig implements Serializable {
             AppSdkConfig appSdkConfig = new AppSdkConfig()
                     .withAppKey(sdkConfig.getAppKey())
                     .withAesSecretKey(sdkConfig.getAesSecretKey())
-                    .withServerRoot(sdkConfig.getServerRoot())
-                    .withYosServerRot(sdkConfig.getYosServerRoot());
+                    .withServerRoot(StringUtils.defaultIfBlank(sdkConfig.getServerRoot(), YopConstants.DEFAULT_SERVER_ROOT))
+                    .withYosServerRot(StringUtils.defaultIfBlank(sdkConfig.getYosServerRoot(), YopConstants.DEFAULT_YOS_SERVER_ROOT));
             if (sdkConfig.getYopPublicKey() != null && sdkConfig.getYopPublicKey().length >= 1) {
                 appSdkConfig.storeYopPublicKey(sdkConfig.getYopPublicKey());
             }
