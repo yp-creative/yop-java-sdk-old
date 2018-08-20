@@ -11,7 +11,6 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -23,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 /**
  * title: <br>
@@ -43,9 +43,9 @@ public class LocalDemo {
 
     @BeforeClass
     public static void setUp() throws Exception {
-//        System.setProperty("yop.sdk.config.file", "/config/yop_sdk_config_local.json");
+        System.setProperty("yop.sdk.config.file", "/config/yop_sdk_config_local.json");
 //        System.setProperty("yop.sdk.config.file", "/config/yop_sdk_config_dev.json");
-        System.setProperty("yop.sdk.config.file", "/config/yop_sdk_config_qa_docker.json");
+//        System.setProperty("yop.sdk.config.file", "/config/yop_sdk_config_qa_docker.json");
 //        System.setProperty("yop.sdk.config.file", "/config/yop_sdk_config_pro.json");
 //        System.setProperty("yop.sdk.trust.all.certs", "true");
     }
@@ -54,7 +54,6 @@ public class LocalDemo {
     public void test112() throws IOException {
         String merchant = "B112345678901239";
         String key = "DMGF1AOw+EpoXV/vF99vvg==";
-//        String url = "http://10.151.32.27:30228/yop-center";
         YopRequest request = new YopRequest(merchant, key);
 //        request.setEncrypt(true);
 //        request.setSignRet(true);
@@ -62,7 +61,7 @@ public class LocalDemo {
         request.addParam("requestNo", "trx" + RandomStringUtils.randomNumeric(10));
         request.addParam("merchantUserId", merchant);
         YopResponse response = YopClient.post("/rest/v1.0/payplus/user/register", request);
-        System.out.println(response);
+        AssertUtils.assertYopResponse(response);
     }
 
     @Test
@@ -71,9 +70,6 @@ public class LocalDemo {
         request.addParam("requestFlowId", "test123456");//请求流水标识
         request.addParam("name", "张文康");
         request.addParam("idCardNumber", "czr+7xY");
-
-//        YopResponse response = YopClient.get("/rest/v2.0/auth/idcard", request);
-//        AssertUtils.assertYopResponse(response);
 
         YopResponse response = YopClient.post("/rest/v2.0/auth/idcard", request);
         AssertUtils.assertYopResponse(response);
@@ -250,6 +246,20 @@ public class LocalDemo {
         AssertUtils.assertYopResponse(response);
     }
 
+    @Test
+    public void testRsa3() throws Exception {
+        int i = 2;
+        YopRequest request = new YopRequest(APP_KEYS[i], APP_SECRETS[i]);
+        request.addParam("corpName", "安徽四创电子股份有限公司青海分公司");//企业名称
+        request.addParam("regNo", "630104063035716");//工商注册号
+        request.addParam("requestCustomerId", "yop-boss");//子商户编号
+        request.addParam("requestFlowId", "test-" + System.currentTimeMillis() + RandomStringUtils.randomNumeric(3));//请求流水标识
+        request.addParam("requestIdentification", "unit test");//请求者标识
+
+        YopResponse response = YopClient3.postRsa("/rest/v1.0/sys/trade/order", request);
+        AssertUtils.assertYopResponse(response);
+    }
+
     @Test(timeout = 30000)
     public void testRsaUploadFile() throws IOException {
         YopRequest request = new YopRequest();
@@ -321,14 +331,58 @@ public class LocalDemo {
         AssertUtils.assertYopResponse(response);
     }
 
-    @Ignore
     @Test
-    public void testLoadClass() throws Exception {
+    public void testLoadLocalClass() throws Exception {
         YopRequest request = new YopRequest();
-        request.addParam("className", "com.yeepay.g3.facade.ymf.facade.laike.OrderFacade");//这个写YOP就可以了
+        request.addParam("className", "com.yeepay.g3.facade.notifier.NotifyFacade");
 
         YopResponse response = YopClient.post("/rest/v1.0/system/loader/methods", request);
         AssertUtils.assertYopResponse(response);
+    }
+
+    @Test
+    public void testLoadRemoteClass() throws Exception {
+        YopRequest request = new YopRequest();
+        request.addParam("className", "com.yeepay.g3.facade.opr.facade.yop.YopOrderFacade");
+
+        YopResponse response = YopClient.post("/rest/v1.0/system/loader/methods", request);
+        AssertUtils.assertYopResponse(response);
+    }
+
+    @Test
+    public void testLoadClassTimeout() throws Exception {
+        YopRequest request = new YopRequest();
+        request.addParam("className", "com.yeepay.g3.facade.ymf.facade.laike.OrderFacade");
+
+        YopResponse response = YopClient.post("/rest/v1.0/system/loader/methods", request);
+        AssertUtils.assertYopResponse(response);
+        assertTrue(StringUtils.contains("调用超过最大处理时长", response.getError().getMessage()));
+    }
+
+    @Test
+    public void testConstraintViolationException() throws Exception {
+        YopRequest request = new YopRequest();
+        request.addParam("requestFlowId", "test123456");//请求流水标识
+        request.addParam("name", "张文康");
+        request.addParam("idCardNumber", "czr+7xY");
+
+        YopResponse response = YopClient.post("/rest/v2.0/auth/idcard", request);
+        AssertUtils.assertYopResponse(response);
+        assertEquals("个人身份证号长度必须为15位或18位", response.getError().getMessage());
+    }
+
+    @Test
+    public void testYeepayBizException() throws IOException {
+        YopRequest request = new YopRequest();
+        request.setSignAlg("SHA-256");
+
+        request.addParam("grant_type", "password0");//请求流水标识
+        request.addParam("client_id", "appKey");
+        request.addParam("authenticated_user_id", "unit test");
+        request.addParam("scope", "test");
+
+        YopResponse response = YopClient.post("/rest/v1.2/oauth2/token", request);
+        assertEquals("invalid_grant", response.getError().getCode());
     }
 
     @Test

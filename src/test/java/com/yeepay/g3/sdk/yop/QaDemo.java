@@ -23,9 +23,6 @@ import java.io.IOException;
  */
 public class QaDemo {
 
-    //    private static final String BASE_URL = "http://10.151.30.87:8064/yop-center/";
-//    private static final String BASE_URL = "http://open.yeepay.com:8064/yop-center/";
-
     private static final String[] APP_KEYS = {"yop-boss", "jinkela"};
     private static final String[] APP_SECRETS = {"PdZ74F6sxapgOWJ31QKmYw==", "cAFj+DxhpeMo8afn7s0z5w=="};
 
@@ -126,8 +123,7 @@ public class QaDemo {
 
     @Test
     public void test1() throws IOException {
-        YopRequest request = new YopRequest(null,
-                "s5KI8r0920SQ339oVlFE6eWJ0yk019SD7015nw39iaXJp10856z0C1d7JV5l");
+        YopRequest request = new YopRequest(null, "s5KI8r0920SQ339oVlFE6eWJ0yk019SD7015nw39iaXJp10856z0C1d7JV5l");
         request.setEncrypt(true);
         request.setSignRet(true);
         request.addParam("customerNo", "10011830665");
