@@ -20,7 +20,7 @@ import java.io.IOException;
 public class TestPersonalBadInfo {
     @Test
     public void personnalBadInfoTest() throws IOException {
-        YopRequest request = new YopRequest("test", "LVLDflZNINrrCFPIis9gCA==", "http://open.yeepay.com:8064/yop-center");
+        YopRequest request = new YopRequest("test", "LVLDflZNINrrCFPIis9gCA==");
         request.setSignAlg("SHA-256");//具体看api签名算法而定
         request.setEncrypt(false);
         request.addParam("idcard", "360121198605075212");
