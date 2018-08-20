@@ -46,9 +46,10 @@ public final class DefaultFileAppSdkConfigProvider extends BaseFixedAppSdkConfig
         if (CollectionUtils.isEmpty(files)) {
             return Collections.emptyList();
         }
+        checkFilePath(files);
         List<SDKConfig> customSdkConfigs = new ArrayList<SDKConfig>(files.size());
         for (String filePath : files) {
-            String fileName = StringUtils.substringAfterLast(filePath, File.separator);
+            String fileName = getFileName(filePath);
             Matcher matcher = SDK_CONFIG_FILE_NAME_PATTERN.matcher(fileName);
             if (matcher.matches()) {
                 customSdkConfigs.add(SDKConfigUtils.loadConfig(filePath));
@@ -58,7 +59,6 @@ public final class DefaultFileAppSdkConfigProvider extends BaseFixedAppSdkConfig
         }
         return customSdkConfigs;
     }
-
 
     private List<String> loadSystemConfigSdkFiles() {
         String configDir = System.getProperty(SDK_CONFIG_DIR_PROPERTY_KEY);
@@ -97,5 +97,26 @@ public final class DefaultFileAppSdkConfigProvider extends BaseFixedAppSdkConfig
             return Collections.emptyList();
         }
     }
+
+    private void checkFilePath(List<String> files) {
+        for (String file : files) {
+            if (StringUtils.isBlank(file)) {
+                throw new YopClientException("sdkConfig filePath is blank");
+            }
+            if (file.charAt(0) == '/' || file.charAt(0) == '\\') {
+                throw new YopClientException("sdkConfig filePath should not start with file separator.");
+            }
+        }
+    }
+
+    private String getFileName(String filePath) {
+        String fileName = StringUtils.substringAfterLast(filePath, File.separator);
+        //当fileName中不包含文件间隔符时返回空，需要做特殊处理
+        if (StringUtils.isEmpty(fileName)) {
+            fileName = filePath;
+        }
+        return fileName;
+    }
+
 
 }
