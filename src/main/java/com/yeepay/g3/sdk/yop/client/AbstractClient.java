@@ -25,7 +25,8 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.security.cert.CertificateException;
@@ -33,7 +34,7 @@ import java.security.cert.X509Certificate;
 
 public class AbstractClient {
 
-    private static final Logger LOGGER = Logger.getLogger(AbstractClient.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractClient.class);
 
     private static final String REST_PREFIX = "/rest/v";
 

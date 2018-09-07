@@ -12,7 +12,8 @@ import com.yeepay.g3.sdk.yop.http.Headers;
 import com.yeepay.g3.sdk.yop.utils.Assert;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.InputStream;
@@ -29,7 +30,7 @@ import java.util.*;
  */
 public class YopRequest {
 
-    private Logger logger = Logger.getLogger(getClass());
+    private static final Logger LOGGER = LoggerFactory.getLogger(YopRequest.class);
 
     private String locale = "zh_CN";
 
@@ -125,7 +126,7 @@ public class YopRequest {
         Assert.hasText(paramName, "参数名不能为空");
         if (paramValue == null || ((paramValue instanceof String) && StringUtils.isBlank((String) paramValue))
                 || ((paramValue instanceof Collection<?>) && ((Collection<?>) paramValue).isEmpty())) {
-            logger.warn("param " + paramName + "is null or empty，ignore it");
+            LOGGER.warn("param " + paramName + "is null or empty，ignore it");
             return this;
         }
 

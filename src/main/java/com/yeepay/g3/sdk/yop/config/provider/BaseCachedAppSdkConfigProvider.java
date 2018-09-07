@@ -10,7 +10,8 @@ import com.yeepay.g3.sdk.yop.config.provider.support.AppSdkConfigInitTask;
 import com.yeepay.g3.sdk.yop.utils.Holder;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -27,7 +28,7 @@ import java.util.concurrent.TimeUnit;
  */
 public abstract class BaseCachedAppSdkConfigProvider implements AppSdkConfigProvider {
 
-    protected Logger logger = Logger.getLogger(this.getClass());
+    protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final LoadingCache<String, Holder<AppSdkConfig>> configCache;
 

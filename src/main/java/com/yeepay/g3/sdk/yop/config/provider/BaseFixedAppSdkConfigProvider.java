@@ -7,7 +7,8 @@ import com.yeepay.g3.sdk.yop.config.SDKConfig;
 import com.yeepay.g3.sdk.yop.config.provider.support.AppSdkConfigInitTask;
 import com.yeepay.g3.sdk.yop.utils.Holder;
 import org.apache.commons.lang3.BooleanUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -24,7 +25,7 @@ import java.util.Map;
  */
 public abstract class BaseFixedAppSdkConfigProvider implements AppSdkConfigProvider {
 
-    protected final Logger logger = Logger.getLogger(this.getClass());
+    protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final Map<String, Holder<AppSdkConfig>> configs = Maps.newHashMap();
 

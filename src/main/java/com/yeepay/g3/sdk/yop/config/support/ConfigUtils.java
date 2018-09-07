@@ -4,7 +4,8 @@ import com.yeepay.g3.sdk.yop.YopServiceException;
 import com.yeepay.g3.sdk.yop.config.CertConfig;
 import com.yeepay.g3.sdk.yop.utils.RSAKeyUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.URISyntaxException;
@@ -29,7 +30,7 @@ import java.util.List;
  */
 public final class ConfigUtils {
 
-    private static final Logger LOGGER = Logger.getLogger(ConfigUtils.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConfigUtils.class);
 
     public static PublicKey loadPublicKey(CertConfig certConfig) {
         PublicKey publicKey;

@@ -83,9 +83,15 @@
         </dependency>
 
         <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.17</version>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.25</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>1.7.25</version>
         </dependency>
 
         <!-- test start -->
@@ -98,7 +104,7 @@
         <dependency>
             <groupId>com.yeepay.g3.cloud.yop</groupId>
             <artifactId>yop-utils</artifactId>
-            <version>1.0</version>
+            <version>1.5.13</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
