@@ -17,7 +17,8 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,7 +39,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public class YopClient extends AbstractClient {
 
-    private static final Logger LOGGER = Logger.getLogger(YopClient.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(YopClient.class);
 
     private static final Joiner queryStringOldJoiner = Joiner.on("");
 

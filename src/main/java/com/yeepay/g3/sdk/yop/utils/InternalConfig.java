@@ -7,7 +7,8 @@ import com.yeepay.g3.sdk.yop.config.HttpClientConfig;
 import com.yeepay.g3.sdk.yop.config.ProxyConfig;
 import com.yeepay.g3.sdk.yop.config.support.BackUpAppSdkConfigManager;
 import com.yeepay.g3.sdk.yop.encrypt.CertTypeEnum;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -24,7 +25,7 @@ import java.security.PublicKey;
  */
 public final class InternalConfig {
 
-    private static final Logger LOGGER = Logger.getLogger(InternalConfig.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(InternalConfig.class);
 
     public static final String PROTOCOL_VERSION = "yop-auth-v2";
 
