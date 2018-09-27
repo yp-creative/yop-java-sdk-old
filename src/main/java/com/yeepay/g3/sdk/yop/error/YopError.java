@@ -5,8 +5,6 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * <pre>
@@ -21,19 +19,13 @@ public class YopError {
 
     private String code;
 
+    private String subCode;
+
     private String message;
 
+    private String subMessage;
+
     private String solution;
-
-    private List<YopSubError> subErrors = new ArrayList<YopSubError>();
-
-    public YopError() {
-    }
-
-    public YopError(String code, String message, String solution) {
-        this.code = code;
-        this.message = message;
-    }
 
     public String getCode() {
         return code;
@@ -41,6 +33,14 @@ public class YopError {
 
     public void setCode(String code) {
         this.code = code;
+    }
+
+    public String getSubCode() {
+        return subCode;
+    }
+
+    public void setSubCode(String subCode) {
+        this.subCode = subCode;
     }
 
     public String getMessage() {
@@ -51,6 +51,14 @@ public class YopError {
         this.message = message;
     }
 
+    public String getSubMessage() {
+        return subMessage;
+    }
+
+    public void setSubMessage(String subMessage) {
+        this.subMessage = subMessage;
+    }
+
     public String getSolution() {
         return solution;
     }
@@ -59,22 +67,58 @@ public class YopError {
         this.solution = solution;
     }
 
-    public List<YopSubError> getSubErrors() {
-        return this.subErrors;
-    }
-
-    public void setSubErrors(List<YopSubError> subErrors) {
-        this.subErrors = subErrors;
-    }
-
-    public YopError addSubError(YopSubError subError) {
-        this.subErrors.add(subError);
-        return this;
-    }
-
     @Override
     public String toString() {
-        return ToStringBuilder.reflectionToString(this,
-                ToStringStyle.SHORT_PREFIX_STYLE);
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+    }
+
+    public static final class Builder {
+        private String code;
+        private String subCode;
+        private String message;
+        private String subMessage;
+        private String solution;
+
+        private Builder() {
+        }
+
+        public static Builder anYopError() {
+            return new Builder();
+        }
+
+        public Builder withCode(String code) {
+            this.code = code;
+            return this;
+        }
+
+        public Builder withSubCode(String subCode) {
+            this.subCode = subCode;
+            return this;
+        }
+
+        public Builder withMessage(String message) {
+            this.message = message;
+            return this;
+        }
+
+        public Builder withSubMessage(String subMessage) {
+            this.subMessage = subMessage;
+            return this;
+        }
+
+        public Builder withSolution(String solution) {
+            this.solution = solution;
+            return this;
+        }
+
+        public YopError build() {
+            YopError yopError = new YopError();
+            yopError.setCode(code);
+            yopError.setSubCode(subCode);
+            yopError.setMessage(message);
+            yopError.setSubMessage(subMessage);
+            yopError.setSolution(solution);
+            return yopError;
+        }
     }
 }

@@ -147,10 +147,15 @@ public class AbstractClient {
             if (httpResponse.getContent() != null) {
                 YopResponse yopResponse = new YopResponse();
                 yopResponse.setState("failure");
-                yopResponse.setRequestId(httpResponse.getHeader(Headers.YOP_REQUEST_ID));
                 YopErrorResponse errorResponse = JacksonJsonMarshaller.unmarshal(httpResponse.getContent(),
                         YopErrorResponse.class);
-                yopResponse.setError(new YopError(errorResponse.getCode(), errorResponse.getMessage(), errorResponse.getRequestId()));
+                yopResponse.setRequestId(errorResponse.getRequestId());
+                yopResponse.setError(YopError.Builder.anYopError()
+                        .withCode(errorResponse.getCode())
+                        .withSubCode(errorResponse.getSubCode())
+                        .withMessage(errorResponse.getMessage())
+                        .withSubMessage(errorResponse.getSubMessage())
+                        .build());
                 yopResponse.setValidSign(true);
                 return yopResponse;
             } else {
