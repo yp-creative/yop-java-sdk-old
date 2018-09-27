@@ -23,7 +23,6 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.protocol.HttpContext;
-import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -123,27 +122,42 @@ public class AbstractClient {
         CloseableHttpResponse remoteResponse = null;
         try {
             remoteResponse = getHttpClient().execute(request, httpContext);
-            // 判断返回值
-            int statusCode = remoteResponse.getStatusLine().getStatusCode();
-            if (statusCode >= 400) {
-                throw new YopClientException(Integer.toString(statusCode));
-            }
-
-            String content = EntityUtils.toString(remoteResponse.getEntity());
-            YopResponse response = JacksonJsonMarshaller.unmarshal(content, YopResponse.class);
-            response.setRequestId(getRequestId(request, remoteResponse));
-            return response;
+            return parseResponse(remoteResponse);
         } finally {
             HttpClientUtils.closeQuietly(remoteResponse);
         }
     }
 
-    private static String getRequestId(HttpUriRequest request, CloseableHttpResponse response) {
-        Header requestIdHeader = response.getFirstHeader("x-yop-request-id");
-        if (null != requestIdHeader) {
-            requestIdHeader = request.getFirstHeader("x-yop-request-id");
+    protected static YopResponse parseResponse(CloseableHttpResponse response) throws IOException {
+        YopHttpResponse httpResponse = new YopHttpResponse(response);
+        if (httpResponse.getStatusCode() / 100 == HttpStatus.SC_OK / 100) {
+            //not a error
+            YopResponse yopResponse = new YopResponse();
+            yopResponse.setState("success");
+            yopResponse.setRequestId(httpResponse.getHeader(Headers.YOP_REQUEST_ID));
+            if (httpResponse.getContent() != null) {
+                yopResponse.setStringResult(IOUtils.toString(httpResponse.getContent(), YopConstants.ENCODING));
+            }
+            if (StringUtils.isNotBlank(yopResponse.getStringResult())) {
+                yopResponse.setResult(JacksonJsonMarshaller.unmarshal(yopResponse.getStringResult(), Object.class));
+            }
+            yopResponse.setValidSign(true);
+            return yopResponse;
+        } else if (httpResponse.getStatusCode() >= 500) {
+            if (httpResponse.getContent() != null) {
+                YopResponse yopResponse = new YopResponse();
+                yopResponse.setState("failure");
+                yopResponse.setRequestId(httpResponse.getHeader(Headers.YOP_REQUEST_ID));
+                YopErrorResponse errorResponse = JacksonJsonMarshaller.unmarshal(httpResponse.getContent(),
+                        YopErrorResponse.class);
+                yopResponse.setError(new YopError(errorResponse.getCode(), errorResponse.getMessage(), errorResponse.getRequestId()));
+                yopResponse.setValidSign(true);
+                return yopResponse;
+            } else {
+                throw new YopClientException("empty result with httpStatusCode:" + httpResponse.getStatusCode());
+            }
         }
-        return null != requestIdHeader.getValue() ? requestIdHeader.getValue() : "";
+        throw new YopClientException("unexpected httpStatusCode:" + httpResponse.getStatusCode());
     }
 
     /**

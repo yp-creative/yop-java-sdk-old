@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.yeepay.g3.sdk.yop.exception.YopClientException;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 
 /**
@@ -44,6 +45,16 @@ public class JacksonJsonMarshaller {
             throw new YopClientException(e.getMessage(), e);
         }
     }
+
+    public static <T> T unmarshal(InputStream content, Class<T> objectType) {
+        try {
+            return objectMapper.readValue(content, objectType);
+        } catch (IOException e) {
+            throw new YopClientException(e.getMessage(), e);
+        }
+    }
+
+
 
     public static String marshal(Object content) {
         try {
