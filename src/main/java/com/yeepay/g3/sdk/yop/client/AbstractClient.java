@@ -7,7 +7,6 @@ import com.yeepay.g3.sdk.yop.utils.InternalConfig;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.NTCredentials;
@@ -31,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.concurrent.TimeUnit;
 
 public class AbstractClient {
 
@@ -60,9 +60,12 @@ public class AbstractClient {
                 .setMaxConnPerRoute(InternalConfig.MAX_CONN_PER_ROUTE)
                 .setSSLSocketFactory(InternalConfig.TRUST_ALL_CERTS ? getTrustedAllSSLConnectionSocketFactory() : null)
                 .setDefaultRequestConfig(requestConfig)
+                .evictExpiredConnections()
+                .evictIdleConnections(5000, TimeUnit.MILLISECONDS)
+                .setRetryHandler(new YopHttpRequestRetryHandler())
                 .build();
 
-        requestConfigBuilder = org.apache.http.client.config.RequestConfig.custom();
+        requestConfigBuilder = RequestConfig.custom();
         requestConfigBuilder.setConnectTimeout(InternalConfig.CONNECT_TIMEOUT);
         requestConfigBuilder.setStaleConnectionCheckEnabled(true);
         /*if (InternalConfig.getLocalAddress() != null) {
@@ -117,9 +120,9 @@ public class AbstractClient {
 
     protected static YopResponse fetchContentByApacheHttpClient(HttpUriRequest request) throws IOException {
         HttpContext httpContext = createHttpContext();
-        CloseableHttpResponse remoteResponse = getHttpClient().execute(request, httpContext);
-        HttpEntity resEntity = null;
+        CloseableHttpResponse remoteResponse = null;
         try {
+            remoteResponse = getHttpClient().execute(request, httpContext);
             // 判断返回值
             int statusCode = remoteResponse.getStatusLine().getStatusCode();
             if (statusCode >= 400) {
@@ -128,15 +131,19 @@ public class AbstractClient {
 
             String content = EntityUtils.toString(remoteResponse.getEntity());
             YopResponse response = JacksonJsonMarshaller.unmarshal(content, YopResponse.class);
-
-            Header requestIdHeader = remoteResponse.getFirstHeader("x-yop-request-id");
-            if (null != requestIdHeader) {
-                response.setRequestId(requestIdHeader.getValue());
-            }
+            response.setRequestId(getRequestId(request, remoteResponse));
             return response;
         } finally {
             HttpClientUtils.closeQuietly(remoteResponse);
         }
+    }
+
+    private static String getRequestId(HttpUriRequest request, CloseableHttpResponse response) {
+        Header requestIdHeader = response.getFirstHeader("x-yop-request-id");
+        if (null != requestIdHeader) {
+            requestIdHeader = request.getFirstHeader("x-yop-request-id");
+        }
+        return null != requestIdHeader.getValue() ? requestIdHeader.getValue() : "";
     }
 
     /**

@@ -43,18 +43,18 @@ public class LocalDemo {
 
     @BeforeClass
     public static void setUp() throws Exception {
-        System.setProperty("yop.sdk.config.file", "/config/yop_sdk_config_local.json");
-//        System.setProperty("yop.sdk.config.file", "/config/yop_sdk_config_dev.json");
-//        System.setProperty("yop.sdk.config.file", "/config/yop_sdk_config_qa_docker.json");
-//        System.setProperty("yop.sdk.config.file", "/config/yop_sdk_config_pro.json");
+//        System.setProperty("yop.sdk.config.file", "config/yop_sdk_config_local.json");
+//        System.setProperty("yop.sdk.config.file", "config/yop_sdk_config_dev.json");
+        System.setProperty("yop.sdk.config.file", "config/yop_sdk_config_qa_docker.json");
+//        System.setProperty("yop.sdk.config.file", "config/yop_sdk_config_pro.json");
+//        System.setProperty("yop.sdk.config.file", "config/yop_sdk_config_pro_docker.json");
 //        System.setProperty("yop.sdk.trust.all.certs", "true");
     }
 
     @Test
     public void test112() throws IOException {
-        String merchant = "B112345678901239";
-        String key = "DMGF1AOw+EpoXV/vF99vvg==";
-        YopRequest request = new YopRequest(merchant, key);
+        String merchant = "yop";
+        YopRequest request = new YopRequest();
 //        request.setEncrypt(true);
 //        request.setSignRet(true);
         request.setSignAlg("sha-256");
@@ -137,7 +137,7 @@ public class LocalDemo {
         request.addParam("authenticated_user_id", "unit test");
         request.addParam("scope", "test");
 
-        YopResponse response = YopClient.post("/rest/v1.2/oauth2/token", request);
+        YopResponse response = YopClient.post("/rest/v1.0/oauth2/token", request);
         AssertUtils.assertYopResponse(response);
     }
 
@@ -196,8 +196,8 @@ public class LocalDemo {
         YopRequest request = new YopRequest(APP_KEYS[0], APP_SECRETS[0]);
         request.setSignAlg("SHA-256");
         request.addParam("corp_id", "356e1dc1-4c11-419b-a043-cccb537dfb9b");
-        request.addParam("user_name", "qian.li");
-        request.addParam("password", "yeepay.com123");
+        request.addParam("user_name", "baitao.ji");
+        request.addParam("password", "yeepay.com");
         request.addParam("need_corp_info", "true");
         request.addParam("need_token", "true");
         request.addParam("verified", "true");
@@ -211,6 +211,7 @@ public class LocalDemo {
 //        request2.addParam("fileBase64", Base64.encodeBase64String(IOUtils.toByteArray(new FileInputStream(new File("/Users/dreambt/test2.txt")))));
 
         HbirdLoginToken hbirdLoginToken = JSON_MAPPER.fromJson(response.getStringResult(), HbirdLoginToken.class);
+        assert null != hbirdLoginToken.getoAuth2AccessToken();
         request2.addHeader("Authorization", "Bearer " + hbirdLoginToken.getoAuth2AccessToken().getValue());
 
         request2.addFile("fileBase64", new FileInputStream(new File("/Users/dreambt/test2.txt")));
@@ -381,8 +382,46 @@ public class LocalDemo {
         request.addParam("authenticated_user_id", "unit test");
         request.addParam("scope", "test");
 
-        YopResponse response = YopClient.post("/rest/v1.2/oauth2/token", request);
-        assertEquals("invalid_grant", response.getError().getCode());
+        YopResponse response = YopClient.post("/rest/v1.0/oauth2/token", request);
+        assertEquals("isp.code.invalid_grant", response.getError().getCode());
+    }
+
+    @Test
+    public void testPayPlusRemitQuery() throws IOException {
+        YopRequest request = new YopRequest();
+        request.setEncrypt(true);
+        request.setSignRet(true);
+        request.setSignAlg("sha-256");
+//        request.addParam("trxRequestNo","111");
+        request.addParam("remitRequestNo", "Remit1534859751218");
+
+        System.out.println(request.toQueryString());
+        YopResponse response = YopClient.post("/rest/v1.0/payplus/remit/query", request);
+        System.out.println(response.toString());
+    }
+
+    @Test
+    public void testNoProvider() throws IOException {
+        YopRequest request = new YopRequest();
+        request.setSignAlg("sha-256");
+//        request.addParam("trxRequestNo","111");
+        request.addParam("remitRequestNo", "Remit1534859751218");
+
+        System.out.println(request.toQueryString());
+        YopResponse response = YopClient.post("/rest/v1.0/mt-wallet/order/queryCodeInfo", request);
+        System.out.println(response.toString());
+    }
+
+    @Test
+    public void testDisabledApi() throws IOException {
+        YopRequest request = new YopRequest();
+        request.setSignAlg("sha-256");
+//        request.addParam("trxRequestNo","111");
+        request.addParam("remitRequestNo", "Remit1534859751218");
+
+        System.out.println(request.toQueryString());
+        YopResponse response = YopClient.post("/rest/v1.0/insordering-interface/car-insordering-interface/create-policy", request);
+        System.out.println(response.toString());
     }
 
     @Test
