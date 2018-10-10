@@ -21,6 +21,7 @@ import javax.net.ssl.SSLException;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.net.ConnectException;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Set;
 
@@ -40,9 +41,12 @@ public class YopHttpRequestRetryHandler implements HttpRequestRetryHandler {
 
     private final boolean requestSentRetryEnabled;
 
+    private static final int SCALE_FACTOR = 300;
+
     private final Set<Class<? extends IOException>> nonRetriableClasses = Sets.newHashSet(
             InterruptedIOException.class,
             UnknownHostException.class,
+            SocketException.class,
             ConnectException.class,
             SSLException.class);
 
@@ -73,6 +77,24 @@ public class YopHttpRequestRetryHandler implements HttpRequestRetryHandler {
             }
         }
 
+        if (retryRequestWithSleep(exception, executionCount, context)) {
+            try {
+                Thread.sleep(getDelayBeforeNextRetryInMillis(executionCount));
+            } catch (final InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            return true;
+        }
+
+        // otherwise do not retry
+        return false;
+    }
+
+    private long getDelayBeforeNextRetryInMillis(int retriesAttempted) {
+        return (1 << (retriesAttempted + 1)) * SCALE_FACTOR;
+    }
+
+    private boolean retryRequestWithSleep(IOException exception, int executionCount, HttpContext context) {
         if (exception instanceof ConnectTimeoutException || exception instanceof NoHttpResponseException
                 || exception instanceof UnknownHostException || exception instanceof ConnectionPoolTimeoutException) {
             return true;
@@ -80,11 +102,6 @@ public class YopHttpRequestRetryHandler implements HttpRequestRetryHandler {
 
         final HttpClientContext clientContext = HttpClientContext.adapt(context);
         final HttpRequest request = clientContext.getRequest();
-
-        int statusCode = clientContext.getResponse().getStatusLine().getStatusCode();
-        if (HttpStatus.SC_BAD_GATEWAY == statusCode) {
-            return true;
-        }
 
         if (handleAsIdempotent(request)) {
             // Retry if the request is considered idempotent
@@ -96,7 +113,12 @@ public class YopHttpRequestRetryHandler implements HttpRequestRetryHandler {
             // if it's OK to retry methods that have been sent
             return true;
         }
-        // otherwise do not retry
+
+        int statusCode = null != clientContext.getResponse() ? clientContext.getResponse().getStatusLine().getStatusCode() : 0;
+        if (HttpStatus.SC_BAD_GATEWAY == statusCode) {
+            return true;
+        }
+
         return false;
     }
 

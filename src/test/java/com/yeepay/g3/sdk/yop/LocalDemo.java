@@ -45,8 +45,8 @@ public class LocalDemo {
     public static void setUp() throws Exception {
 //        System.setProperty("yop.sdk.config.file", "config/yop_sdk_config_local.json");
 //        System.setProperty("yop.sdk.config.file", "config/yop_sdk_config_dev.json");
-        System.setProperty("yop.sdk.config.file", "config/yop_sdk_config_qa_docker.json");
-//        System.setProperty("yop.sdk.config.file", "config/yop_sdk_config_pro.json");
+//        System.setProperty("yop.sdk.config.file", "config/yop_sdk_config_qa_docker.json");
+        System.setProperty("yop.sdk.config.file", "config/yop_sdk_config_pro.json");
 //        System.setProperty("yop.sdk.config.file", "config/yop_sdk_config_pro_docker.json");
 //        System.setProperty("yop.sdk.trust.all.certs", "true");
     }
@@ -55,8 +55,6 @@ public class LocalDemo {
     public void test112() throws IOException {
         String merchant = "yop";
         YopRequest request = new YopRequest();
-//        request.setEncrypt(true);
-//        request.setSignRet(true);
         request.setSignAlg("sha-256");
         request.addParam("requestNo", "trx" + RandomStringUtils.randomNumeric(10));
         request.addParam("merchantUserId", merchant);
