@@ -1,13 +1,18 @@
 package com.yeepay.g3.sdk.yop.client;
 
+import com.yeepay.g3.sdk.yop.error.YopError;
 import com.yeepay.g3.sdk.yop.exception.YopClientException;
+import com.yeepay.g3.sdk.yop.http.Headers;
+import com.yeepay.g3.sdk.yop.http.YopHttpResponse;
+import com.yeepay.g3.sdk.yop.model.YopErrorResponse;
 import com.yeepay.g3.sdk.yop.unmarshaller.JacksonJsonMarshaller;
 import com.yeepay.g3.sdk.yop.utils.Assert;
 import com.yeepay.g3.sdk.yop.utils.InternalConfig;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.Header;
 import org.apache.http.HttpHost;
+import org.apache.http.HttpStatus;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.NTCredentials;
 import org.apache.http.client.CredentialsProvider;
