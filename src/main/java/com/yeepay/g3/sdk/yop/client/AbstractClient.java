@@ -133,7 +133,7 @@ public class AbstractClient {
         if (httpResponse.getStatusCode() / 100 == HttpStatus.SC_OK / 100) {
             //not a error
             YopResponse yopResponse = new YopResponse();
-            yopResponse.setState("success");
+            yopResponse.setState("SUCCESS");
             yopResponse.setRequestId(httpResponse.getHeader(Headers.YOP_REQUEST_ID));
             if (httpResponse.getContent() != null) {
                 yopResponse.setStringResult(IOUtils.toString(httpResponse.getContent(), YopConstants.ENCODING));
@@ -146,7 +146,7 @@ public class AbstractClient {
         } else if (httpResponse.getStatusCode() >= 500) {
             if (httpResponse.getContent() != null) {
                 YopResponse yopResponse = new YopResponse();
-                yopResponse.setState("failure");
+                yopResponse.setState("FAILURE");
                 YopErrorResponse errorResponse = JacksonJsonMarshaller.unmarshal(httpResponse.getContent(),
                         YopErrorResponse.class);
                 yopResponse.setRequestId(errorResponse.getRequestId());
