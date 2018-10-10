@@ -12,7 +12,7 @@ package com.yeepay.g3.sdk.yop.exception.config;
  */
 public class IllegalConfigLengthException extends AbstractIllegalConfigException {
 
-    private static final long serialVersionUID = -3600216210204320272L;
+    private static final long serialVersionUID = -1L;
 
     public IllegalConfigLengthException(String field, String message) {
         super("length", field, message);

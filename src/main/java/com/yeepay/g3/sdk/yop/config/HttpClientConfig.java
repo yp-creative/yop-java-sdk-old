@@ -18,7 +18,7 @@ import java.io.Serializable;
  */
 public final class HttpClientConfig implements Serializable {
 
-    private static final long serialVersionUID = -6377916283927611130L;
+    private static final long serialVersionUID = -1L;
 
     @JsonProperty("connect_timeout")
     private Integer connectTimeout;

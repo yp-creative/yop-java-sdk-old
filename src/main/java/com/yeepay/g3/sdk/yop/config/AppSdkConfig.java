@@ -23,7 +23,7 @@ import java.util.Map;
  */
 public class AppSdkConfig implements Serializable {
 
-    private static final long serialVersionUID = 5717760813596644163L;
+    private static final long serialVersionUID = -1L;
 
     private String appKey;
 

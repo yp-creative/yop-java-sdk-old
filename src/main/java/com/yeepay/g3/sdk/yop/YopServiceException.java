@@ -14,7 +14,7 @@ import com.yeepay.g3.sdk.yop.exception.YopClientException;
  */
 public class YopServiceException extends YopClientException {
 
-    private static final long serialVersionUID = 1483785729559154396L;
+    private static final long serialVersionUID = -1L;
 
     public enum ErrorType {
         Client,

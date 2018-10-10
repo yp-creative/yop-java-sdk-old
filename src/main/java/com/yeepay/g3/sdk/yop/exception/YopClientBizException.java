@@ -12,7 +12,7 @@ package com.yeepay.g3.sdk.yop.exception;
  */
 public class YopClientBizException extends YopClientException {
 
-    private static final long serialVersionUID = 8432219772905774915L;
+    private static final long serialVersionUID = -1L;
 
     private final String errorCode;
 

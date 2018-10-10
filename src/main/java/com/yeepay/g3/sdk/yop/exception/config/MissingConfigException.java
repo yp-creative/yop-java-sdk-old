@@ -12,7 +12,7 @@ package com.yeepay.g3.sdk.yop.exception.config;
  */
 public class MissingConfigException extends AbstractSDKConfigException {
 
-    private static final long serialVersionUID = -8823474970692879993L;
+    private static final long serialVersionUID = -1L;
 
 
     public MissingConfigException(String field, String message) {

@@ -14,7 +14,7 @@ import com.yeepay.g3.sdk.yop.exception.YopClientBizException;
  */
 public abstract class AbstractSDKConfigException extends YopClientBizException {
 
-    private static final long serialVersionUID = 2824641676830678981L;
+    private static final long serialVersionUID = -1L;
 
 
     public AbstractSDKConfigException(String code, String field, String message) {
