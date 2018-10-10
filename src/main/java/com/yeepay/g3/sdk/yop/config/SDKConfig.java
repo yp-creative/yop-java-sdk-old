@@ -18,7 +18,7 @@ import java.io.Serializable;
  */
 public final class SDKConfig implements Serializable {
 
-    private static final long serialVersionUID = -6377916283927611130L;
+    private static final long serialVersionUID = -1L;
 
     @JsonProperty("app_key")
     private String appKey;

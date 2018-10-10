@@ -5,6 +5,7 @@ import com.yeepay.g3.sdk.yop.config.AppSdkConfig;
 import com.yeepay.g3.sdk.yop.config.AppSdkConfigProvider;
 import com.yeepay.g3.sdk.yop.config.SDKConfig;
 import com.yeepay.g3.sdk.yop.config.provider.support.AppSdkConfigInitTask;
+import com.yeepay.g3.sdk.yop.config.support.CheckUtils;
 import com.yeepay.g3.sdk.yop.utils.Holder;
 import org.apache.commons.lang3.BooleanUtils;
 import org.slf4j.Logger;
@@ -69,7 +70,7 @@ public abstract class BaseFixedAppSdkConfigProvider implements AppSdkConfigProvi
         } else {
             boolean hasDefault = false;
             for (SDKConfig sdkConfig : customSdkConfigs) {
-//                checkCustomSdkConfig(sdkConfig);
+                CheckUtils.checkCustomSDKConfig(sdkConfig);
                 Holder<AppSdkConfig> holder = new Holder<AppSdkConfig>(new AppSdkConfigInitTask(sdkConfig));
                 configs.put(sdkConfig.getAppKey(), holder);
                 if (BooleanUtils.isTrue(sdkConfig.getDefaulted()) && !hasDefault) {
