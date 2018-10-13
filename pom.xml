@@ -141,12 +141,13 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.7.0</version>
+                <version>${maven-compiler-plugin.version}</version>
                 <configuration>
                     <failOnError>true</failOnError>
                     <verbose>true</verbose>
                     <fork>true</fork>
                     <compilerArgument>-nowarn</compilerArgument>
+                    <!--<executable>${java.specified.home}/bin/javac</executable>-->
                     <source>${maven.compiler.source}</source>
                     <target>${maven.compiler.target}</target>
                     <compilerVersion>${maven.compiler.compilerVersion}</compilerVersion>
@@ -367,6 +368,8 @@
                 <maven.compiler.target>1.8</maven.compiler.target>
                 <maven.compiler.compilerVersion>1.8</maven.compiler.compilerVersion>
 
+                <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
+
                 <assembly.file>assembly.xml</assembly.file>
                 <shaded.classifier.name>jdk18</shaded.classifier.name>
 
@@ -381,6 +384,8 @@
                 <maven.compiler.target>1.7</maven.compiler.target>
                 <maven.compiler.compilerVersion>1.7</maven.compiler.compilerVersion>
 
+                <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
+
                 <assembly.file>assembly-jdk17.xml</assembly.file>
                 <shaded.classifier.name>jdk17</shaded.classifier.name>
 
@@ -394,6 +399,8 @@
                 <maven.compiler.source>1.6</maven.compiler.source>
                 <maven.compiler.target>1.6</maven.compiler.target>
                 <maven.compiler.compilerVersion>1.6</maven.compiler.compilerVersion>
+
+                <maven-compiler-plugin.version>3.0</maven-compiler-plugin.version>
 
                 <assembly.file>assembly-jdk16.xml</assembly.file>
                 <shaded.classifier.name>jdk16</shaded.classifier.name>
