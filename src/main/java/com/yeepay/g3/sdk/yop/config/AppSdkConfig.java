@@ -1,8 +1,10 @@
 package com.yeepay.g3.sdk.yop.config;
 
 import com.google.common.collect.Maps;
+import com.yeepay.g3.sdk.yop.client.YopConstants;
 import com.yeepay.g3.sdk.yop.config.support.ConfigUtils;
 import com.yeepay.g3.sdk.yop.encrypt.CertTypeEnum;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;
 import java.security.PrivateKey;
@@ -21,11 +23,13 @@ import java.util.Map;
  */
 public class AppSdkConfig implements Serializable {
 
-    private static final long serialVersionUID = 5717760813596644163L;
+    private static final long serialVersionUID = -1L;
 
     private String appKey;
 
     private String serverRoot;
+
+    private String yosServerRoot;
 
     private String aesSecretKey;
 
@@ -64,6 +68,19 @@ public class AppSdkConfig implements Serializable {
 
     public AppSdkConfig withServerRoot(String serverRoot) {
         this.serverRoot = serverRoot;
+        return this;
+    }
+
+    public String getYosServerRoot() {
+        return yosServerRoot;
+    }
+
+    public void setYosServerRoot(String yosServerRoot) {
+        this.yosServerRoot = yosServerRoot;
+    }
+
+    public AppSdkConfig withYosServerRot(String yosServerRoot) {
+        this.yosServerRoot = yosServerRoot;
         return this;
     }
 
@@ -154,11 +171,11 @@ public class AppSdkConfig implements Serializable {
         }
 
         public AppSdkConfig build() {
-            AppSdkConfig appSdkConfig = new AppSdkConfig();
-            appSdkConfig.setAppKey(sdkConfig.getAppKey());
-            appSdkConfig.setAesSecretKey(sdkConfig.getAesSecretKey());
-            appSdkConfig.setServerRoot(sdkConfig.getServerRoot());
-
+            AppSdkConfig appSdkConfig = new AppSdkConfig()
+                    .withAppKey(sdkConfig.getAppKey())
+                    .withAesSecretKey(sdkConfig.getAesSecretKey())
+                    .withServerRoot(StringUtils.defaultIfBlank(sdkConfig.getServerRoot(), YopConstants.DEFAULT_SERVER_ROOT))
+                    .withYosServerRot(StringUtils.defaultIfBlank(sdkConfig.getYosServerRoot(), YopConstants.DEFAULT_YOS_SERVER_ROOT));
             if (sdkConfig.getYopPublicKey() != null && sdkConfig.getYopPublicKey().length >= 1) {
                 appSdkConfig.storeYopPublicKey(sdkConfig.getYopPublicKey());
             }

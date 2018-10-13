@@ -3,7 +3,8 @@ package com.yeepay.g3.sdk.yop.utils.checksum;
 import com.google.common.primitives.UnsignedLong;
 import com.yeepay.g3.sdk.yop.client.YopConstants;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -24,7 +25,7 @@ import java.util.zip.CheckedInputStream;
  */
 public class CRC64Utils {
 
-    private static final Logger LOGGER = Logger.getLogger(CRC64Utils.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CRC64Utils.class);
 
     public static String calculateMultiPartFileCrc64ecma(Map<String, Object> multiPartFiles) throws IOException {
         Map<String, Object> sortedFiles = new TreeMap<String, Object>(multiPartFiles);

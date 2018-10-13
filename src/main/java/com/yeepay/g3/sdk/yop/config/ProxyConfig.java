@@ -17,7 +17,7 @@ import java.io.Serializable;
  */
 public class ProxyConfig implements Serializable {
 
-    private static final long serialVersionUID = 6323172665244717695L;
+    private static final long serialVersionUID = -1L;
 
     private String host;
 

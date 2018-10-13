@@ -18,7 +18,7 @@ import java.util.UUID;
  * @since 2018/1/10 下午12:01
  */
 public class YeepayRuntimeException extends RuntimeException {
-    private static final long serialVersionUID = 2381136802566762335L;
+    private static final long serialVersionUID = -1L;
 
     /**
      * 异常ID，每个异常示例一个

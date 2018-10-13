@@ -23,10 +23,6 @@ import java.io.IOException;
  */
 public class QaDemo {
 
-    //    private static final String BASE_URL = "http://10.151.30.87:8064/yop-center/";
-//    private static final String BASE_URL = "http://open.yeepay.com:8064/yop-center/";
-    private static final String BASE_URL = "http://10.151.30.87:8064/yop-center/";
-
     private static final String[] APP_KEYS = {"yop-boss", "jinkela"};
     private static final String[] APP_SECRETS = {"PdZ74F6sxapgOWJ31QKmYw==", "cAFj+DxhpeMo8afn7s0z5w=="};
 
@@ -55,7 +51,7 @@ public class QaDemo {
     @Test
     public void testQueryMemberAccount() throws Exception {
         int i = 0;
-        YopRequest request = new YopRequest(null, APP_SECRETS[i], BASE_URL);
+        YopRequest request = new YopRequest(null, APP_SECRETS[i]);
         request.setEncrypt(true);
         request.setSignRet(true);
         request.addParam("customerNo", APP_KEYS[i]);
@@ -67,7 +63,7 @@ public class QaDemo {
 
     @Test
     public void v() throws IOException {
-        YopRequest request = new YopRequest(null, "8intulgnqibv77f1t8q9j0hhlkiy6ei6c82sknv63vib3zhgyzl8uif9ky7a", BASE_URL);
+        YopRequest request = new YopRequest(null, "8intulgnqibv77f1t8q9j0hhlkiy6ei6c82sknv63vib3zhgyzl8uif9ky7a");
         request.setEncrypt(true);
         request.setSignRet(true);
         request.addParam("customerNo", "10040011444");
@@ -79,7 +75,7 @@ public class QaDemo {
 
     @Test
     public void testEnterprise() throws Exception {
-        YopRequest request = new YopRequest("yop-boss", "QFdODaBYBiVuLpP+sbyH+g==", BASE_URL);
+        YopRequest request = new YopRequest("yop-boss", "QFdODaBYBiVuLpP+sbyH+g==");
         request.setEncrypt(false);
         request.setSignRet(true);
         request.addParam("appKey", "yop-boss");//这个写YOP就可以了
@@ -95,7 +91,7 @@ public class QaDemo {
 
     @Test
     public void testName1() throws Exception {
-        YopRequest request = new YopRequest(null, "8intulgnqibv77f1t8q9j0hhlkiy6ei6c82sknv63vib3zhgyzl8uif9ky7a", BASE_URL);
+        YopRequest request = new YopRequest(null, "8intulgnqibv77f1t8q9j0hhlkiy6ei6c82sknv63vib3zhgyzl8uif9ky7a");
         request.setEncrypt(true);
         request.setSignRet(true);
         request.addParam("customerNo", "10040011444");
@@ -109,7 +105,7 @@ public class QaDemo {
 
     @Test
     public void testName2() throws Exception {
-        YopRequest request = new YopRequest(null, "8intulgnqibv77f1t8q9j0hhlkiy6ei6c82sknv63vib3zhgyzl8uif9ky7a", BASE_URL);
+        YopRequest request = new YopRequest(null, "8intulgnqibv77f1t8q9j0hhlkiy6ei6c82sknv63vib3zhgyzl8uif9ky7a");
         request.setEncrypt(true);
         request.setSignRet(true);
         request.addParam("customerNo", "10040011444");
@@ -127,9 +123,7 @@ public class QaDemo {
 
     @Test
     public void test1() throws IOException {
-        YopRequest request = new YopRequest(null,
-                "s5KI8r0920SQ339oVlFE6eWJ0yk019SD7015nw39iaXJp10856z0C1d7JV5l",
-                BASE_URL);
+        YopRequest request = new YopRequest(null, "s5KI8r0920SQ339oVlFE6eWJ0yk019SD7015nw39iaXJp10856z0C1d7JV5l");
         request.setEncrypt(true);
         request.setSignRet(true);
         request.addParam("customerNo", "10011830665");
@@ -146,9 +140,7 @@ public class QaDemo {
 
     @Test
     public void testValidate() throws IOException {
-        YopRequest request = new YopRequest(null,
-                "cGB2CeC3YmwSWGoVz0kAvQ==",
-                BASE_URL);
+        YopRequest request = new YopRequest(null, "cGB2CeC3YmwSWGoVz0kAvQ==");
         request.setEncrypt(false);
         request.setSignRet(true);
         request.setSignAlg("sha-256");
@@ -170,9 +162,7 @@ public class QaDemo {
 
     @Test
     public void testWhiteList() throws Exception {
-        YopRequest request = new YopRequest(null,
-                "cGB2CeC3YmwSWGoVz0kAvQ==",
-                BASE_URL);
+        YopRequest request = new YopRequest(null, "cGB2CeC3YmwSWGoVz0kAvQ==");
         request.setEncrypt(false);
         request.setSignRet(true);
         request.addParam("appKey", "yop-boss");
@@ -186,7 +176,7 @@ public class QaDemo {
 
     @Test
     public void testCreateToken() throws IOException {
-        YopRequest request = new YopRequest(null, "cGB2CeC3YmwSWGoVz0kAvQ==", BASE_URL);
+        YopRequest request = new YopRequest(null, "cGB2CeC3YmwSWGoVz0kAvQ==");
         request.setEncrypt(true);
         request.setSignRet(true);
         request.addParam("appKey", "yop-boss");
@@ -201,7 +191,7 @@ public class QaDemo {
 
     @Test
     public void testAmount() throws IOException {
-        YopRequest request = new YopRequest(null, "cGB2CeC3YmwSWGoVz0kAvQ==", BASE_URL);
+        YopRequest request = new YopRequest(null, "cGB2CeC3YmwSWGoVz0kAvQ==");
         request.setEncrypt(true);
         request.setSignRet(true);
         request.addParam("appKey", "yop-boss");
@@ -218,7 +208,7 @@ public class QaDemo {
     @Test
     public void testJvmCollect() throws IOException {
         int i = 0;
-        YopRequest request = new YopRequest(null, APP_SECRETS[i], BASE_URL);
+        YopRequest request = new YopRequest(null, APP_SECRETS[i]);
         request.setEncrypt(false);
         request.setSignRet(true);
         request.setSignAlg("sha-256");
@@ -232,7 +222,7 @@ public class QaDemo {
 
     @Test
     public void testQueryMember() throws IOException {
-        YopRequest request = new YopRequest(null, "8intulgnqibv77f1t8q9j0hhlkiy6ei6c82sknv63vib3zhgyzl8uif9ky7a", BASE_URL);
+        YopRequest request = new YopRequest(null, "8intulgnqibv77f1t8q9j0hhlkiy6ei6c82sknv63vib3zhgyzl8uif9ky7a");
         request.setEncrypt(true);
         request.setSignRet(true);
         request.addParam("customerNo", "10040011444");
@@ -245,7 +235,7 @@ public class QaDemo {
 
 //    @Test
 //    public void testUpLoadFile() {
-//        YopRequest request = new YopRequest(APP_KEYS[0], APP_SECRETS[0], BASE_URL);
+//        YopRequest request = new YopRequest(APP_KEYS[0], APP_SECRETS[0]);
 //        request.setEncrypt(true);
 //        request.setSignRet(true);
 //        request.addParam("fileType", "IMAGE");
@@ -258,7 +248,7 @@ public class QaDemo {
 
     @Test
     public void testSopay() throws IOException {
-        YopRequest request = new YopRequest(APP_KEYS[0], APP_SECRETS[0], BASE_URL);
+        YopRequest request = new YopRequest(APP_KEYS[0], APP_SECRETS[0]);
         request.setEncrypt(true);
         request.setSignRet(true);
         request.setSignAlg("sha-256");
@@ -274,7 +264,7 @@ public class QaDemo {
 
     @Test
     public void testLaike() throws IOException {
-        YopRequest request = new YopRequest(APP_KEYS[0], APP_SECRETS[0], BASE_URL);
+        YopRequest request = new YopRequest(APP_KEYS[0], APP_SECRETS[0]);
         request.setEncrypt(true);
         request.setSignRet(true);
         request.setSignAlg("sha-256");
@@ -293,7 +283,7 @@ public class QaDemo {
     @Test
     public void testLaikeToken() throws IOException {
         int i = 0;
-        YopRequest request = new YopRequest(APP_KEYS[i], APP_SECRETS[i], BASE_URL);
+        YopRequest request = new YopRequest(APP_KEYS[i], APP_SECRETS[i]);
         request.setEncrypt(true);
         request.setSignRet(true);
         request.setSignAlg("sha-256");
@@ -308,7 +298,7 @@ public class QaDemo {
     @Test
     public void testLoadMethod() throws IOException {
         int i = 0;
-        YopRequest request = new YopRequest(APP_KEYS[i], APP_SECRETS[i], BASE_URL);
+        YopRequest request = new YopRequest(APP_KEYS[i], APP_SECRETS[i]);
         request.setEncrypt(true);
         request.setSignRet(true);
 //        request.setSignAlg("sha-256");

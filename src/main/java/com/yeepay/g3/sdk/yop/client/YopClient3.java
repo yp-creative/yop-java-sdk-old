@@ -19,7 +19,8 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,7 +42,7 @@ import java.util.*;
  */
 public class YopClient3 extends AbstractClient {
 
-    protected static final Logger LOGGER = Logger.getLogger(YopClient3.class);
+    protected static final Logger LOGGER = LoggerFactory.getLogger(YopClient3.class);
 
     private static final Set<String> defaultHeadersToSign = Sets.newHashSet();
     private static final Joiner headerJoiner = Joiner.on('\n');

@@ -37,8 +37,7 @@ public class Demo {
 
     @Test
     public void testIdCard() throws Exception {
-        YopRequest request = new YopRequest(null, "0/ZoyfKku0tunPunw7dbfA==", "http://127.0.0.1:8064/yop-center/");
-//        YopRequest request = new YopRequest(null, "cAFj+DxhpeMo8afn7s0z5w==", "http://open.yeepay.com:8064/yop-center/");
+        YopRequest request = new YopRequest(null, "0/ZoyfKku0tunPunw7dbfA==");
         request.setEncrypt(true);
         request.setSignRet(true);
         request.setSignAlg("sha-256");
@@ -54,9 +53,7 @@ public class Demo {
 
     @Test
     public void testQueryMemberAccount() throws Exception {
-        YopRequest request = new YopRequest(null,
-                "8intulgnqibv77f1t8q9j0hhlkiy6ei6c82sknv63vib3zhgyzl8uif9ky7a",
-                "http://open.yeepay.com:8064/yop-center");
+        YopRequest request = new YopRequest(null, "8intulgnqibv77f1t8q9j0hhlkiy6ei6c82sknv63vib3zhgyzl8uif9ky7a");
         request.setEncrypt(true);
         request.setSignRet(true);
         request.addParam("customerNo", "10040011444");
@@ -69,9 +66,7 @@ public class Demo {
 
     @Test
     public void v() throws IOException {
-        YopRequest request = new YopRequest(null,
-                "8intulgnqibv77f1t8q9j0hhlkiy6ei6c82sknv63vib3zhgyzl8uif9ky7a",
-                "http://open.yeepay.com:8064/yop-center");
+        YopRequest request = new YopRequest(null, "8intulgnqibv77f1t8q9j0hhlkiy6ei6c82sknv63vib3zhgyzl8uif9ky7a");
         request.setEncrypt(true);
         request.setSignRet(true);
         request.addParam("customerNo", "10040011444");
@@ -84,8 +79,7 @@ public class Demo {
 
     @Test
     public void testEnterprise() throws Exception {
-        YopRequest request = new YopRequest("yop-boss",
-                "QFdODaBYBiVuLpP+sbyH+g==", "http://open.yeepay.com:8064/yop-center/");
+        YopRequest request = new YopRequest("yop-boss", "QFdODaBYBiVuLpP+sbyH+g==");
         request.setEncrypt(false);
         request.setSignRet(true);
         request.addParam("appKey", "yop-boss");//这个写YOP就可以了
@@ -102,9 +96,7 @@ public class Demo {
 
     @Test
     public void testName1() throws Exception {
-        YopRequest request = new YopRequest(null,
-                "8intulgnqibv77f1t8q9j0hhlkiy6ei6c82sknv63vib3zhgyzl8uif9ky7a",
-                "http://open.yeepay.com:8064/yop-center");
+        YopRequest request = new YopRequest(null, "8intulgnqibv77f1t8q9j0hhlkiy6ei6c82sknv63vib3zhgyzl8uif9ky7a");
         request.setEncrypt(true);
         request.setSignRet(true);
         request.addParam("customerNo", "10040011444");
@@ -119,9 +111,7 @@ public class Demo {
 
     @Test
     public void testName2() throws Exception {
-        YopRequest request = new YopRequest(null,
-                "8intulgnqibv77f1t8q9j0hhlkiy6ei6c82sknv63vib3zhgyzl8uif9ky7a",
-                "http://open.yeepay.com:8064/yop-center");
+        YopRequest request = new YopRequest(null, "8intulgnqibv77f1t8q9j0hhlkiy6ei6c82sknv63vib3zhgyzl8uif9ky7a");
         request.setEncrypt(true);
         request.setSignRet(true);
         request.addParam("customerNo", "10040011444");
@@ -141,9 +131,7 @@ public class Demo {
 
     @Test
     public void test1() throws IOException {
-        YopRequest request = new YopRequest(null,
-                "s5KI8r0920SQ339oVlFE6eWJ0yk019SD7015nw39iaXJp10856z0C1d7JV5l",
-                "https://open.yeepay.com:8064/yop-center/");
+        YopRequest request = new YopRequest(null, "s5KI8r0920SQ339oVlFE6eWJ0yk019SD7015nw39iaXJp10856z0C1d7JV5l");
         request.setEncrypt(true);
         request.setSignRet(true);
         request.addParam("customerNo", "10011830665");
@@ -160,7 +148,7 @@ public class Demo {
 
     @Test//发送短信接口
     public void testSendSms() throws IOException {
-        YopRequest request = new YopRequest("TestAppKey002", "TestAppSecret002", "http://open.yeepay.com:8064/yop-center");
+        YopRequest request = new YopRequest("TestAppKey002", "TestAppSecret002");
         // request.setSignAlg("SHA1");
         request.setSignAlg("MD5");//具体看api签名算法而定
         //request.setEncrypt(true);
@@ -181,7 +169,7 @@ public class Demo {
 
     @Test
     public void testSendSmsQa() throws IOException {
-        YopRequest request = new YopRequest("openSmsApi", "1234554321", "http://open.yeepay.com:8064/yop-center/");
+        YopRequest request = new YopRequest("openSmsApi", "1234554321");
         request.setSignAlg("MD5");//具体看api签名算法而定
         //request.setEncrypt(true);
         String notifyRule = "商户结算短信通知";//通知规则
@@ -206,7 +194,7 @@ public class Demo {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        YopRequest request = new YopRequest("ypo2o", "tpcY6k2RSpEod7hsJIp33Q==", "https://open.yeepay.com:8064/yop-center");
+        YopRequest request = new YopRequest("ypo2o", "tpcY6k2RSpEod7hsJIp33Q==");
         request.setSignAlg("MD5");//具体看api签名算法而定
         String notifyRule = "EGOU_VERIFY";//通知规则
         List recipients = new ArrayList();//接收人
@@ -226,9 +214,7 @@ public class Demo {
 
     @Test
     public void testValidate() throws IOException {
-        YopRequest request = new YopRequest(null,
-                "cGB2CeC3YmwSWGoVz0kAvQ==",
-                "http://localhost:8064/yop-center/");
+        YopRequest request = new YopRequest(null, "cGB2CeC3YmwSWGoVz0kAvQ==");
         request.setEncrypt(false);
         request.setSignRet(true);
         request.setSignAlg("sha-256");
@@ -251,9 +237,7 @@ public class Demo {
 
     @Test
     public void testWhiteList() throws Exception {
-        YopRequest request = new YopRequest(null,
-                "cGB2CeC3YmwSWGoVz0kAvQ==",
-                "http://localhost:8064/yop-center");
+        YopRequest request = new YopRequest(null, "cGB2CeC3YmwSWGoVz0kAvQ==");
         request.setEncrypt(false);
         request.setSignRet(true);
         request.addParam("appKey", "yop-boss");
@@ -272,15 +256,14 @@ public class Demo {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    YopRequest request = new YopRequest(null, "cGB2CeC3YmwSWGoVz0kAvQ==", "http://127.0.0.1:7777/yop-center");
-//                YopRequest request = new YopRequest(null, "cGB2CeC3YmwSWGoVz0kAvQ==", "http://172.17.102.177:7777/yop-center");
+                    YopRequest request = new YopRequest(null, "cGB2CeC3YmwSWGoVz0kAvQ==");
+//                YopRequest request = new YopRequest(null, "cGB2CeC3YmwSWGoVz0kAvQ==");
 //        YopRequest request = new YopRequest(null,
 //                "cGB2CeC3YmwSWGoVz0kAvQ==",
 //                "http://localhost:8064/yop-center");
-//        YopRequest request = new YopRequest(null, "8intulgnqibv77f1t8q9j0hhlkiy6ei6c82sknv63vib3zhgyzl8uif9ky7a", "http://127.0.0.1:7777");
+//        YopRequest request = new YopRequest(null, "8intulgnqibv77f1t8q9j0hhlkiy6ei6c82sknv63vib3zhgyzl8uif9ky7a");
 //        YopRequest request = new YopRequest(null,
-//                "8intulgnqibv77f1t8q9j0hhlkiy6ei6c82sknv63vib3zhgyzl8uif9ky7a",
-//                "http://localhost:8064/yop-center");
+//                "8intulgnqibv77f1t8q9j0hhlkiy6ei6c82sknv63vib3zhgyzl8uif9ky7a");
                     request.setEncrypt(true);
                     request.setSignRet(true);
 //        request.setSignAlg("SHA1");
@@ -302,11 +285,11 @@ public class Demo {
                 }
             }).start();
         }
-//        YopRequest request = new YopRequest(null, "cGB2CeC3YmwSWGoVz0kAvQ==", "http://127.0.0.1:7777/yop-center");
+//        YopRequest request = new YopRequest(null, "cGB2CeC3YmwSWGoVz0kAvQ==");
 ////        YopRequest request = new YopRequest(null,
 ////                "cGB2CeC3YmwSWGoVz0kAvQ==",
 ////                "http://localhost:8064/yop-center");
-////        YopRequest request = new YopRequest(null, "8intulgnqibv77f1t8q9j0hhlkiy6ei6c82sknv63vib3zhgyzl8uif9ky7a", "http://127.0.0.1:7777");
+////        YopRequest request = new YopRequest(null, "8intulgnqibv77f1t8q9j0hhlkiy6ei6c82sknv63vib3zhgyzl8uif9ky7a");
 ////        YopRequest request = new YopRequest(null,
 ////                "8intulgnqibv77f1t8q9j0hhlkiy6ei6c82sknv63vib3zhgyzl8uif9ky7a",
 ////                "http://localhost:8064/yop-center");
@@ -330,8 +313,7 @@ public class Demo {
 
     @Test
     public void testCreateToken() throws IOException {
-        YopRequest request = new YopRequest(null, "cGB2CeC3YmwSWGoVz0kAvQ==", "http://127.0.0.1:7777/yop-center");
-//                YopRequest request = new YopRequest(null, "cGB2CeC3YmwSWGoVz0kAvQ==", "http://172.17.102.177:7777/yop-center");
+        YopRequest request = new YopRequest(null, "cGB2CeC3YmwSWGoVz0kAvQ==");
 //        YopRequest request = new YopRequest(null,
 //                "cGB2CeC3YmwSWGoVz0kAvQ==",
 //                "http://localhost:8064/yop-center");
@@ -356,8 +338,7 @@ public class Demo {
 
     @Test
     public void testAmount() throws IOException {
-        YopRequest request = new YopRequest(null, "cGB2CeC3YmwSWGoVz0kAvQ==", "http://127.0.0.1:8064/yop-center");
-//                YopRequest request = new YopRequest(null, "cGB2CeC3YmwSWGoVz0kAvQ==", "http://172.17.102.177:7777/yop-center");
+        YopRequest request = new YopRequest(null, "cGB2CeC3YmwSWGoVz0kAvQ==");
 //        YopRequest request = new YopRequest(null,
 //                "cGB2CeC3YmwSWGoVz0kAvQ==",
 //                "http://localhost:8064/yop-center");
@@ -383,10 +364,7 @@ public class Demo {
 
     @Test
     public void testKong() throws Exception {
-        YopRequest request = new YopRequest(null, "cGB2CeC3YmwSWGoVz0kAvQ==", "http://127.0.0.1:7777/yop-center");
-//        YopRequest request = new YopRequest(null,
-//                "cGB2CeC3YmwSWGoVz0kAvQ==",
-//                "http://localhost:8064/yop-center");
+        YopRequest request = new YopRequest(null, "cGB2CeC3YmwSWGoVz0kAvQ==");
         request.setEncrypt(true);
         request.setSignRet(true);
         request.setSignAlg("SHA-256");
@@ -402,11 +380,7 @@ public class Demo {
 
     @Test
     public void testKong2() throws Exception {
-        YopRequest request = new YopRequest(null, "cGB2CeC3YmwSWGoVz0kAvQ==", "http://127.0.0.1:7777/yop-center");
-//        YopRequest request = new YopRequest(null, "cGB2CeC3YmwSWGoVz0kAvQ==", "http://open.yeepay.com:8064/yop-center");
-//        YopRequest request = new YopRequest(null,
-//                "cGB2CeC3YmwSWGoVz0kAvQ==",
-//                "http://localhost:8064/yop-center");
+        YopRequest request = new YopRequest(null, "cGB2CeC3YmwSWGoVz0kAvQ==");
         request.setEncrypt(true);
         request.setSignRet(true);
         request.setSignAlg("SHA-256");
@@ -425,7 +399,7 @@ public class Demo {
 
     @Test
     public void testXue() throws IOException {
-        YopRequest request = new YopRequest(null, "0owN80Vs39386sSSi7B76wa7497P41gZ3G4b8971V8R8sc6lS7ns4FA2846T", "http://open.yeepay.com:8064/yop-center");
+        YopRequest request = new YopRequest(null, "0owN80Vs39386sSSi7B76wa7497P41gZ3G4b8971V8R8sc6lS7ns4FA2846T");
         request.setEncrypt(true);
         request.setSignRet(true);
         request.setSignAlg("sha-256");
@@ -440,8 +414,7 @@ public class Demo {
     @Test
     public void testLihui() throws IOException {
 //        YopRequest request = new YopRequest("B112345678901237",
-//                "nUXQx0Mt0aSKvR0uNOp6kg==",
-//                "http://open.yeepay.com:8064/yop-center");
+//                "nUXQx0Mt0aSKvR0uNOp6kg==");
 //        request.setEncrypt(true);
 //        request.setSignRet(true);
 //        request.setSignAlg("sha-256");
@@ -452,9 +425,7 @@ public class Demo {
 //        YopResponse response = YopClient.post("/rest/v1.0/accounting/queryFee", request);
 //        System.out.println(response.toString());
 
-        YopRequest request = new YopRequest("B112345678901237",
-                "nUXQx0Mt0aSKvR0uNOp6kg==",
-                "http://open.yeepay.com:8064/yop-center");
+        YopRequest request = new YopRequest("B112345678901237", "nUXQx0Mt0aSKvR0uNOp6kg==");
         request.setEncrypt(true);
         request.setSignRet(true);
         request.setSignAlg("sha-256");
@@ -467,9 +438,7 @@ public class Demo {
 
     @Test
     public void testHanfan() throws IOException {
-        YopRequest request = new YopRequest("B112345678901239",
-                "Vmt/sFQgWbJ6b4uKWLlFGw==",
-                "http://10.151.30.87:8064/yop-center");
+        YopRequest request = new YopRequest("B112345678901239", "Vmt/sFQgWbJ6b4uKWLlFGw==");
         request.setEncrypt(true);
         request.setSignRet(true);
         request.setSignAlg("sha-256");
@@ -481,9 +450,7 @@ public class Demo {
 
     @Test
     public void testJiaoLinJie() {
-        YopRequest request = new YopRequest(null,
-                "ER59202j4EqI44c18L76iyjVjTl17c75268w15L9M5f7638A8l2zJ7UB0d54",
-                "https://open.yeepay.com/yop-center");//appKey,secretKey平台上秘钥,serverRoot服务路径
+        YopRequest request = new YopRequest(null, "ER59202j4EqI44c18L76iyjVjTl17c75268w15L9M5f7638A8l2zJ7UB0d54");//appKey,secretKey平台上秘钥,serverRoot服务路径
         //商户入网请求接口依赖外部系统：yop
         //http://open.yeepay.com:8064/yop-center  http://open.yeepay.com:18064/yop-center
         //https://open.yeepay.com/yop-center     yop-生产环境

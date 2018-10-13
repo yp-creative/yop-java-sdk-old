@@ -5,7 +5,7 @@
 
     <groupId>com.yeepay.g3.yop</groupId>
     <artifactId>yop-java-sdk</artifactId>
-    <version>2.3.3</version>
+    <version>3.0.1</version>
     <packaging>jar</packaging>
     <name>YOP :: SDK</name>
 
@@ -70,6 +70,12 @@
             <artifactId>commons-codec</artifactId>
             <version>1.10</version>
         </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.5</version>
+        </dependency>
+
 
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -83,9 +89,9 @@
         </dependency>
 
         <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.17</version>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.25</version>
         </dependency>
 
         <!-- test start -->
@@ -98,7 +104,7 @@
         <dependency>
             <groupId>com.yeepay.g3.cloud.yop</groupId>
             <artifactId>yop-utils</artifactId>
-            <version>1.0</version>
+            <version>1.5.13</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -135,12 +141,13 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.7.0</version>
+                <version>${maven-compiler-plugin.version}</version>
                 <configuration>
                     <failOnError>true</failOnError>
                     <verbose>true</verbose>
                     <fork>true</fork>
                     <compilerArgument>-nowarn</compilerArgument>
+                    <!--<executable>${java.specified.home}/bin/javac</executable>-->
                     <source>${maven.compiler.source}</source>
                     <target>${maven.compiler.target}</target>
                     <compilerVersion>${maven.compiler.compilerVersion}</compilerVersion>
@@ -361,6 +368,8 @@
                 <maven.compiler.target>1.8</maven.compiler.target>
                 <maven.compiler.compilerVersion>1.8</maven.compiler.compilerVersion>
 
+                <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
+
                 <assembly.file>assembly.xml</assembly.file>
                 <shaded.classifier.name>jdk18</shaded.classifier.name>
 
@@ -375,6 +384,8 @@
                 <maven.compiler.target>1.7</maven.compiler.target>
                 <maven.compiler.compilerVersion>1.7</maven.compiler.compilerVersion>
 
+                <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
+
                 <assembly.file>assembly-jdk17.xml</assembly.file>
                 <shaded.classifier.name>jdk17</shaded.classifier.name>
 
@@ -388,6 +399,8 @@
                 <maven.compiler.source>1.6</maven.compiler.source>
                 <maven.compiler.target>1.6</maven.compiler.target>
                 <maven.compiler.compilerVersion>1.6</maven.compiler.compilerVersion>
+
+                <maven-compiler-plugin.version>3.0</maven-compiler-plugin.version>
 
                 <assembly.file>assembly-jdk16.xml</assembly.file>
                 <shaded.classifier.name>jdk16</shaded.classifier.name>

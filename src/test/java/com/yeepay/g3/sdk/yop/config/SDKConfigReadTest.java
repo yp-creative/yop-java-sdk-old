@@ -4,6 +4,8 @@ import com.yeepay.g3.sdk.yop.config.provider.DefaultFileAppSdkConfigProvider;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.net.URL;
+
 /**
  * title: <br/>
  * description: <br/>
@@ -17,9 +19,31 @@ import org.junit.Test;
 public class SDKConfigReadTest {
 
     @Test
-    public void test() {
+    public void testDir() {
         System.setProperty("yop.sdk.config.dir", "multiconfig");
         DefaultFileAppSdkConfigProvider provider = new DefaultFileAppSdkConfigProvider();
         Assert.assertNotNull(provider.getConfig("app_oEdCdceLQF63hvYz"));
+    }
+
+    @Test
+    public void testRelativePath2() {
+        System.setProperty("yop.sdk.config.file", "yop_sdk_config_dev.json");
+        DefaultFileAppSdkConfigProvider provider = new DefaultFileAppSdkConfigProvider();
+        Assert.assertNotNull(provider.getConfig("yop-boss"));
+    }
+
+    @Test
+    public void testRelativePath3() {
+        System.setProperty("yop.sdk.config.file", "config/yop_sdk_config_dev.json");
+        DefaultFileAppSdkConfigProvider provider = new DefaultFileAppSdkConfigProvider();
+        Assert.assertNotNull(provider.getConfig("yop-boss"));
+    }
+
+    @Test
+    public void testAbsolutePath() {
+        URL url = Thread.currentThread().getContextClassLoader().getResource("config/yop_sdk_config_dev.json");
+        System.setProperty("yop.sdk.config.file", "file://" + url.getFile());
+        DefaultFileAppSdkConfigProvider provider = new DefaultFileAppSdkConfigProvider();
+        Assert.assertNotNull(provider.getConfig("yop-boss"));
     }
 }

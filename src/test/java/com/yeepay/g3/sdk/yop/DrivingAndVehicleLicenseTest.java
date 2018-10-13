@@ -21,7 +21,7 @@ public class DrivingAndVehicleLicenseTest {
 
     @Test
     public void brandTest() throws IOException {
-        YopRequest request = new YopRequest("test", "LVLDflZNINrrCFPIis9gCA==", "http://open.yeepay.com:8064/yop-center");
+        YopRequest request = new YopRequest("test", "LVLDflZNINrrCFPIis9gCA==");
         request.setSignAlg("SHA-256");//具体看api签名算法而定
         request.setEncrypt(false);
         request.addParam("vin", "LVSHGFAR7FF087581");
@@ -31,7 +31,7 @@ public class DrivingAndVehicleLicenseTest {
 
     @Test
     public void orderIdTest() throws Exception {
-        YopRequest request = new YopRequest("test", "LVLDflZNINrrCFPIis9gCA==", "http://open.yeepay.com:8064/yop-center");
+        YopRequest request = new YopRequest("test", "LVLDflZNINrrCFPIis9gCA==");
         request.setSignAlg("SHA-256");//具体看api签名算法而定
         request.setEncrypt(false);
         request.addParam("vin", "LVSHGFAR7FF087581");
@@ -43,7 +43,7 @@ public class DrivingAndVehicleLicenseTest {
 
     @Test
     public void reportTest() throws IOException {
-        YopRequest request = new YopRequest("test", "LVLDflZNINrrCFPIis9gCA==", "http://open.yeepay.com:8064/yop-center");
+        YopRequest request = new YopRequest("test", "LVLDflZNINrrCFPIis9gCA==");
         request.setSignAlg("SHA-256");//具体看api签名算法而定
         request.setEncrypt(false);
         request.addParam("orderId", "51bfee75f620413b9398296603d8b883");
@@ -53,7 +53,7 @@ public class DrivingAndVehicleLicenseTest {
 
     @Test
     public void drivingAuth() throws Exception {
-        YopRequest request = new YopRequest("test", "LVLDflZNINrrCFPIis9gCA==", "http://open.yeepay.com:8064/yop-center");
+        YopRequest request = new YopRequest("test", "LVLDflZNINrrCFPIis9gCA==");
         request.setSignAlg("SHA-256");//具体看api签名算法而定
         request.setEncrypt(false);
         request.addParam("licenseNumber", "360121198605075212");
@@ -69,7 +69,7 @@ public class DrivingAndVehicleLicenseTest {
 
     @Test
     public void vehicleLicense() throws Exception {
-        YopRequest request = new YopRequest("test", "LVLDflZNINrrCFPIis9gCA==", "http://open.yeepay.com:8064/yop-center");
+        YopRequest request = new YopRequest("test", "LVLDflZNINrrCFPIis9gCA==");
         request.setSignAlg("SHA-256");//具体看api签名算法而定
         request.setEncrypt(false);
         request.addParam("plateNumber", "赣A40Q03");

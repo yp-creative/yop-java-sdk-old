@@ -17,7 +17,8 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,7 +39,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public class YopClient extends AbstractClient {
 
-    private static final Logger LOGGER = Logger.getLogger(YopClient.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(YopClient.class);
 
     private static final Joiner queryStringOldJoiner = Joiner.on("");
 
@@ -224,28 +225,29 @@ public class YopClient extends AbstractClient {
         if (StringUtils.isNotBlank(stringResult)) {
             response.setResult(JacksonJsonMarshaller.unmarshal(stringResult, Object.class));
         }
-
-        String sign = response.getSign();
-        if (StringUtils.isNotBlank(sign)) {
-            response.setValidSign(verifySignature(request, response, sign));
-        }
+        verifySignature(request, response);
     }
 
     /**
      * 校验签名
      *
+     * @param request
      * @param response
-     * @param expectedSign
      * @return
      */
-    private static boolean verifySignature(YopRequest request, YopResponse response, String expectedSign) {
+    private static void verifySignature(final YopRequest request, final YopResponse response) {
+        String expectedSign = response.getSign();
+        if (StringUtils.isBlank(expectedSign) || null == response.getStringResult()) {
+            return;
+        }
+
         String trimmedBizResult = response.getStringResult().replaceAll("[ \t\n]", "");
-        StringBuilder sb = new StringBuilder();
-        sb.append(request.getAesSecretKey());
-        sb.append(StringUtils.trimToEmpty(response.getState() + trimmedBizResult + response.getTs()));
-        sb.append(request.getAesSecretKey());
+        StringBuilder sb = new StringBuilder(request.getAesSecretKey())
+                .append(StringUtils.trimToEmpty(response.getState() + trimmedBizResult + response.getTs()))
+                .append(request.getAesSecretKey());
         String calculatedSign = Digests.digest2Hex(sb.toString(), StringUtils.isBlank(request.getSignAlg()) ? YopConstants.ALG_SHA1 : request.getSignAlg());
-        return StringUtils.equalsIgnoreCase(expectedSign, calculatedSign);
+        boolean valid = StringUtils.equalsIgnoreCase(expectedSign, calculatedSign);
+        response.setValidSign(valid);
     }
 
     /**

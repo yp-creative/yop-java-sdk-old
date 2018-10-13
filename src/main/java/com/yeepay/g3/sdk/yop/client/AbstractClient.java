@@ -1,13 +1,18 @@
 package com.yeepay.g3.sdk.yop.client;
 
+import com.yeepay.g3.sdk.yop.error.YopError;
 import com.yeepay.g3.sdk.yop.exception.YopClientException;
+import com.yeepay.g3.sdk.yop.http.Headers;
+import com.yeepay.g3.sdk.yop.http.YopHttpResponse;
+import com.yeepay.g3.sdk.yop.model.YopErrorResponse;
 import com.yeepay.g3.sdk.yop.unmarshaller.JacksonJsonMarshaller;
 import com.yeepay.g3.sdk.yop.utils.Assert;
 import com.yeepay.g3.sdk.yop.utils.InternalConfig;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
+import org.apache.http.HttpStatus;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.NTCredentials;
 import org.apache.http.client.CredentialsProvider;
@@ -23,16 +28,17 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.protocol.HttpContext;
-import org.apache.http.util.EntityUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.concurrent.TimeUnit;
 
 public class AbstractClient {
 
-    private static final Logger LOGGER = Logger.getLogger(AbstractClient.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractClient.class);
 
     private static final String REST_PREFIX = "/rest/v";
 
@@ -58,9 +64,12 @@ public class AbstractClient {
                 .setMaxConnPerRoute(InternalConfig.MAX_CONN_PER_ROUTE)
                 .setSSLSocketFactory(InternalConfig.TRUST_ALL_CERTS ? getTrustedAllSSLConnectionSocketFactory() : null)
                 .setDefaultRequestConfig(requestConfig)
+                .evictExpiredConnections()
+                .evictIdleConnections(5000, TimeUnit.MILLISECONDS)
+                .setRetryHandler(new YopHttpRequestRetryHandler())
                 .build();
 
-        requestConfigBuilder = org.apache.http.client.config.RequestConfig.custom();
+        requestConfigBuilder = RequestConfig.custom();
         requestConfigBuilder.setConnectTimeout(InternalConfig.CONNECT_TIMEOUT);
         requestConfigBuilder.setStaleConnectionCheckEnabled(true);
         /*if (InternalConfig.getLocalAddress() != null) {
@@ -115,26 +124,50 @@ public class AbstractClient {
 
     protected static YopResponse fetchContentByApacheHttpClient(HttpUriRequest request) throws IOException {
         HttpContext httpContext = createHttpContext();
-        CloseableHttpResponse remoteResponse = getHttpClient().execute(request, httpContext);
-        HttpEntity resEntity = null;
+        CloseableHttpResponse remoteResponse = null;
         try {
-            // 判断返回值
-            int statusCode = remoteResponse.getStatusLine().getStatusCode();
-            if (statusCode >= 400) {
-                throw new YopClientException(Integer.toString(statusCode));
-            }
-
-            String content = EntityUtils.toString(remoteResponse.getEntity());
-            YopResponse response = JacksonJsonMarshaller.unmarshal(content, YopResponse.class);
-
-            Header requestIdHeader = remoteResponse.getFirstHeader("x-yop-request-id");
-            if (null != requestIdHeader) {
-                response.setRequestId(requestIdHeader.getValue());
-            }
-            return response;
+            remoteResponse = getHttpClient().execute(request, httpContext);
+            return parseResponse(remoteResponse);
         } finally {
             HttpClientUtils.closeQuietly(remoteResponse);
         }
+    }
+
+    protected static YopResponse parseResponse(CloseableHttpResponse response) throws IOException {
+        YopHttpResponse httpResponse = new YopHttpResponse(response);
+        if (httpResponse.getStatusCode() / 100 == HttpStatus.SC_OK / 100) {
+            //not a error
+            YopResponse yopResponse = new YopResponse();
+            yopResponse.setState("SUCCESS");
+            yopResponse.setRequestId(httpResponse.getHeader(Headers.YOP_REQUEST_ID));
+            if (httpResponse.getContent() != null) {
+                yopResponse.setStringResult(IOUtils.toString(httpResponse.getContent(), YopConstants.ENCODING));
+            }
+            if (StringUtils.isNotBlank(yopResponse.getStringResult())) {
+                yopResponse.setResult(JacksonJsonMarshaller.unmarshal(yopResponse.getStringResult(), Object.class));
+            }
+            yopResponse.setValidSign(true);
+            return yopResponse;
+        } else if (httpResponse.getStatusCode() >= 500) {
+            if (httpResponse.getContent() != null) {
+                YopResponse yopResponse = new YopResponse();
+                yopResponse.setState("FAILURE");
+                YopErrorResponse errorResponse = JacksonJsonMarshaller.unmarshal(httpResponse.getContent(),
+                        YopErrorResponse.class);
+                yopResponse.setRequestId(errorResponse.getRequestId());
+                yopResponse.setError(YopError.Builder.anYopError()
+                        .withCode(errorResponse.getCode())
+                        .withSubCode(errorResponse.getSubCode())
+                        .withMessage(errorResponse.getMessage())
+                        .withSubMessage(errorResponse.getSubMessage())
+                        .build());
+                yopResponse.setValidSign(true);
+                return yopResponse;
+            } else {
+                throw new YopClientException("empty result with httpStatusCode:" + httpResponse.getStatusCode());
+            }
+        }
+        throw new YopClientException("unexpected httpStatusCode:" + httpResponse.getStatusCode());
     }
 
     /**
@@ -162,11 +195,13 @@ public class AbstractClient {
 
     protected static String richRequest(String methodOrUri, YopRequest request) {
         Assert.hasText(methodOrUri, "method name or rest uri");
-        String serverRoot = request.getAppSdkConfig().getServerRoot();
+
+        String requestRoot = MapUtils.isNotEmpty(request.getMultipartFiles()) ? request.getAppSdkConfig().getYosServerRoot() :
+                request.getAppSdkConfig().getServerRoot();
 
         String path = methodOrUri;
-        if (StringUtils.startsWith(methodOrUri, serverRoot)) {
-            path = StringUtils.substringAfter(methodOrUri, serverRoot);
+        if (StringUtils.startsWith(methodOrUri, requestRoot)) {
+            path = StringUtils.substringAfter(methodOrUri, requestRoot);
         }
 
         if (!StringUtils.startsWith(path, REST_PREFIX)) {
@@ -176,7 +211,7 @@ public class AbstractClient {
         /*v and method are always needed because of old signature implementation...*/
         request.setParam(YopConstants.VERSION, StringUtils.substringBetween(methodOrUri, REST_PREFIX, "/"));
         request.setParam(YopConstants.METHOD, methodOrUri);
-        return serverRoot + path;
+        return requestRoot + path;
     }
 
 }

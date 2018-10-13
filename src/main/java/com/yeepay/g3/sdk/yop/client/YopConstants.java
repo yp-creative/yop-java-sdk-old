@@ -30,7 +30,7 @@ public class YopConstants {
                 .replace(' ', '_');
     }
 
-    public static final String CLIENT_VERSION = "2.3.3";// old 版本末尾只能为奇数
+    public static final String CLIENT_VERSION = "3.0.1";
     public static final String CLIENT_LANGS = "java";
 
     public static String USER_AGENT;
@@ -80,6 +80,11 @@ public class YopConstants {
     public static final String ALG_AES = "AES";
     public static final String ALG_SHA = "SHA";
     public static final String ALG_SHA1 = "SHA1";
+
+
+    public static final String DEFAULT_SERVER_ROOT = "https://openapi.yeepay.com/yop-center";
+
+    public static final String DEFAULT_YOS_SERVER_ROOT = "https://yos.yeepay.com/yop-center";
 
     /**
      * 判断是否为保护参数
