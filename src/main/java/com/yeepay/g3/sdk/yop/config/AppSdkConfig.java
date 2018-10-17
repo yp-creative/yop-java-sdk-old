@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import com.yeepay.g3.sdk.yop.client.YopConstants;
 import com.yeepay.g3.sdk.yop.config.support.ConfigUtils;
 import com.yeepay.g3.sdk.yop.encrypt.CertTypeEnum;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;
@@ -44,6 +45,8 @@ public class AppSdkConfig implements Serializable {
     private Map<CertTypeEnum, PrivateKey> isvPrivateKeys;
 
     private ProxyConfig proxy;
+
+    private boolean trustAllCerts;
 
     public String getAppKey() {
         return appKey;
@@ -155,6 +158,14 @@ public class AppSdkConfig implements Serializable {
         this.proxy = proxy;
     }
 
+    public boolean getTrustAllCerts() {
+        return trustAllCerts;
+    }
+
+    public void setTrustAllCerts(boolean trustAllCerts) {
+        this.trustAllCerts = trustAllCerts;
+    }
+
     public static final class Builder {
         private SDKConfig sdkConfig;
 
@@ -184,6 +195,7 @@ public class AppSdkConfig implements Serializable {
             }
             appSdkConfig.setHttpClientConfig(sdkConfig.getHttpClient());
             appSdkConfig.setProxy(sdkConfig.getProxy());
+            appSdkConfig.setTrustAllCerts(BooleanUtils.isTrue(sdkConfig.getTrustAllCerts()));
             return appSdkConfig;
         }
     }
