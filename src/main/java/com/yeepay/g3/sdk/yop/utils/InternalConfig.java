@@ -60,6 +60,7 @@ public final class InternalConfig {
                 MAX_CONN_PER_ROUTE = clientConfig.getMaxConnPerRoute();
             }
             proxy = config.getProxy();
+            TRUST_ALL_CERTS = config.getTrustAllCerts();
         }
 
     }
