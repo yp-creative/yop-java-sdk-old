@@ -139,8 +139,8 @@ public class YopClient3 extends AbstractClient {
 
         Map<String, String> headers = request.getHeaders();
         if (!headers.containsKey(Headers.YOP_REQUEST_ID)) {
-            String requestId = UUID.randomUUID().toString();
-            headers.put(Headers.YOP_REQUEST_ID, requestId);
+            headers.put(Headers.YOP_REQUEST_ID, getUUID());
+            headers.put(Headers.YOP_SESSION_ID, SESSION_ID);
         }
         headers.put(Headers.YOP_DATE, timestamp);
         if (request.hasFiles()) {

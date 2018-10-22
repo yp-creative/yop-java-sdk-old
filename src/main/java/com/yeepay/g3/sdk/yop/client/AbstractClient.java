@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 public class AbstractClient {
@@ -47,6 +48,8 @@ public class AbstractClient {
     private static org.apache.http.client.config.RequestConfig.Builder requestConfigBuilder;
     private static CredentialsProvider credentialsProvider;
     private static HttpHost proxyHttpHost;
+
+    protected static final String SESSION_ID = getUUID();
 
     static {
         initApacheHttpClient();
@@ -212,6 +215,10 @@ public class AbstractClient {
         request.setParam(YopConstants.VERSION, StringUtils.substringBetween(methodOrUri, REST_PREFIX, "/"));
         request.setParam(YopConstants.METHOD, methodOrUri);
         return requestRoot + path;
+    }
+
+    protected static String getUUID() {
+        return UUID.randomUUID().toString();
     }
 
 }

@@ -177,9 +177,11 @@ public class YopClient extends AbstractClient {
     }
 
     private static void normalize(YopRequest request) {
+        request.addHeader(Headers.YOP_SESSION_ID, SESSION_ID);
+
         // 归一化
         if (!request.getHeaders().containsKey(Headers.YOP_REQUEST_ID)) {
-            request.addHeader(Headers.YOP_REQUEST_ID, UUID.randomUUID().toString());
+            request.addHeader(Headers.YOP_REQUEST_ID, getUUID());
         }
 
         String timestamp = DateUtils.formatCompressedIso8601Timestamp(System.currentTimeMillis());

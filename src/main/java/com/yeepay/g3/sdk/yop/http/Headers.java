@@ -72,6 +72,8 @@ public interface Headers {
 
     String YOP_REQUEST_ID = "x-yop-request-id";
 
+    String YOP_SESSION_ID = "x-yop-session-id";
+
     String YOP_SDK_VERSION = "x-yop-sdk-version";
 
     String YOP_SDK_LANGS = "x-yop-sdk-langs";
