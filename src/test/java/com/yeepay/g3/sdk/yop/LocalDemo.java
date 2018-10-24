@@ -10,6 +10,7 @@ import com.yeepay.g3.sdk.yop.utils.mapper.JsonMapper;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -20,6 +21,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
@@ -45,8 +47,8 @@ public class LocalDemo {
     public static void setUp() throws Exception {
 //        System.setProperty("yop.sdk.config.file", "config/yop_sdk_config_local.json");
 //        System.setProperty("yop.sdk.config.file", "config/yop_sdk_config_dev.json");
-//        System.setProperty("yop.sdk.config.file", "config/yop_sdk_config_qa_docker.json");
-        System.setProperty("yop.sdk.config.file", "config/yop_sdk_config_pro.json");
+        System.setProperty("yop.sdk.config.file", "config/yop_sdk_config_qa_docker.json");
+//        System.setProperty("yop.sdk.config.file", "config/yop_sdk_config_pro.json");
 //        System.setProperty("yop.sdk.config.file", "config/yop_sdk_config_pro_docker.json");
 //        System.setProperty("yop.sdk.trust.all.certs", "true");
     }
@@ -67,10 +69,13 @@ public class LocalDemo {
         YopRequest request = new YopRequest();
         request.addParam("requestFlowId", "test123456");//请求流水标识
         request.addParam("name", "张文康");
-        request.addParam("idCardNumber", "czr+7xY");
+        request.addParam("idCardNumber", "411122199104318257");
 
         YopResponse response = YopClient.post("/rest/v2.0/auth/idcard", request);
         AssertUtils.assertYopResponse(response);
+        if (response.isSuccess()) {
+            Assert.assertNull(((Map) response.getResult()).get("result"));
+        }
     }
 
     @Test
