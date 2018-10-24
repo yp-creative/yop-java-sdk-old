@@ -197,7 +197,7 @@ public class AbstractClient {
     }
 
     protected static String richRequest(String methodOrUri, YopRequest request) {
-        Assert.hasText(methodOrUri, "method name or rest uri");
+        Assert.hasText(methodOrUri, "apiUri");
 
         String requestRoot = MapUtils.isNotEmpty(request.getMultipartFiles()) ? request.getAppSdkConfig().getYosServerRoot() :
                 request.getAppSdkConfig().getServerRoot();
@@ -208,7 +208,7 @@ public class AbstractClient {
         }
 
         if (!StringUtils.startsWith(path, REST_PREFIX)) {
-            throw new YopClientException("Unsupported request method.");
+            throw new YopClientException("Unsupported apiUri.");
         }
 
         /*v and method are always needed because of old signature implementation...*/
