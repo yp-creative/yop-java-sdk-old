@@ -54,7 +54,13 @@ public class JacksonJsonMarshaller {
         }
     }
 
-
+    public static void load(String content, Object obj) {
+        try {
+            objectMapper.readerForUpdating(obj).readValue(content);
+        } catch (IOException ex) {
+            throw new YopClientException(ex.getMessage(), ex);
+        }
+    }
 
     public static String marshal(Object content) {
         try {
