@@ -144,10 +144,11 @@ public class AbstractClient {
             yopResponse.setState("SUCCESS");
             yopResponse.setRequestId(httpResponse.getHeader(Headers.YOP_REQUEST_ID));
             if (httpResponse.getContent() != null) {
-                yopResponse.setStringResult(IOUtils.toString(httpResponse.getContent(), YopConstants.ENCODING));
-            }
-            if (StringUtils.isNotBlank(yopResponse.getStringResult())) {
-                yopResponse.setResult(JacksonJsonMarshaller.unmarshal(yopResponse.getStringResult(), Object.class));
+                String result = IOUtils.toString(httpResponse.getContent(), YopConstants.ENCODING);
+                JacksonJsonMarshaller.load(result, yopResponse);
+                if (yopResponse.getStringResult() != null) {
+                    yopResponse.setResult(JacksonJsonMarshaller.unmarshal(yopResponse.getStringResult(), Object.class));
+                }
             }
             yopResponse.setValidSign(true);
             return yopResponse;
