@@ -5,7 +5,7 @@
 
     <groupId>com.yeepay.g3.yop</groupId>
     <artifactId>yop-java-sdk</artifactId>
-    <version>3.0.5</version>
+    <version>3.0.7</version>
     <packaging>jar</packaging>
     <name>YOP :: SDK</name>
 
@@ -428,12 +428,12 @@
         <repository>
             <id>YeepayReleases</id>
             <name>Internal Releases</name>
-            <url>http://m2.yeepay.com/nexus/content/repositories/yp3g-subsystem-release/</url>
+            <url>http://artifact.paas.yp:8000/artifactory/yp3g-subsystem-release/</url>
         </repository>
         <snapshotRepository>
             <id>YeepaySnapshots</id>
             <name>Internal Snapshots</name>
-            <url>http://m2.yeepay.com/nexus/content/repositories/yp3g-subsystem-snapshot/</url>
+            <url>http://artifact.paas.yp:8000/artifactory/yp3g-subsystem-snapshot/</url>
         </snapshotRepository>
     </distributionManagement>
 </project>

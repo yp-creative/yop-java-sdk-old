@@ -17,6 +17,7 @@ import static org.junit.Assert.assertTrue;
 public class AssertUtils {
 
     public static void assertYopResponse(YopResponse response) {
+        System.out.println(response.getRequestId());
         if (!response.isSuccess()) {
             System.out.println(response);
         }
