@@ -41,7 +41,7 @@ public class AbstractClient {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractClient.class);
 
-    private static final String REST_PREFIX = "/rest/v";
+    private static final String[] API_URI_PREFIX = {"/rest/v", "/yos/v"};
 
     private static CloseableHttpClient httpClient;
 
@@ -208,12 +208,12 @@ public class AbstractClient {
             path = StringUtils.substringAfter(methodOrUri, requestRoot);
         }
 
-        if (!StringUtils.startsWith(path, REST_PREFIX)) {
+        if (!StringUtils.startsWithAny(path, API_URI_PREFIX)) {
             throw new YopClientException("Unsupported apiUri.");
         }
 
         /*v and method are always needed because of old signature implementation...*/
-        request.setParam(YopConstants.VERSION, StringUtils.substringBetween(methodOrUri, REST_PREFIX, "/"));
+        request.setParam(YopConstants.VERSION, StringUtils.substringBefore(StringUtils.substringAfter(methodOrUri, "/v"), "/"));
         request.setParam(YopConstants.METHOD, methodOrUri);
         return requestRoot + path;
     }
