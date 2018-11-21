@@ -43,6 +43,8 @@ public class AbstractClient {
 
     private static final String[] API_URI_PREFIX = {"/rest/v", "/yos/v"};
 
+    private static final String CONTENT_TYPE_JSON = "application/json";
+
     private static CloseableHttpClient httpClient;
 
     private static org.apache.http.client.config.RequestConfig.Builder requestConfigBuilder;
@@ -132,7 +134,9 @@ public class AbstractClient {
             remoteResponse = getHttpClient().execute(request, httpContext);
             return parseResponse(remoteResponse);
         } finally {
-            HttpClientUtils.closeQuietly(remoteResponse);
+            if (isJsonResponse(remoteResponse)) {
+                HttpClientUtils.closeQuietly(remoteResponse);
+            }
         }
     }
 
@@ -144,10 +148,14 @@ public class AbstractClient {
             yopResponse.setState("SUCCESS");
             yopResponse.setRequestId(httpResponse.getHeader(Headers.YOP_REQUEST_ID));
             if (httpResponse.getContent() != null) {
-                String result = IOUtils.toString(httpResponse.getContent(), YopConstants.ENCODING);
-                JacksonJsonMarshaller.load(result, yopResponse);
-                if (yopResponse.getStringResult() != null) {
-                    yopResponse.setResult(JacksonJsonMarshaller.unmarshal(yopResponse.getStringResult(), Object.class));
+                if (isJsonResponse(response)) {
+                    String result = IOUtils.toString(httpResponse.getContent(), YopConstants.ENCODING);
+                    JacksonJsonMarshaller.load(result, yopResponse);
+                    if (yopResponse.getStringResult() != null) {
+                        yopResponse.setResult(JacksonJsonMarshaller.unmarshal(yopResponse.getStringResult(), Object.class));
+                    }
+                } else {
+                    yopResponse.setResult(response.getEntity().getContent());
                 }
             }
             yopResponse.setValidSign(true);
@@ -172,6 +180,10 @@ public class AbstractClient {
             }
         }
         throw new YopClientException("unexpected httpStatusCode:" + httpResponse.getStatusCode());
+    }
+
+    private static boolean isJsonResponse(CloseableHttpResponse response) {
+        return StringUtils.startsWith(response.getEntity().getContentType().getValue(), CONTENT_TYPE_JSON);
     }
 
     /**

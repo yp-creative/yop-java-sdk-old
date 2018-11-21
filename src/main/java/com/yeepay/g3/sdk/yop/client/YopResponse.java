@@ -15,6 +15,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.io.InputStream;
 
 /**
  * @author wang.bao
@@ -153,6 +154,10 @@ public class YopResponse {
             return JacksonJsonMarshaller.unmarshal(stringResult, objectType);
         }
         return null;
+    }
+
+    public InputStream getFile() {
+        return (InputStream) result;
     }
 
     @Override
