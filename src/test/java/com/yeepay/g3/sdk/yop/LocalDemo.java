@@ -7,6 +7,7 @@ import com.yeepay.g3.sdk.yop.client.YopResponse;
 import com.yeepay.g3.sdk.yop.hbird.HbirdLoginToken;
 import com.yeepay.g3.sdk.yop.http.Headers;
 import com.yeepay.g3.sdk.yop.utils.mapper.JsonMapper;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
@@ -21,10 +22,12 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * title: <br>
@@ -47,21 +50,10 @@ public class LocalDemo {
     public static void setUp() throws Exception {
 //        System.setProperty("yop.sdk.config.file", "config/yop_sdk_config_local.json");
 //        System.setProperty("yop.sdk.config.file", "config/yop_sdk_config_dev.json");
-        System.setProperty("yop.sdk.config.file", "config/yop_sdk_config_qa_docker.json");
-//        System.setProperty("yop.sdk.config.file", "config/yop_sdk_config_pro.json");
-//        System.setProperty("yop.sdk.config.file", "config/yop_sdk_config_pro_docker.json");
+//        System.setProperty("yop.sdk.config.file", "config/yop_sdk_config_qa_docker.json");
+//        System.setProperty("yop.sdk.config.file305", "config/yop_sdk_config_pro.json");
+        System.setProperty("yop.sdk.config.file", "config/yop_sdk_config_pro_docker.json");
 //        System.setProperty("yop.sdk.trust.all.certs", "true");
-    }
-
-    @Test
-    public void test112() throws IOException {
-        String merchant = "yop";
-        YopRequest request = new YopRequest();
-        request.setSignAlg("sha-256");
-        request.addParam("requestNo", "trx" + RandomStringUtils.randomNumeric(10));
-        request.addParam("merchantUserId", merchant);
-        YopResponse response = YopClient.post("/rest/v1.0/payplus/user/register", request);
-        AssertUtils.assertYopResponse(response);
     }
 
     @Test
@@ -71,7 +63,7 @@ public class LocalDemo {
         request.addParam("name", "张文康");
         request.addParam("idCardNumber", "411122199104318257");
 
-        YopResponse response = YopClient.post("/rest/v2.0/auth/idcard", request);
+        YopResponse response = YopClient.post("/rest/v2.0/auth/enterprise", request);
         AssertUtils.assertYopResponse(response);
         if (response.isSuccess()) {
             Assert.assertNull(((Map) response.getResult()).get("result"));
@@ -127,6 +119,17 @@ public class LocalDemo {
         AssertUtils.assertYopResponse(response);
 
         response = YopClient.post("/rest/v3.0/auth/enterprise", request);
+        AssertUtils.assertYopResponse(response);
+    }
+
+    @Test
+    public void testAES256_SHA256_payplus() throws IOException {
+        String merchant = "yop";
+        YopRequest request = new YopRequest();
+        request.setSignAlg("sha-256");
+        request.addParam("requestNo", "trx" + RandomStringUtils.randomNumeric(10));
+        request.addParam("merchantUserId", merchant);
+        YopResponse response = YopClient.post("/rest/v1.0/payplus/user/register", request);
         AssertUtils.assertYopResponse(response);
     }
 
@@ -224,7 +227,7 @@ public class LocalDemo {
     }
 
     @Test
-    public void testRsa() throws Exception {
+    public void testRsa_auth() throws Exception {
         YopRequest request = new YopRequest();
         request.addParam("corpName", "安徽四创电子股份有限公司青海分公司");//企业名称
         request.addParam("regNo", "630104063035716");//工商注册号
@@ -237,21 +240,23 @@ public class LocalDemo {
     }
 
     @Test
-    public void testRsa2() throws Exception {
-        int i = 2;
-        YopRequest request = new YopRequest(APP_KEYS[i], APP_SECRETS[i]);
-        request.addParam("corpName", "安徽四创电子股份有限公司青海分公司");//企业名称
-        request.addParam("regNo", "630104063035716");//工商注册号
-        request.addParam("requestCustomerId", "yop-boss");//子商户编号
-        request.addParam("requestFlowId", "test-" + System.currentTimeMillis() + RandomStringUtils.randomNumeric(3));//请求流水标识
-        request.addParam("requestIdentification", "unit test");//请求者标识
+    public void testRsa_notifier() throws Exception {
+        YopRequest request = new YopRequest();
+        request.setSignAlg("sha-256");//具体看api签名算法而定
+        String notifyRule = "ad_rule";//通知规则
+        List<String> recipients = new ArrayList<>();//接收人
+        recipients.add("18511620061");
+        String content = "{\"code\":\"123445\"}";//json字符串，code为消息模板变量
+        request.addParam("notifyRule", notifyRule);
+        request.addParam("recipients", recipients);
+        request.addParam("content", content);
 
-        YopResponse response = YopClient3.postRsa("/rest/v3.0/auth/enterprise", request);
+        YopResponse response = YopClient3.postRsa("/rest/v4.0/notifier/send", request);
         AssertUtils.assertYopResponse(response);
     }
 
     @Test
-    public void testRsa3() throws Exception {
+    public void testRsa2() throws Exception {
         int i = 2;
         YopRequest request = new YopRequest(APP_KEYS[i], APP_SECRETS[i]);
         request.addParam("corpName", "安徽四创电子股份有限公司青海分公司");//企业名称
@@ -338,7 +343,8 @@ public class LocalDemo {
     @Test
     public void testLoadLocalClass() throws Exception {
         YopRequest request = new YopRequest();
-        request.addParam("className", "com.yeepay.g3.facade.notifier.NotifyFacade");
+        request.getAppSdkConfig().setServerRoot("http://ycetest.yeepay.com:30228/yop-center");
+        request.addParam("className", "com.yeepay.g3.facade.xls.bankfront.facade.TradeOrderFacade");
 
         YopResponse response = YopClient.post("/rest/v1.0/system/loader/methods", request);
         AssertUtils.assertYopResponse(response);
@@ -386,7 +392,8 @@ public class LocalDemo {
         request.addParam("scope", "test");
 
         YopResponse response = YopClient.post("/rest/v1.0/oauth2/token", request);
-        assertEquals("isp.code.invalid_grant", response.getError().getCode());
+        assertEquals("40029", response.getError().getCode());
+        assertEquals("isp.code.invalid_grant", response.getError().getSubCode());
     }
 
     @Test
@@ -444,6 +451,39 @@ public class LocalDemo {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @Test
+    public void name1() throws IOException {
+        //secretKey:商户私钥（字符串形式）
+        String OPRkey = "MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDKLgI+64mmJdNg1TwlCPBnNH3b3qfw2TdHVc2uDd4LTyQI8nRr0heFhhdj0OZi6agqekIyzAH/XmO9PdLrTi4YXJXOfiO/dYwKA6gSktRe6FKY4C2WzX1yA4fGfqJMV7RYVoL6In50Hur6rGnavNSQZqbiDJOgy5yokJ14Mey1iMqqqWvADtKN9SqxtbyIxYD/jj/6qLWwmu88wSwSaGdO3wNFgzajsHgRJe9G9IhD0zr5d72HvJGoedq7VaPn3jhIszcPQE6oqbXAddZRGKBehA4WSCjLEl87XH33zZPrxrQlBTHVVGzfxjbB4QvYz0hlEoWh1ntxeDHTfgyhdPQpAgMBAAECggEATmxMSLW6Xe08McpkmwT9ozq0Oy4BvKW1EIGS15nfcEmRc7sAN7Z1k0BxIDGuu91gcqGbvfJuL+0gCQ7LGqTnsmFvZnp9SU3CNTw33ISBxhKdv1jtthodN7Vw3CjQsYYvmThtc7Mfk9FOWk+4e7VVSnHW98XjGbMBIE2AF1heNgeZ40ubdgzuz9+4g4pphjWncPpwcaMfsDZm3JtFyvUp0+LME0CmUqrxvONZAkpFR/PyejGHnIh3ptHzhe/VjNcuIC4PphkCNBakCBCrtohTy0YeeWfDAUTAO4tPXF/JUhlxjPuqR6rpQY/0uQdMAtTpiWHVJar7eGdK81QnuuOFRQKBgQDrklUPM0pkvGG/wREa0bgUI+ki+1/wv7O8X94/8onomJqPpkD8z4hv/Lev/wD5gDcgmgLC36u/XDuhFfVNOmw4eUWenU6pzonroEjhi91AKcRRfzDfOfWg3wPm1J9WQOn5A033tNRydCpVcX/Ot4qDbKcAwLiPNPXXMTn4LUQE/wKBgQDbtmE0KS/kSfjscWJOqwv1XbxckipkxncqIbdiSdU+DzaLd+Vuaco7TLQJRFp7S7WJW4Tz6KBX2UiA7O7ezXY9PwlgXxXiZDDtneXNAqk7DNxmTTZHrF2C7qdU98klppCFiFx9bysGY6lFWofWmg3Pu5IiPqO3iLRPTvZgQOE+1wKBgQC9SCgmfYzyIlfcjtIinY5uSGiEnjz5od9WpiVbdpOPHEdc0zZ2rH6xlPs3ZAuxbm9dN8KuOLC0ovSau50Nv7rDKdZh234gfP9fH7xP1mUhsC25Why30MdnyqpE6GVbFe+qERitx1PI30RAwWDzhZC7hystNK1XDDPZBAnTOvPjmwKBgDFuujX7IkxRnFDOPdkHQNyGp2+Ib0NXJ85x4YmapQCeeZ4tbpBF+vsWidcf6t+crA5oaeRarWC2gUqIhEHapkSnXxuwqQLTmfKMOPzEIYEoppnZu2Gq1Ss1OK60RSxUamWwxWZvUZXRbG8vLCrLZFodkIZl433SowbI9EO5tTPnAoGAJRsy1z95Q1GPkKrFtKivkxZy1k7zJXjM0VWDc7lT9fBnoeGUyt+vuq+lC5i2aiWKJK7pe8MM9QFDGlWPnly+J8jbyMfm99k5oJtCWDfF0or1pAQ4mw0kjL9TvDVXdojgYA+rxSMQ09hwsYukQ4bblrwfBUmRjLN5WibcRzIW5ZA=";
+
+        //step1  生成yop请求对象
+        //arg0:appkey（举例授权扣款是SQKK+商户编号，亿企通是OPR:+商户编号，具体是什么请参考自己开通产品的手册。
+        //arg1:商户私钥字符串
+        YopRequest request = new YopRequest("OPR:10000466938", OPRkey);
+
+        //step2 配置参数
+        //arg0:参数名
+        //arg1:参数值
+        request.addParam("merchantNo", "10000466938");
+        request.addParam("dayString", "2018-11-20");
+
+
+        //step3 发起请求
+        //arg0:接口的uri（参见手册）
+        //arg1:配置好参数的请求对象
+        YopResponse response = YopClient3.postRsa("/yos/v1.0/std/bill/tradedaydownload", request);
+        assertNotNull(response);
+        assertNotNull(response.getResult());
+
+//        InputStream retstream= response.getFile();
+//        byte[] bytes = new byte[0];
+//        bytes = new byte[retstream.available()];
+//        retstream.read(bytes);
+//        String str = new String(bytes);
+
+        System.out.println(IOUtils.toString(response.getFile()));
     }
 
 }
