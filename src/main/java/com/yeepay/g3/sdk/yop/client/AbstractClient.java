@@ -214,6 +214,9 @@ public class AbstractClient {
 
         String requestRoot = MapUtils.isNotEmpty(request.getMultipartFiles()) ? request.getAppSdkConfig().getYosServerRoot() :
                 request.getAppSdkConfig().getServerRoot();
+        if (StringUtils.endsWith(requestRoot, "/")) {
+            requestRoot = StringUtils.substring(requestRoot, 0, requestRoot.length() - 1);
+        }
 
         String path = methodOrUri;
         if (StringUtils.startsWith(methodOrUri, requestRoot)) {
