@@ -134,7 +134,7 @@ public class AbstractClient {
             remoteResponse = getHttpClient().execute(request, httpContext);
             return parseResponse(remoteResponse);
         } finally {
-            if (isJsonResponse(remoteResponse)) {
+            if (null != remoteResponse && isJsonResponse(remoteResponse)) {
                 HttpClientUtils.closeQuietly(remoteResponse);
             }
         }
