@@ -26,9 +26,9 @@
 +- yop-java-sdk-${version}-jdk16.jar    // All in One for JDK 1.6，已将lib目录shade打包
 +- yop-java-sdk-${version}-sources.jar  // 源码包
 +- yop-java-sdk-${version}-tests.jar    // 单元测试
++- yop-java-sdk-${version}.jar          // 未将lib目录shade打包的原始jar包
 +- yop_sdk_config_default.json     // 默认用配置文件
 +- yop_sdk_config_template.json    // 配置文件模版
-+- yop-sdk-${version}.jar          // 未将lib目录shade打包的原始jar包
 +- lib                             // 依赖包，采用All in One时请忽略本目录
 ````
 
