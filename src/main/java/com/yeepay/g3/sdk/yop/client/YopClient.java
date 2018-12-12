@@ -171,7 +171,7 @@ public class YopClient extends AbstractClient {
         }
         StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, String> entry : signParams.entrySet()) {
-            sb.append(entry.getKey()).append(entry.getValue());
+            sb.append(entry.getKey()).append(StringUtils.trim(entry.getValue()));
         }
         return sb.toString();
     }
