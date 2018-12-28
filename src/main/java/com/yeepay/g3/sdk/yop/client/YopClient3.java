@@ -10,27 +10,23 @@ import com.yeepay.g3.sdk.yop.encrypt.DigestAlgEnum;
 import com.yeepay.g3.sdk.yop.encrypt.DigitalSignatureDTO;
 import com.yeepay.g3.sdk.yop.exception.YopClientException;
 import com.yeepay.g3.sdk.yop.http.Headers;
+import com.yeepay.g3.sdk.yop.http.HttpMethodName;
 import com.yeepay.g3.sdk.yop.http.HttpUtils;
 import com.yeepay.g3.sdk.yop.unmarshaller.JacksonJsonMarshaller;
 import com.yeepay.g3.sdk.yop.utils.*;
 import com.yeepay.g3.sdk.yop.utils.checksum.CRC64Utils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.client.methods.RequestBuilder;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URLEncoder;
-import java.nio.charset.Charset;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.spec.InvalidKeySpecException;
 import java.util.*;
+import java.util.zip.CheckedInputStream;
 
 /**
  * <pre>
@@ -68,16 +64,7 @@ public class YopClient3 extends AbstractClient {
     public static YopResponse postRsa(String apiUri, YopRequest request) throws IOException {
         String contentUrl = richRequest(apiUri, request);
         sign(apiUri, request);
-
-        RequestBuilder requestBuilder = RequestBuilder.post().setUri(contentUrl);
-        for (Map.Entry<String, String> entry : request.getHeaders().entrySet()) {
-            requestBuilder.addHeader(entry.getKey(), entry.getValue());
-        }
-        for (Map.Entry<String, String> entry : request.getParams().entries()) {
-            requestBuilder.addParameter(entry.getKey(), URLEncoder.encode(entry.getValue(), YopConstants.ENCODING));
-        }
-
-        HttpUriRequest httpPost = requestBuilder.build();
+        HttpUriRequest httpPost = buildFormHttpRequest(request, contentUrl, HttpMethodName.POST);
         YopResponse response = fetchContentByApacheHttpClient(httpPost);
         handleRsaResult(response, request.getAppSdkConfig());
         return response;
@@ -92,44 +79,16 @@ public class YopClient3 extends AbstractClient {
      */
     public static YopResponse uploadRsa(String apiUri, YopRequest request) throws IOException {
         String contentUrl = richRequest(apiUri, request);
-
         sign(apiUri, request);
-
-        RequestBuilder requestBuilder = RequestBuilder.post().setUri(contentUrl);
-        for (Map.Entry<String, String> entry : request.getHeaders().entrySet()) {
-            requestBuilder.addHeader(entry.getKey(), entry.getValue());
-        }
-        if (!request.hasFiles()) {
-            for (Map.Entry<String, String> entry : request.getParams().entries()) {
-                requestBuilder.addParameter(entry.getKey(), URLEncoder.encode(entry.getValue(), YopConstants.ENCODING));
-            }
-        } else {
-            MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create().setCharset(Charset.forName(YopConstants.ENCODING));
-            for (Map.Entry<String, Object> entry : request.getMultipartFiles().entrySet()) {
-                String paramName = entry.getKey();
-                Object file = entry.getValue();
-                if (file instanceof String) {
-                    multipartEntityBuilder.addBinaryBody(paramName, new File((String) file));
-                } else if (file instanceof File) {
-                    multipartEntityBuilder.addBinaryBody(paramName, (File) file);
-                } else if (file instanceof InputStream) {
-                    String fileName = FileUtils.getFileName((InputStream) file);
-                    multipartEntityBuilder.addBinaryBody(paramName, (InputStream) file, ContentType.DEFAULT_BINARY, fileName);
-                } else {
-                    throw new YopClientException("不支持的上传文件类型");
-                }
-            }
-            for (Map.Entry<String, String> entry : request.getParams().entries()) {
-                multipartEntityBuilder.addTextBody(entry.getKey(), URLEncoder.encode(entry.getValue(), YopConstants.ENCODING));
-            }
-            requestBuilder.setEntity(multipartEntityBuilder.build());
-        }
-
-        HttpUriRequest httpPost = requestBuilder.build();
-        YopResponse response = fetchContentByApacheHttpClient(httpPost);
+        Pair<HttpUriRequest, List<CheckedInputStream>> pair = buildMultiFormRequest(request, contentUrl);
+        YopResponse response = fetchContentByApacheHttpClient(pair.getLeft());
         handleRsaResult(response, request.getAppSdkConfig());
+        if (pair.getRight() != null) {
+            checkFileIntegrity(response, CRC64Utils.getCRC64(pair.getRight()));
+        }
         return response;
     }
+
 
     private static void sign(String apiUri, YopRequest request) {
         String appKey = request.getAppSdkConfig().getAppKey();
@@ -143,15 +102,6 @@ public class YopClient3 extends AbstractClient {
             headers.put(Headers.YOP_SESSION_ID, SESSION_ID);
         }
         headers.put(Headers.YOP_DATE, timestamp);
-        if (request.hasFiles()) {
-            try {
-                request.addHeader(Headers.YOP_HASH_CRC64ECMA, CRC64Utils.calculateMultiPartFileCrc64ecma(request.getMultipartFiles()));
-            } catch (IOException ex) {
-                LOGGER.error("IOException occurred when generate crc64ecma.", ex);
-                throw new YopClientException("IOException occurred when generate crc64ecma.", ex);
-            }
-        }
-
         String authString = InternalConfig.PROTOCOL_VERSION + "/" + appKey + "/" + timestamp + "/" + EXPIRED_SECONDS;
 
         Set<String> headersToSignSet = new HashSet<String>();
@@ -169,11 +119,8 @@ public class YopClient3 extends AbstractClient {
         SortedMap<String, String> headersToSign = getHeadersToSign(headers, headersToSignSet);
         // Formatting the headers from the request based on signing protocol.
         String canonicalHeader = getCanonicalHeaders(headersToSign);
-        String signedHeaders = "";
-        if (headersToSignSet != null) {
-            signedHeaders = signedHeaderStringJoiner.join(headersToSign.keySet());
-            signedHeaders = signedHeaders.trim().toLowerCase();
-        }
+        String signedHeaders = signedHeaderStringJoiner.join(headersToSign.keySet());
+        signedHeaders = signedHeaders.trim().toLowerCase();
 
         String canonicalRequest = authString + "\n" + "POST" + "\n" + canonicalURI + "\n" + canonicalQueryString + "\n" + canonicalHeader;
 
