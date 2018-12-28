@@ -24,7 +24,7 @@ public class CRC64Utils {
     private static final Logger LOGGER = LoggerFactory.getLogger(CRC64Utils.class);
 
     public static String getCRC64(List<CheckedInputStream> inputStreams) {
-        List<String> crc64s = new ArrayList<>(inputStreams.size());
+        List<String> crc64s = new ArrayList<String>(inputStreams.size());
         for (CheckedInputStream in : inputStreams) {
             crc64s.add(UnsignedLong.fromLongBits(in.getChecksum().getValue()).toString());
         }
