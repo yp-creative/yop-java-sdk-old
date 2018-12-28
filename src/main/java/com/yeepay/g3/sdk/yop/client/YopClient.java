@@ -4,28 +4,22 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Multimap;
 import com.yeepay.g3.sdk.yop.encrypt.AESEncrypter;
 import com.yeepay.g3.sdk.yop.encrypt.Digests;
-import com.yeepay.g3.sdk.yop.exception.YopClientException;
 import com.yeepay.g3.sdk.yop.http.Headers;
+import com.yeepay.g3.sdk.yop.http.HttpMethodName;
 import com.yeepay.g3.sdk.yop.unmarshaller.JacksonJsonMarshaller;
 import com.yeepay.g3.sdk.yop.utils.DateUtils;
-import com.yeepay.g3.sdk.yop.utils.FileUtils;
 import com.yeepay.g3.sdk.yop.utils.JsonUtils;
 import com.yeepay.g3.sdk.yop.utils.checksum.CRC64Utils;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.client.methods.RequestBuilder;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URISyntaxException;
-import java.net.URLEncoder;
 import java.util.*;
+import java.util.zip.CheckedInputStream;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -55,15 +49,7 @@ public class YopClient extends AbstractClient {
         normalize(request);
         sign(request);
 
-        RequestBuilder requestBuilder = RequestBuilder.post().setUri(contentUrl);
-        for (Map.Entry<String, String> entry : request.getHeaders().entrySet()) {
-            requestBuilder.addHeader(entry.getKey(), entry.getValue());
-        }
-        for (Map.Entry<String, String> entry : request.getParams().entries()) {
-            requestBuilder.addParameter(entry.getKey(), URLEncoder.encode(entry.getValue(), YopConstants.ENCODING));
-        }
-
-        HttpUriRequest httpPost = requestBuilder.build();
+        HttpUriRequest httpPost = buildFormHttpRequest(request, contentUrl, HttpMethodName.POST);
         YopResponse response = fetchContentByApacheHttpClient(httpPost);
         handleResult(request, response);
         return response;
@@ -81,15 +67,7 @@ public class YopClient extends AbstractClient {
         normalize(request);
         sign(request);
 
-        RequestBuilder requestBuilder = RequestBuilder.get().setUri(contentUrl);
-        for (Map.Entry<String, String> entry : request.getHeaders().entrySet()) {
-            requestBuilder.addHeader(entry.getKey(), entry.getValue());
-        }
-        for (Map.Entry<String, String> entry : request.getParams().entries()) {
-            requestBuilder.addParameter(entry.getKey(), URLEncoder.encode(entry.getValue(), YopConstants.ENCODING));
-        }
-
-        HttpUriRequest httpGet = requestBuilder.build();
+        HttpUriRequest httpGet = buildFormHttpRequest(request, contentUrl, HttpMethodName.GET);
         YopResponse response = fetchContentByApacheHttpClient(httpGet);
         handleResult(request, response);
         return response;
@@ -102,45 +80,17 @@ public class YopClient extends AbstractClient {
      * @param request 客户端请求对象
      * @return 响应对象
      */
-    public static YopResponse upload(String apiUri, YopRequest request) throws IOException, URISyntaxException {
+    public static YopResponse upload(String apiUri, YopRequest request) throws IOException {
         String contentUrl = richRequest(apiUri, request);
         normalize(request);
         sign(request);
 
-        RequestBuilder requestBuilder = RequestBuilder.post().setUri(contentUrl);
-        for (Map.Entry<String, String> entry : request.getHeaders().entrySet()) {
-            requestBuilder.addHeader(entry.getKey(), entry.getValue());
-        }
-
-        if (!request.hasFiles()) {
-            for (Map.Entry<String, String> entry : request.getParams().entries()) {
-                requestBuilder.addParameter(entry.getKey(), URLEncoder.encode(entry.getValue(), YopConstants.ENCODING));
-            }
-        } else {
-            MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create();
-            for (Map.Entry<String, Object> entry : request.getMultipartFiles().entrySet()) {
-                String paramName = entry.getKey();
-                Object file = entry.getValue();
-                if (file instanceof String) {
-                    multipartEntityBuilder.addBinaryBody(paramName, new File((String) file));
-                } else if (file instanceof File) {
-                    multipartEntityBuilder.addBinaryBody(paramName, (File) file);
-                } else if (file instanceof InputStream) {
-                    String fileName = FileUtils.getFileName((InputStream) file);
-                    multipartEntityBuilder.addBinaryBody(paramName, (InputStream) file, ContentType.DEFAULT_BINARY, fileName);
-                } else {
-                    throw new YopClientException("不支持的上传文件类型");
-                }
-            }
-            for (Map.Entry<String, String> entry : request.getParams().entries()) {
-                multipartEntityBuilder.addTextBody(entry.getKey(), URLEncoder.encode(entry.getValue(), YopConstants.ENCODING));
-            }
-            requestBuilder.setEntity(multipartEntityBuilder.build());
-        }
-
-        HttpUriRequest httpPost = requestBuilder.build();
-        YopResponse response = fetchContentByApacheHttpClient(httpPost);
+        Pair<HttpUriRequest, List<CheckedInputStream>> pair = buildMultiFormRequest(request, contentUrl);
+        YopResponse response = fetchContentByApacheHttpClient(pair.getLeft());
         handleResult(request, response);
+        if (pair.getRight() != null) {
+            checkFileIntegrity(response, CRC64Utils.getCRC64(pair.getRight()));
+        }
         return response;
     }
 
@@ -192,15 +142,6 @@ public class YopClient extends AbstractClient {
         if (request.getHeaders().containsKey("Authorization")) {
             return;
         }
-        if (request.hasFiles()) {
-            try {
-                request.addHeader(Headers.YOP_HASH_CRC64ECMA, CRC64Utils.calculateMultiPartFileCrc64ecma(request.getMultipartFiles()));
-            } catch (IOException ex) {
-                LOGGER.error("IOException occurred when generate crc64ecma.", ex);
-                throw new YopClientException("IOException occurred when generate crc64ecma.", ex);
-            }
-        }
-
         String canonicalQueryString = getCanonicalQueryString(request, true);
 
         String secret = request.getAesSecretKey();

@@ -97,6 +97,36 @@ public class LocalDemo {
     }
 
     @Test
+    public void testAESYosFileUpload() throws Exception {
+        YopRequest request = new YopRequest();
+        request.setSignAlg("SHA256");
+        request.addParam("request_flow_id", "test123456");//请求流水标识
+        request.addParam("request_system", "YOP");//请求流水标识
+        request.addParam("name", "谌猛浩");
+        request.addParam("id_card_number", "411122199102218257");
+        request.addFile("id_card_file", "src/test/resources/log4j.xml");
+
+        YopResponse response = YopClient.upload("/yos/v1.0/test123/auth2/auth-id-card", request);
+        AssertUtils.assertYopResponse(response);
+        Assert.assertNotNull(response.getHeaders().get(Headers.YOP_HASH_CRC64ECMA));
+    }
+
+    @Test
+    public void testRSAYosFileUpload() throws Exception {
+        YopRequest request = new YopRequest();
+        request.setSignAlg("SHA256");
+        request.addParam("request_flow_id", "test123456");//请求流水标识
+        request.addParam("request_system", "YOP");//请求流水标识
+        request.addParam("name", "谌猛浩");
+        request.addParam("id_card_number", "411122199102218257");
+        request.addFile("id_card_file", "src/test/resources/log4j.xml");
+
+        YopResponse response = YopClient3.uploadRsa("/yos/v1.0/test123/auth2/auth-id-card", request);
+        AssertUtils.assertYopResponse(response);
+        Assert.assertNotNull(response.getHeaders().get(Headers.YOP_HASH_CRC64ECMA));
+    }
+
+    @Test
     public void testAES_SHA256() throws Exception {
         YopRequest request = new YopRequest();
         request.setSignAlg("sha-256");
@@ -197,7 +227,7 @@ public class LocalDemo {
         YopRequest request = new YopRequest(APP_KEYS[0], APP_SECRETS[0]);
         request.addParam("fileType", "IMAGE");
 
-        FileInputStream stream = new FileInputStream(new File("/Users/dreambt/SiteMesh Flow Diagram.png"));
+        FileInputStream stream = new FileInputStream(new File("src/test/resources/log4j.xml"));
         request.addFile(stream);
 
         YopResponse response = YopClient.upload("/rest/v1.0/file/upload", request);
@@ -229,7 +259,7 @@ public class LocalDemo {
         assert null != hbirdLoginToken.getoAuth2AccessToken();
         request2.addHeader("Authorization", "Bearer " + hbirdLoginToken.getoAuth2AccessToken().getValue());
 
-        request2.addFile("fileBase64", new FileInputStream(new File("/Users/dreambt/test2.txt")));
+        request2.addFile("fileBase64", new FileInputStream(new File("src/test/resources/log4j.xml")));
 
         response = YopClient.upload("/rest/v2.0/hbird/sharefile/upload", request2);
         AssertUtils.assertYopResponse(response);
@@ -319,7 +349,7 @@ public class LocalDemo {
         YopRequest request = new YopRequest();
         request.addParam("fileType", "IMAGE");
 
-        FileInputStream stream = new FileInputStream(new File("/Users/dreambt/SiteMesh Flow Diagram.png"));
+        FileInputStream stream = new FileInputStream(new File("src/test/resources/log4j.xml"));
         request.addFile(stream);
 
         YopResponse response = YopClient3.uploadRsa("/rest/v1.0/file/upload", request);

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+import com.google.common.collect.Maps;
 import com.yeepay.g3.sdk.yop.error.YopError;
 import com.yeepay.g3.sdk.yop.unmarshaller.JacksonJsonMarshaller;
 import com.yeepay.g3.sdk.yop.unmarshaller.KeepAsRawStringDeserializer;
@@ -16,6 +17,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.io.InputStream;
+import java.util.Map;
 
 /**
  * @author wang.bao
@@ -25,6 +27,9 @@ import java.io.InputStream;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "response")
 public class YopResponse {
+
+    private transient Map<String, String> headers;
+
     /**
      * 状态(SUCCESS/FAILURE)
      */
@@ -120,6 +125,22 @@ public class YopResponse {
         this.error = error;
     }
 
+    public Map<String, String> getHeaders() {
+        return headers;
+    }
+
+    public void setHeaders(Map<String, String> headers) {
+        this.headers = headers;
+    }
+
+    public YopResponse addHeader(String name, String value) {
+        if (this.headers == null) {
+            this.headers = Maps.newHashMap();
+        }
+        this.headers.put(name, value);
+        return this;
+    }
+
     public String getStringResult() {
         return stringResult;
     }
@@ -162,7 +183,7 @@ public class YopResponse {
 
     @Override
     public String toString() {
-        String[] excludeFieldNames = new String[]{"stringResult"};
+        String[] excludeFieldNames = new String[]{"headers,stringResult"};
         return new ReflectionToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
                 .setExcludeFieldNames(excludeFieldNames)
                 .toString();
