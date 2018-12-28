@@ -1,4 +1,4 @@
-# SDK使用说明
+## Java版使用说明
 
 [易宝开放平台](https://open.yeepay.com/) 的SDK是由程序自动化生成的代码包，其中包含了构建请求、加密、返回解析等一些必要的功能。
 
@@ -40,8 +40,8 @@
 </dependency>
 ````
 
-## 3. 示例
 
+## 3. 示例
 ### 3.0. 配置文件说明
 
 app_key：应用标识
@@ -49,6 +49,7 @@ app_key：应用标识
 aes_secret_key：应用密钥，当认证鉴权机制为对称、OAuth2、Basic时需要提供
 
 yop_public_key（list）：YOP平台公钥，当认证鉴权机制为非对称时需要提供
+````
 - store_type
     - string：密钥文本<br>
     - file_p12：p12格式的密钥文件<br>
@@ -69,7 +70,7 @@ httpclient:<br>
 - max_connections: 最大连接数，默认值：50
 
 server_root:
-- yop: YOP 服务器请求地址。默认值：https://open.yeepay.com/yop-center<br>
+- yop: YOP 服务器请求地址。默认值：https://openapi.yeepay.com/yop-center<br>
 - yos: YOS 服务器请求地址。默认值：https://yos.yeepay.com/yop-center<br>
 
 region: 区域，默认值：空<br>
@@ -85,6 +86,7 @@ proxy:<br>
 protocol_version：协议版本，默认：yop-auth-v2<br>
 
 config_version: 配置文件版本<br>
+````
 
 ### 3.1. 对称加密接口
 
@@ -111,14 +113,14 @@ request.addFile(stream);
 // 演示远程文件参数传递
 request.addFile(new URL("https://www.yeepay.com/logo.png").openStream());
 
-YopResponse response = YopClient.post("/rest/v1.0/notifier/send", request);
+YopResponse response = YopClient.post("/rest/v1.0/notifier/send", request); 
 ````
 
 ### 3.2. 非对称签名接口
 
 #### 配置文件 
 
-默认配置文件名：yop_sdk_config_default.json
+默认配置文件名：yop_sdk_config_default.json 
 
 #### 配置项
 
@@ -159,13 +161,150 @@ YopResponse response = YopClient.post("/rest/v1.0/notifier/send", request);
 }
 ```
 
+####配置文件命名规范
+默认配置文件名 
+
+```
+yop_sdk_config_default.json
+```
+
+多配置文件命名方式 
+```
+yop_sdk_config_{appKey}.json
+```
+
+只有一个配置文件时，该配置文件即默认配置文件（无论文件名是不是yop_sdk_config_default.json）； 
+当有多个配置文件时，则必须指定默认配置文件（通过default配置项）,不指定的情况下第一个配置文件作为默认配置；
+
+#### 默认配置文件读取路径(classPath)
+/config
+
+
 #### 如何覆盖默认配置文件
 
-在 VM arguments 中指定配置文件名
+在 VM arguments 中指定配置文件路径 
+-Dyop.sdk.config.file 配置文件路径，多个配置文件用逗号分隔，文件路径必须为全路径，示例如下： 
+-Dyop.sdk.config.file=file://home/app/yop_sdk_config_default.json,file://home/app/yop_sdk_config_yop-boss.json
 
-例如：
-* -Dyop.sdk.config.file=/yop_sdk_config_override.json
-* -Dyop.sdk.config.file=file://home/app/yop_sdk_config_override.json
+####自定义
+如果用户不能使用文件配置方式或者需要更自由的配置方式（例如从数据库加载sdk配置等），只需实现自定义配置提供方接口并注册，示例如下：
+
+``` java
+//全局设置
+AppSdkConfigProvider provider = new MockCacheAppSdkConfigProvider("test", 30L, TimeUnit.SECONDS)
+AppSdkConfigProviderRegistry.registerCustomProvider(provider);
+
+。。。发起请求
+```
+
+1.实现提供方接口
+
+* 可以直接实现接口AppSdkConfigProvider
+    * AppSdkConfig是最小配置单元，包含指定appKey的所有配置信息
+    * 如果用户配置有多个appKey，需要指定默认appKey，默认appKey的相关资源配置（请求地址，httpClient配置，代理配置等）是sdk实际采用的来源
+
+```java
+package com.yeepay.g3.sdk.yop.config;
+
+public interface AppSdkConfigProvider {
+ 
+    /**
+     * 获取指定appKey的sdk配置
+     *
+     * @param appKey appKey
+     * @return app sdk配置
+     */
+    AppSdkConfig getConfig(String appKey);
+ 
+    /**
+     * 获取默认的应用sdk配置
+     *
+     * @return app sdk配置
+     */
+    AppSdkConfig getDefaultConfig();
+ 
+    /**
+     * 获取指定appKey的sdk配置，如果不存在则返回默认配置
+     *
+     * @param appKey appKey
+     * @return app sdk配置
+     */
+    AppSdkConfig getConfigWithDefault(String appKey);
+}
+```
+
+* sdk提供了一些工具类便于用户实现
+
+    * BaseFixedAppSdkConfigProvider用于sdk配置无需变化只需初始化一次的场景，需实现如下方法：
+	
+     ``` java
+        /**
+        * 加载用户自定义sdk配置
+        *
+        * @return 用户自定义sdk配置列表
+        */
+        protected abstract List<SDKConfig> loadCustomSdkConfig();
+ ```
+    provider在初始化的时候会调用该方法进行初始化工作，默认AppSdkConfig需要在相关SDKConfig中将default项配置为true，如果没有则会将读取到的第一个配置项作为默认配置，示例如下
+
+      ```  java
+    public class MockFixedSDKConfigProvider extends BaseFixedAppSdkConfigProvider{
+
+        /**
+         * sdk配置加载repository，用于从数据库加载sdk配置
+         */
+        private SDKConfigRepository repository;
+
+        @Override
+        protected List<SDKConfig> loadCustomSdkConfig() {
+            return repository.queryAllConfig();
+        }
+    }
+  ```
+    * BaseCachedAppSdkConfigProvider 用于sdk配置动态变化的场景，该类中会缓存相关配置并定时刷新以获取最新的配置，，需实现如下方法：
+```java
+/**
+     * 加载sdk配置
+     * 缓存会（首次加载、缓存过期、异步刷新）触发该方法去获取最新的配置
+     *
+     * @param appKey appKey
+     * @return sdk配置
+     */
+    protected abstract SDKConfig loadSDKConfig(String appKey);
+        ```
+该类在初始化的时候必须指定默认appKey和缓存过期时间，示例如下：
+        ``` java
+        public class MockCachedSDKConfigProvider extends BaseCachedAppSdkConfigProvider{
+
+        /**
+         * sdk配置加载repository，用于从数据库加载sdk配置
+         */
+        private SDKConfigRepository repository;
+
+        public MockCachedSDKConfigProvider(String defaultAppKey, Long expire, TimeUnit timeUnit) {
+            super(defaultAppKey, expire, timeUnit);
+        }
+
+        /**
+         * 缓存会（首次加载、缓存过期、异步刷新）触发改方法去获取最新的配置
+         *
+         * @param appKey appKey
+         * @return
+         */
+        @Override
+        protected SDKConfig loadSDKConfig(String appKey) {
+            return repository.queryConfig(appKey);
+        }
+```
+2，注册提供方
+要想让自定义的提供方生效，需要向AppSdkConfigProviderRegistry（默认情况下采取文件提供方DefaultFileAppSdkConfigProvider）注册，示例如下：
+``` java
+AppSdkConfigProviderRegistry.registerCustomProvider(myProvider);
+```
+
+
+
+
 
 #### 代码示例
 
