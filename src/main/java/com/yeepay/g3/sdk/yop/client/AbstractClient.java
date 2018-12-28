@@ -213,8 +213,8 @@ public class AbstractClient {
         }
 
         HttpUriRequest httpPost = requestBuilder.build();
-        List<CheckedInputStream> inputStreamList = checkedInputStreams == null ? null : new ArrayList<>(checkedInputStreams.values());
-        return new ImmutablePair<>(httpPost, inputStreamList);
+        List<CheckedInputStream> inputStreamList = checkedInputStreams == null ? null : new ArrayList<CheckedInputStream>(checkedInputStreams.values());
+        return new ImmutablePair<HttpUriRequest, List<CheckedInputStream>>(httpPost, inputStreamList);
 
     }
 
@@ -229,16 +229,16 @@ public class AbstractClient {
         if (file instanceof String) {
             File paramFile = new File((String) file);
             CheckedInputStream inputStream = new CheckedInputStream(new FileInputStream(paramFile), new CRC64());
-            return new ImmutablePair<>(paramFile.getName(), inputStream);
+            return new ImmutablePair<String, CheckedInputStream>(paramFile.getName(), inputStream);
         }
         if (file instanceof File) {
             CheckedInputStream inputStream = new CheckedInputStream(new FileInputStream((File) file), new CRC64());
-            return new ImmutablePair<>(((File) file).getName(), inputStream);
+            return new ImmutablePair<String, CheckedInputStream>(((File) file).getName(), inputStream);
         }
         if (file instanceof InputStream) {
             String fileName = FileUtils.getFileName((InputStream) file);
             CheckedInputStream inputStream = new CheckedInputStream((InputStream) file, new CRC64());
-            return new ImmutablePair<>(fileName, inputStream);
+            return new ImmutablePair<String, CheckedInputStream>(fileName, inputStream);
         }
         throw new YopClientException("不支持的上传文件类型");
     }
