@@ -48,11 +48,11 @@ public class LocalDemo {
 
     @BeforeClass
     public static void setUp() throws Exception {
-//        System.setProperty("yop.sdk.config.file", "config/yop_sdk_config_local.json");
+        System.setProperty("yop.sdk.config.file", "config/yop_sdk_config_local.json");
 //        System.setProperty("yop.sdk.config.file", "config/yop_sdk_config_dev.json");
 //        System.setProperty("yop.sdk.config.file", "config/yop_sdk_config_qa_docker.json");
-//        System.setProperty("yop.sdk.config.file305", "config/yop_sdk_config_pro.json");
-        System.setProperty("yop.sdk.config.file", "config/yop_sdk_config_pro_docker.json");
+//        System.setProperty("yop.sdk.config.file", "config/yop_sdk_config_pro.json");
+//        System.setProperty("yop.sdk.config.file", "config/yop_sdk_config_pro_docker.json");
 //        System.setProperty("yop.sdk.trust.all.certs", "true");
     }
 
@@ -71,7 +71,7 @@ public class LocalDemo {
     }
 
     @Test
-    public void testAES_SHA1() throws Exception {
+    public void testAES_sha1_verify_failed() throws Exception {
         YopRequest request = new YopRequest();
         request.setSignAlg("sha1");
         request.addParam("requestFlowId", "test123456");//请求流水标识
@@ -80,10 +80,19 @@ public class LocalDemo {
 
         request.addHeader("Accept-Encoding", "gzip");
 
-        YopResponse response = YopClient.get("/rest/v2.0/auth/idcard", request);
-        AssertUtils.assertYopResponse(response);
+        YopResponse response = YopClient.get("/rest/v3.0/auth/idcard", request);
+        assertEquals("40047", response.getError().getCode());
+        assertEquals("isv.authentication.digest.verify-failure", response.getError().getSubCode());
+    }
 
-        response = YopClient.post("/rest/v2.0/auth/idcard", request);
+    @Test
+    public void testAES_SHA1() throws Exception {
+        YopRequest request = new YopRequest();
+        request.addParam("requestFlowId", "test123456");//请求流水标识
+        request.addParam("name", "张文康");
+        request.addParam("idCardNumber", "370982199101186692");
+
+        YopResponse response = YopClient.post("/rest/v3.0/auth/idcard", request);
         AssertUtils.assertYopResponse(response);
     }
 
@@ -256,7 +265,7 @@ public class LocalDemo {
     }
 
     @Test
-    public void testRsa2() throws Exception {
+    public void testRsa2() throws IOException {
         int i = 2;
         YopRequest request = new YopRequest(APP_KEYS[i], APP_SECRETS[i]);
         request.addParam("corpName", "安徽四创电子股份有限公司青海分公司");//企业名称
