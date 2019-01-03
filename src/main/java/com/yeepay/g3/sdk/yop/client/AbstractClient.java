@@ -12,6 +12,7 @@ import com.yeepay.g3.sdk.yop.utils.Assert;
 import com.yeepay.g3.sdk.yop.utils.FileUtils;
 import com.yeepay.g3.sdk.yop.utils.InternalConfig;
 import com.yeepay.g3.sdk.yop.utils.checksum.CRC64;
+import com.yeepay.g3.sdk.yop.utils.io.MarkableFileInputStream;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -42,10 +43,7 @@ import org.apache.http.protocol.HttpContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.security.cert.CertificateException;
@@ -61,6 +59,8 @@ public class AbstractClient {
     private static final String[] API_URI_PREFIX = {"/rest/v", "/yos/v"};
 
     private static final String CONTENT_TYPE_JSON = "application/json";
+
+    private static final int EXT_READ_BUFFER_SIZE = 64 * 1024;
 
     private static CloseableHttpClient httpClient;
 
@@ -160,7 +160,7 @@ public class AbstractClient {
      * @return http请求
      * @throws IOException io异常
      */
-    protected static HttpUriRequest buildFormHttpRequest(YopRequest request, String contentUrl, HttpMethodName httpMethod) throws IOException {
+    protected static HttpUriRequest buildFormHttpRequest(YopRequest request, String contentUrl, HttpMethodName httpMethod) {
         RequestBuilder requestBuilder;
         if (HttpMethodName.POST == httpMethod) {
             requestBuilder = RequestBuilder.post();
@@ -173,8 +173,12 @@ public class AbstractClient {
         for (Map.Entry<String, String> entry : request.getHeaders().entrySet()) {
             requestBuilder.addHeader(entry.getKey(), entry.getValue());
         }
-        for (Map.Entry<String, String> entry : request.getParams().entries()) {
-            requestBuilder.addParameter(entry.getKey(), URLEncoder.encode(entry.getValue(), YopConstants.ENCODING));
+        try {
+            for (Map.Entry<String, String> entry : request.getParams().entries()) {
+                requestBuilder.addParameter(entry.getKey(), URLEncoder.encode(entry.getValue(), YopConstants.ENCODING));
+            }
+        } catch (IOException ex) {
+            throw new YopClientException("unable to create http request.", ex);
         }
         return requestBuilder.build();
     }
@@ -187,35 +191,37 @@ public class AbstractClient {
      * @return key为http请求，value为checkInputStream列表
      * @throws IOException io异常
      */
-    protected static Pair<HttpUriRequest, List<CheckedInputStream>> buildMultiFormRequest(YopRequest request, String contentUrl) throws IOException {
+    protected static Pair<HttpUriRequest, List<CheckedInputStream>> buildMultiFormRequest(YopRequest request, String contentUrl) {
         RequestBuilder requestBuilder = RequestBuilder.post().setUri(contentUrl);
         for (Map.Entry<String, String> entry : request.getHeaders().entrySet()) {
             requestBuilder.addHeader(entry.getKey(), entry.getValue());
         }
         TreeMap<String, CheckedInputStream> checkedInputStreams = null;
-        if (!request.hasFiles()) {
-            for (Map.Entry<String, String> entry : request.getParams().entries()) {
-                requestBuilder.addParameter(entry.getKey(), URLEncoder.encode(entry.getValue(), YopConstants.ENCODING));
+        try {
+            if (!request.hasFiles()) {
+                for (Map.Entry<String, String> entry : request.getParams().entries()) {
+                    requestBuilder.addParameter(entry.getKey(), URLEncoder.encode(entry.getValue(), YopConstants.ENCODING));
+                }
+            } else {
+                checkedInputStreams = Maps.newTreeMap();
+                MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create().setCharset(Charset.forName(YopConstants.ENCODING));
+                for (Map.Entry<String, Object> entry : request.getMultipartFiles().entrySet()) {
+                    String paramName = entry.getKey();
+                    Pair<String, CheckedInputStream> checkedInputStreamPair = wrapToCheckInputStream(entry.getValue());
+                    multipartEntityBuilder.addBinaryBody(paramName, checkedInputStreamPair.getRight(), ContentType.DEFAULT_BINARY, checkedInputStreamPair.getLeft());
+                    checkedInputStreams.put(paramName, checkedInputStreamPair.getRight());
+                }
+                for (Map.Entry<String, String> entry : request.getParams().entries()) {
+                    multipartEntityBuilder.addTextBody(entry.getKey(), URLEncoder.encode(entry.getValue(), YopConstants.ENCODING));
+                }
+                requestBuilder.setEntity(multipartEntityBuilder.build());
             }
-        } else {
-            checkedInputStreams = Maps.newTreeMap();
-            MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create().setCharset(Charset.forName(YopConstants.ENCODING));
-            for (Map.Entry<String, Object> entry : request.getMultipartFiles().entrySet()) {
-                String paramName = entry.getKey();
-                Pair<String, CheckedInputStream> checkedInputStreamPair = wrapToCheckInputStream(entry.getValue());
-                multipartEntityBuilder.addBinaryBody(paramName, checkedInputStreamPair.getRight(), ContentType.DEFAULT_BINARY, checkedInputStreamPair.getLeft());
-                checkedInputStreams.put(paramName, checkedInputStreamPair.getRight());
-            }
-            for (Map.Entry<String, String> entry : request.getParams().entries()) {
-                multipartEntityBuilder.addTextBody(entry.getKey(), URLEncoder.encode(entry.getValue(), YopConstants.ENCODING));
-            }
-            requestBuilder.setEntity(multipartEntityBuilder.build());
+        } catch (IOException ex) {
+            throw new YopClientException("unable to create http request.", ex);
         }
-
         HttpUriRequest httpPost = requestBuilder.build();
         List<CheckedInputStream> inputStreamList = checkedInputStreams == null ? null : new ArrayList<CheckedInputStream>(checkedInputStreams.values());
         return new ImmutablePair<HttpUriRequest, List<CheckedInputStream>>(httpPost, inputStreamList);
-
     }
 
     /**
@@ -235,12 +241,43 @@ public class AbstractClient {
             CheckedInputStream inputStream = new CheckedInputStream(new FileInputStream((File) file), new CRC64());
             return new ImmutablePair<String, CheckedInputStream>(((File) file).getName(), inputStream);
         }
+        if (file instanceof FileInputStream) {
+            return getCheckedInputStreamPair((FileInputStream) file);
+        }
         if (file instanceof InputStream) {
-            String fileName = FileUtils.getFileName((InputStream) file);
-            CheckedInputStream inputStream = new CheckedInputStream((InputStream) file, new CRC64());
-            return new ImmutablePair<String, CheckedInputStream>(fileName, inputStream);
+            return getCheckedInputStreamPair((InputStream) file);
         }
         throw new YopClientException("不支持的上传文件类型");
+    }
+
+    private static Pair<String, CheckedInputStream> getCheckedInputStreamPair(FileInputStream fileInputStream) throws IOException {
+        MarkableFileInputStream in = new MarkableFileInputStream(fileInputStream);
+        in.mark(0);
+        //解析文件扩展名的时候会读取流的前64*1024个字节,需要reset文件流
+        String fileName = FileUtils.getFileName(in);
+        in.reset();
+        CheckedInputStream inputStream = new CheckedInputStream(in, new CRC64());
+        return new ImmutablePair<String, CheckedInputStream>(fileName, inputStream);
+    }
+
+    private static Pair<String, CheckedInputStream> getCheckedInputStreamPair(InputStream inputStream) throws IOException {
+        //解析文件扩展名的时候会读取流的前64*1024个字节
+        byte[] extReadBuffer = new byte[EXT_READ_BUFFER_SIZE];
+        int totalRead = 0;
+        int lastRead = inputStream.read(extReadBuffer);
+        while (lastRead != -1) {
+            totalRead += lastRead;
+            if (totalRead == EXT_READ_BUFFER_SIZE) {
+                break;
+            }
+            lastRead = inputStream.read(extReadBuffer, totalRead, EXT_READ_BUFFER_SIZE - totalRead);
+        }
+        ByteArrayInputStream extReadIn = new ByteArrayInputStream(extReadBuffer, 0, totalRead);
+        String fileName = FileUtils.getFileName(extReadIn);
+        extReadIn.reset();
+        SequenceInputStream sequenceInputStream = new SequenceInputStream(extReadIn, inputStream);
+        return new ImmutablePair<String, CheckedInputStream>(fileName, new CheckedInputStream(sequenceInputStream,
+                new CRC64()));
     }
 
 

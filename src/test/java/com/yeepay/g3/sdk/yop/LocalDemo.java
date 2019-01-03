@@ -367,6 +367,7 @@ public class LocalDemo {
 
         YopResponse response = YopClient3.uploadRsa("/rest/v1.0/file/upload", request);
         AssertUtils.assertYopResponse(response);
+        assertTrue(0 < ((Integer) ((HashMap) (((ArrayList) ((HashMap) response.getResult()).get("files")).get(0))).get("fileSize")));
         assertTrue(StringUtils.endsWith((String) ((HashMap) (((ArrayList) ((HashMap) response.getResult()).get("files")).get(0))).get("fileName"), ".png"));
     }
 
