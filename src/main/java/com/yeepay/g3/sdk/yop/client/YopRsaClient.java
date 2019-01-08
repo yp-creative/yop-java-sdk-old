@@ -56,7 +56,7 @@ public class YopRsaClient extends AbstractClient {
 
     public static YopResponse get(String apiUri, YopRequest request) throws IOException {
         String contentUrl = richRequest(apiUri, request);
-        sign(apiUri, request);
+        sign(apiUri, request, HttpMethodName.GET);
         HttpUriRequest httpPost = buildFormHttpRequest(request, contentUrl, HttpMethodName.GET);
         YopResponse response = fetchContentByApacheHttpClient(httpPost);
         handleRsaResult(response, request.getAppSdkConfig());
@@ -72,7 +72,7 @@ public class YopRsaClient extends AbstractClient {
      */
     public static YopResponse post(String apiUri, YopRequest request) throws IOException {
         String contentUrl = richRequest(apiUri, request);
-        sign(apiUri, request);
+        sign(apiUri, request, HttpMethodName.POST);
         HttpUriRequest httpPost = buildFormHttpRequest(request, contentUrl, HttpMethodName.POST);
         YopResponse response = fetchContentByApacheHttpClient(httpPost);
         handleRsaResult(response, request.getAppSdkConfig());
@@ -88,7 +88,7 @@ public class YopRsaClient extends AbstractClient {
      */
     public static YopResponse upload(String apiUri, YopRequest request) throws IOException {
         String contentUrl = richRequest(apiUri, request);
-        sign(apiUri, request);
+        sign(apiUri, request, HttpMethodName.POST);
         Pair<HttpUriRequest, List<CheckedInputStream>> pair = buildMultiFormRequest(request, contentUrl);
         YopResponse response = fetchContentByApacheHttpClient(pair.getLeft());
         handleRsaResult(response, request.getAppSdkConfig());
@@ -98,7 +98,7 @@ public class YopRsaClient extends AbstractClient {
         return response;
     }
 
-    private static void sign(String apiUri, YopRequest request) {
+    private static void sign(String apiUri, YopRequest request, HttpMethodName httpMethod) {
         String appKey = request.getAppSdkConfig().getAppKey();
         String timestamp = DateUtils.formatCompressedIso8601Timestamp(System.currentTimeMillis());
 
@@ -130,7 +130,7 @@ public class YopRsaClient extends AbstractClient {
         String signedHeaders = signedHeaderStringJoiner.join(headersToSign.keySet());
         signedHeaders = signedHeaders.trim().toLowerCase();
 
-        String canonicalRequest = authString + "\n" + "POST" + "\n" + canonicalURI + "\n" + canonicalQueryString + "\n" + canonicalHeader;
+        String canonicalRequest = authString + "\n" + httpMethod + "\n" + canonicalURI + "\n" + canonicalQueryString + "\n" + canonicalHeader;
 
         // Signing the canonical request using key with sha-256 algorithm.
 
