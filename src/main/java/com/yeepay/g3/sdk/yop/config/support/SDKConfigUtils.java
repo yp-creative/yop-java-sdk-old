@@ -4,6 +4,8 @@ import com.yeepay.g3.sdk.yop.YopServiceException;
 import com.yeepay.g3.sdk.yop.config.SDKConfig;
 import com.yeepay.g3.sdk.yop.utils.JsonUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,6 +22,8 @@ import java.io.InputStream;
  */
 public final class SDKConfigUtils {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(SDKConfigUtils.class);
+
     public static SDKConfig loadConfig(String configFile) {
         InputStream fis = null;
         SDKConfig config;
@@ -27,13 +31,14 @@ public final class SDKConfigUtils {
             fis = ConfigUtils.getInputStream(configFile);
             config = JsonUtils.loadFrom(fis, SDKConfig.class);
         } catch (Exception ex) {
+            LOGGER.error("Errors occurred when loading SDKConfig,configFile:" + configFile, ex);
             throw new YopServiceException(ex, "Errors occurred when loading SDK Config.");
         } finally {
             if (null != fis) {
                 try {
                     fis.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    //ignore
                 }
             }
         }
@@ -58,7 +63,7 @@ public final class SDKConfigUtils {
                 try {
                     fis.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    //ignore
                 }
             }
         }
