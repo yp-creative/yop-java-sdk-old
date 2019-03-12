@@ -108,8 +108,9 @@ public class AbstractClient {
         if (InternalConfig.proxy != null) {
             String proxyHost = InternalConfig.proxy.getHost();
             int proxyPort = InternalConfig.proxy.getPort();
+            String scheme = InternalConfig.proxy.getScheme();
             if (proxyHost != null && proxyPort > 0) {
-                proxyHttpHost = new HttpHost(proxyHost, proxyPort);
+                proxyHttpHost = new HttpHost(proxyHost, proxyPort, scheme);
                 requestConfigBuilder.setProxy(proxyHttpHost);
                 credentialsProvider = new BasicCredentialsProvider();
                 String proxyUsername = InternalConfig.proxy.getUsername();

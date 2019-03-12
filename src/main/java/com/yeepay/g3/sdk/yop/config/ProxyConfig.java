@@ -23,6 +23,8 @@ public class ProxyConfig implements Serializable {
 
     private int port = -1;
 
+    private String scheme;
+
     private String username;
 
     private String password;
@@ -45,6 +47,14 @@ public class ProxyConfig implements Serializable {
 
     public void setPort(int port) {
         this.port = port;
+    }
+
+    public String getScheme() {
+        return scheme;
+    }
+
+    public void setScheme(String scheme) {
+        this.scheme = scheme;
     }
 
     public String getUsername() {

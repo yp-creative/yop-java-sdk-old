@@ -40,6 +40,11 @@
 </dependency>
 ````
 
+### 2.1 发布SDK包到仓库
+参考[发布第三方jar包到远程仓库](https://maven.apache.org/guides/mini/guide-3rd-party-jars-remote.html)，示例如下：
+
+mvn deploy:deploy-file -Dversion=3.2.1 -DgroupId=com.yeepay.g3.yop -DartifactId=yop-java-sdk -Dpackaging=jar -Dfile=target/yop-java-sdk-3.2.1.jar -DpomFile=pom.xml -Durl=http://xxxx:8000/artifactory/xxx-release/ -DrepositoryId=xxx
+
 
 ## 3. 示例
 ### 3.0. 配置文件说明
@@ -78,6 +83,7 @@ region: 区域，默认值：空<br>
 proxy:<br>
 - host: 代理服务器IP<br>
 - port:  代理服务器端口，默认值：-1<br>
+- scheme: 协议(http或者https)
 - username: 代理账号<br>
 - password: 代理密码<br>
 - domain: 代理域<br>
