@@ -31,8 +31,8 @@ public final class SDKConfigUtils {
             fis = ConfigUtils.getInputStream(configFile);
             config = JsonUtils.loadFrom(fis, SDKConfig.class);
         } catch (Exception ex) {
-            LOGGER.error("Errors occurred when loading SDKConfig,configFile:" + configFile, ex);
-            throw new YopServiceException(ex, "Errors occurred when loading SDK Config.");
+            LOGGER.error("Errors occurred when loading SDKConfig, filePath:" + configFile, ex);
+            throw new YopServiceException(ex, "Errors occurred when loading SDKConfig.");
         } finally {
             if (null != fis) {
                 try {
@@ -57,7 +57,7 @@ public final class SDKConfigUtils {
         try {
             config = JsonUtils.loadFrom(in, SDKConfig.class);
         } catch (Exception ex) {
-            throw new YopServiceException(ex, "Errors occurred when loading SDK Config.");
+            throw new YopServiceException(ex, "Errors occurred when loading SDKConfig.");
         } finally {
             if (null != fis) {
                 try {
