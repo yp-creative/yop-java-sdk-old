@@ -55,6 +55,7 @@ public class YopRsaClient extends AbstractClient {
     }
 
     public static YopResponse get(String apiUri, YopRequest request) throws IOException {
+        CheckUtils.checkApiUri(apiUri);
         String contentUrl = richRequest(apiUri, request);
         sign(apiUri, request, HttpMethodName.GET);
         HttpUriRequest httpPost = buildFormHttpRequest(request, contentUrl, HttpMethodName.GET);
@@ -71,6 +72,7 @@ public class YopRsaClient extends AbstractClient {
      * @return 响应对象
      */
     public static YopResponse post(String apiUri, YopRequest request) throws IOException {
+        CheckUtils.checkApiUri(apiUri);
         String contentUrl = richRequest(apiUri, request);
         sign(apiUri, request, HttpMethodName.POST);
         HttpUriRequest httpPost = buildFormHttpRequest(request, contentUrl, HttpMethodName.POST);
@@ -87,6 +89,7 @@ public class YopRsaClient extends AbstractClient {
      * @return 响应对象
      */
     public static YopResponse upload(String apiUri, YopRequest request) throws IOException {
+        CheckUtils.checkApiUri(apiUri);
         String contentUrl = richRequest(apiUri, request);
         sign(apiUri, request, HttpMethodName.POST);
         Pair<HttpUriRequest, List<CheckedInputStream>> pair = buildMultiFormRequest(request, contentUrl);

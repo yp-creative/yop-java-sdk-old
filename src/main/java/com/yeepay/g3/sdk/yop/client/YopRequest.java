@@ -89,6 +89,7 @@ public class YopRequest {
         }
         this.appSdkConfig.setServerRoot(appSdkConfig.getServerRoot());
         this.appSdkConfig.setYosServerRoot(appSdkConfig.getYosServerRoot());
+        this.appSdkConfig.setSandboxServerRoot(appSdkConfig.getSandboxServerRoot());
         this.appSdkConfig.setDefaultYopPublicKey(appSdkConfig.getDefaultYopPublicKey());
         this.secretKey = secretKey;
         init();
