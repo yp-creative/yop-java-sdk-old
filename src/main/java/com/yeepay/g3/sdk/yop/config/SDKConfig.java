@@ -1,6 +1,7 @@
 package com.yeepay.g3.sdk.yop.config;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.yeepay.g3.sdk.yop.config.enums.ModeEnum;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
@@ -32,6 +33,9 @@ public final class SDKConfig implements Serializable {
     @JsonProperty("yos_server_root")
     private String yosServerRoot;
 
+    @JsonProperty("sandbox_server_root")
+    private String sandboxServerRoot;
+
     @JsonProperty("yop_public_key")
     private CertConfig[] yopPublicKey;
 
@@ -54,6 +58,8 @@ public final class SDKConfig implements Serializable {
 
     @JsonProperty("default")
     private Boolean defaulted;
+
+    private ModeEnum mode;
 
     private ProxyConfig proxy;
 
@@ -83,6 +89,14 @@ public final class SDKConfig implements Serializable {
 
     public String getYosServerRoot() {
         return yosServerRoot;
+    }
+
+    public String getSandboxServerRoot() {
+        return sandboxServerRoot;
+    }
+
+    public void setSandboxServerRoot(String sandboxServerRoot) {
+        this.sandboxServerRoot = sandboxServerRoot;
     }
 
     public void setYosServerRoot(String yosServerRoot) {
@@ -143,6 +157,14 @@ public final class SDKConfig implements Serializable {
 
     public void setDefaulted(Boolean defaulted) {
         this.defaulted = defaulted;
+    }
+
+    public ModeEnum getMode() {
+        return mode;
+    }
+
+    public void setMode(ModeEnum mode) {
+        this.mode = mode;
     }
 
     public ProxyConfig getProxy() {

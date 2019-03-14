@@ -1,12 +1,12 @@
 package com.yeepay.g3.sdk.yop.client;
 
-import com.google.common.base.Joiner;
 import com.google.common.collect.Multimap;
 import com.yeepay.g3.sdk.yop.encrypt.AESEncrypter;
 import com.yeepay.g3.sdk.yop.encrypt.Digests;
 import com.yeepay.g3.sdk.yop.http.Headers;
 import com.yeepay.g3.sdk.yop.http.HttpMethodName;
 import com.yeepay.g3.sdk.yop.unmarshaller.JacksonJsonMarshaller;
+import com.yeepay.g3.sdk.yop.utils.CheckUtils;
 import com.yeepay.g3.sdk.yop.utils.DateUtils;
 import com.yeepay.g3.sdk.yop.utils.JsonUtils;
 import com.yeepay.g3.sdk.yop.utils.checksum.CRC64Utils;
@@ -35,8 +35,6 @@ public class YopClient extends AbstractClient {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(YopClient.class);
 
-    private static final Joiner queryStringOldJoiner = Joiner.on("");
-
     /**
      * 发起post请求，以YopResponse对象返回
      *
@@ -45,6 +43,7 @@ public class YopClient extends AbstractClient {
      * @return 响应对象
      */
     public static YopResponse post(String apiUri, YopRequest request) throws IOException {
+        CheckUtils.checkApiUri(apiUri);
         String contentUrl = richRequest(apiUri, request);
         normalize(request);
         sign(request);
@@ -63,6 +62,7 @@ public class YopClient extends AbstractClient {
      * @return 响应对象
      */
     public static YopResponse get(String apiUri, YopRequest request) throws IOException {
+        CheckUtils.checkApiUri(apiUri);
         String contentUrl = richRequest(apiUri, request);
         normalize(request);
         sign(request);
@@ -81,6 +81,7 @@ public class YopClient extends AbstractClient {
      * @return 响应对象
      */
     public static YopResponse upload(String apiUri, YopRequest request) throws IOException {
+        CheckUtils.checkApiUri(apiUri);
         String contentUrl = richRequest(apiUri, request);
         normalize(request);
         sign(request);

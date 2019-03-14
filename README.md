@@ -456,9 +456,52 @@ SDK中，通过`request.setEncrypt(true)`指定此请求需加密，当前支持
 
 请求加密则响应默认加密，YopResponse自动解密、验签、反序列化
 
-##5. 常见问题
+###5. 沙箱
+沙箱网关是为了提高接入效率而提供的专门部署环境，开启沙箱模式以后，所有的请求都将发送到沙箱网关（不会发生实际业务调用），方便联调。
+因此sdk引入了mode参数，mode的可选值为prod（生产），sandbox（沙箱），不配置的情况下默认为prod。
+开启沙箱环境有两种方法：
+* 配置文件中配置mode=sandbox,示例如下：
 
-###5.1. 报错：Java Security: Illegal key size or default parameters
+    ```
+      {
+        "app_key": "test",
+        "aes_secret_key": "xxx",
+        "server_root": "http://openapi.yeepay.com/yop-center",
+        "yos_server_root": "http://yos.yeepay.com/yop-center",
+        "sandbox_server_root": "http://sandbox.yeepay.com/yop-center",
+        "yop_public_key": [
+          {
+            "store_type": "string",
+            "cert_type": "RSA2048",
+            "value": "xxx"
+          }
+        ],
+        "isv_private_key": [
+          {
+            "store_type": "string",
+            "cert_type": "RSA2048",
+            "value": "xxx"
+          }
+        ],
+        "http_client": {
+          "connect_timeout": 10000,
+          "read_timeout": 30000,
+          "max_conn_total": 2000,
+          "max_conn_per_route": 1000
+        },
+        "mode": "sandbox"
+      }  
+    ```
+* 配置jvm启动参数-Dyop.sdk.mode=sandbox,jvm参数的优先级高于配置文件，如果在jvm中指定了mode，实际使用的mode即jvm中的mode，
+配置文件中的mode不生效。
+
+注意：
+* 多配置文件的情况下，各个配置文件均可以配置自己的mode，各个配置文件中的appKey发起的请求，按照各自文件中的mode分发（前提是jvm中没有配置mode）
+* 若请求了沙箱网关，在成功接收到沙箱网关的返回结果后会打印一条日志来说明正常请求到了沙箱环境，日志内容为：response from sandbox-gateway
+
+##6. 常见问题
+
+###6.1. 报错：Java Security: Illegal key size or default parameters
 
  说明：异常java.security.InvalidKeyException:illegal Key Size的解决方案
  <ol>

@@ -1,6 +1,13 @@
 package com.yeepay.g3.sdk.yop.client;
 
 import com.google.common.collect.Maps;
+import com.yeepay.g3.sdk.yop.client.router.GateWayRouter;
+import com.yeepay.g3.sdk.yop.client.router.ServerRootSpace;
+import com.yeepay.g3.sdk.yop.client.router.SimpleGateWayRouter;
+import com.yeepay.g3.sdk.yop.config.AppSdkConfig;
+import com.yeepay.g3.sdk.yop.config.AppSdkConfigProvider;
+import com.yeepay.g3.sdk.yop.config.AppSdkConfigProviderRegistry;
+import com.yeepay.g3.sdk.yop.config.support.BackUpAppSdkConfigManager;
 import com.yeepay.g3.sdk.yop.error.YopError;
 import com.yeepay.g3.sdk.yop.exception.YopClientException;
 import com.yeepay.g3.sdk.yop.http.Headers;
@@ -8,12 +15,10 @@ import com.yeepay.g3.sdk.yop.http.HttpMethodName;
 import com.yeepay.g3.sdk.yop.http.YopHttpResponse;
 import com.yeepay.g3.sdk.yop.model.YopErrorResponse;
 import com.yeepay.g3.sdk.yop.unmarshaller.JacksonJsonMarshaller;
-import com.yeepay.g3.sdk.yop.utils.Assert;
 import com.yeepay.g3.sdk.yop.utils.FileUtils;
 import com.yeepay.g3.sdk.yop.utils.InternalConfig;
 import com.yeepay.g3.sdk.yop.utils.checksum.CRC64;
 import com.yeepay.g3.sdk.yop.utils.io.MarkableFileInputStream;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -44,6 +49,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.net.MalformedURLException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.security.cert.CertificateException;
@@ -56,11 +62,11 @@ public class AbstractClient {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractClient.class);
 
-    private static final String[] API_URI_PREFIX = {"/rest/v", "/yos/v"};
-
     private static final String CONTENT_TYPE_JSON = "application/json";
 
     private static final int EXT_READ_BUFFER_SIZE = 64 * 1024;
+
+    private static final GateWayRouter GATE_WAY_ROUTER;
 
     private static CloseableHttpClient httpClient;
 
@@ -79,6 +85,20 @@ public class AbstractClient {
         FILE_CHECK_ERROR.setMessage("业务处理失败");
         FILE_CHECK_ERROR.setSubCode("isv.scene.filestore.put.crc-failed");
         FILE_CHECK_ERROR.setSubMessage("文件上传crc校验失败");
+
+        AppSdkConfigProvider sdkConfigProvider = AppSdkConfigProviderRegistry.getProvider();
+        AppSdkConfig appSdkConfig = sdkConfigProvider.getDefaultConfig() == null ? BackUpAppSdkConfigManager.getBackUpConfig()
+                : sdkConfigProvider.getDefaultConfig();
+        ServerRootSpace serverRootSpace;
+        try {
+            serverRootSpace = new ServerRootSpace(
+                    StringUtils.defaultIfBlank(appSdkConfig.getServerRoot(), YopConstants.DEFAULT_SERVER_ROOT),
+                    StringUtils.defaultIfBlank(appSdkConfig.getYosServerRoot(), YopConstants.DEFAULT_YOS_SERVER_ROOT),
+                    StringUtils.defaultIfBlank(appSdkConfig.getSandboxServerRoot(), YopConstants.DEFAULT_SANDBOX_SERVER_ROOT));
+        } catch (MalformedURLException e) {
+            throw new YopClientException("server root illegal");
+        }
+        GATE_WAY_ROUTER = new SimpleGateWayRouter(serverRootSpace);
     }
 
     // 创建包含connection pool与超时设置的client
@@ -297,6 +317,10 @@ public class AbstractClient {
 
     protected static YopResponse parseResponse(CloseableHttpResponse response) throws IOException {
         YopHttpResponse httpResponse = new YopHttpResponse(response);
+        Header yopViaHeader = response.getFirstHeader(Headers.YOP_VIA);
+        if (yopViaHeader != null && StringUtils.equals(yopViaHeader.getValue(), YopConstants.SANDBOX_GATEWAY_VIA)) {
+            LOGGER.info("response from sandbox-gateway");
+        }
         if (httpResponse.getStatusCode() / 100 == HttpStatus.SC_OK / 100) {
             //not a error
             YopResponse yopResponse = new YopResponse();
@@ -398,27 +422,9 @@ public class AbstractClient {
     }
 
     protected static String richRequest(String methodOrUri, YopRequest request) {
-        Assert.hasText(methodOrUri, "apiUri");
-
-        String requestRoot = MapUtils.isNotEmpty(request.getMultipartFiles()) ? request.getAppSdkConfig().getYosServerRoot() :
-                request.getAppSdkConfig().getServerRoot();
-        if (StringUtils.endsWith(requestRoot, "/")) {
-            requestRoot = StringUtils.substring(requestRoot, 0, requestRoot.length() - 1);
-        }
-
-        String path = methodOrUri;
-        if (StringUtils.startsWith(methodOrUri, requestRoot)) {
-            path = StringUtils.substringAfter(methodOrUri, requestRoot);
-        }
-
-        if (!StringUtils.startsWithAny(path, API_URI_PREFIX)) {
-            throw new YopClientException("Unsupported apiUri.");
-        }
-
-        /*v and method are always needed because of old signature implementation...*/
         request.setParam(YopConstants.VERSION, StringUtils.substringBefore(StringUtils.substringAfter(methodOrUri, "/v"), "/"));
         request.setParam(YopConstants.METHOD, methodOrUri);
-        return requestRoot + path;
+        return GATE_WAY_ROUTER.route(methodOrUri, request) + methodOrUri;
     }
 
     protected static String getUUID() {
