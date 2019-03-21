@@ -29,13 +29,13 @@ public class QaDemo {
     @Before
     public void setUp() throws Exception {
         TrustAllHttpsCertificates.setTrue();
-        System.setProperty("yop.sdk.config.file", "/config/yop_sdk_config_dev.json,/config/yop_sdk_config_dev1.json");
+        System.setProperty("yop.sdk.config.file", "config/yop_sdk_config_qa_docker.json");
     }
 
     @Test
     public void testIdCard() throws Exception {
         int i = 0;
-        YopRequest request = new YopRequest("jinkela");
+        YopRequest request = new YopRequest();
         request.setEncrypt(true);
         request.setSignRet(true);
 //        request.setSignAlg("sha-256");
