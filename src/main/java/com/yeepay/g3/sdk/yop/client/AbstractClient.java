@@ -305,14 +305,30 @@ public class AbstractClient {
     protected static YopResponse fetchContentByApacheHttpClient(HttpUriRequest request) throws IOException {
         HttpContext httpContext = createHttpContext();
         CloseableHttpResponse remoteResponse = null;
+        boolean success = true;
         try {
             remoteResponse = getHttpClient().execute(request, httpContext);
             return parseResponse(remoteResponse);
+        } catch (Throwable ex) {
+            success = false;
+            throw ex;
         } finally {
+            String requestId = getRequestId(request);
+            if (success) {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("request success, requestId:{}.", requestId);
+                }
+            } else {
+                LOGGER.error("request failure, requestId:{}.", requestId);
+            }
             if (null != remoteResponse && isJsonResponse(remoteResponse)) {
                 HttpClientUtils.closeQuietly(remoteResponse);
             }
         }
+    }
+
+    private static String getRequestId(HttpUriRequest request) {
+        return request.getFirstHeader(Headers.YOP_REQUEST_ID).getValue();
     }
 
     protected static YopResponse parseResponse(CloseableHttpResponse response) throws IOException {
@@ -321,7 +337,8 @@ public class AbstractClient {
         if (yopViaHeader != null && StringUtils.equals(yopViaHeader.getValue(), YopConstants.SANDBOX_GATEWAY_VIA)) {
             LOGGER.info("response from sandbox-gateway");
         }
-        if (httpResponse.getStatusCode() / 100 == HttpStatus.SC_OK / 100) {
+        int statusCode = httpResponse.getStatusCode();
+        if (statusCode / 100 == HttpStatus.SC_OK / 100 && statusCode != HttpStatus.SC_NO_CONTENT) {
             //not a error
             YopResponse yopResponse = new YopResponse();
             handleHeaders(yopResponse, response);
@@ -340,7 +357,7 @@ public class AbstractClient {
             }
             yopResponse.setValidSign(true);
             return yopResponse;
-        } else if (httpResponse.getStatusCode() >= 500) {
+        } else if (statusCode >= HttpStatus.SC_INTERNAL_SERVER_ERROR && statusCode != HttpStatus.SC_BAD_GATEWAY) {
             if (httpResponse.getContent() != null) {
                 YopResponse yopResponse = new YopResponse();
                 handleHeaders(yopResponse, response);
