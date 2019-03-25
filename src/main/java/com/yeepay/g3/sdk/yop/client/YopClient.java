@@ -169,29 +169,6 @@ public class YopClient extends AbstractClient {
         if (StringUtils.isNotBlank(stringResult)) {
             response.setResult(JacksonJsonMarshaller.unmarshal(stringResult, Object.class));
         }
-        verifySignature(request, response);
-    }
-
-    /**
-     * 校验签名
-     *
-     * @param request
-     * @param response
-     * @return
-     */
-    private static void verifySignature(final YopRequest request, final YopResponse response) {
-        String expectedSign = response.getSign();
-        if (StringUtils.isBlank(expectedSign) || null == response.getStringResult()) {
-            return;
-        }
-
-        String trimmedBizResult = response.getStringResult().replaceAll("[ \t\n]", "");
-        StringBuilder sb = new StringBuilder(request.getAesSecretKey())
-                .append(StringUtils.trimToEmpty(response.getState() + trimmedBizResult + response.getTs()))
-                .append(request.getAesSecretKey());
-        String calculatedSign = Digests.digest2Hex(sb.toString(), StringUtils.isBlank(request.getSignAlg()) ? YopConstants.ALG_SHA1 : request.getSignAlg());
-        boolean valid = StringUtils.equalsIgnoreCase(expectedSign, calculatedSign);
-        response.setValidSign(valid);
     }
 
     /**

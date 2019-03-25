@@ -4,7 +4,6 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.yeepay.g3.sdk.yop.config.AppSdkConfig;
 import com.yeepay.g3.sdk.yop.encrypt.CertTypeEnum;
 import com.yeepay.g3.sdk.yop.encrypt.DigestAlgEnum;
 import com.yeepay.g3.sdk.yop.encrypt.DigitalSignatureDTO;
@@ -60,7 +59,7 @@ public class YopRsaClient extends AbstractClient {
         sign(apiUri, request, HttpMethodName.GET);
         HttpUriRequest httpPost = buildFormHttpRequest(request, contentUrl, HttpMethodName.GET);
         YopResponse response = fetchContentByApacheHttpClient(httpPost);
-        handleRsaResult(response, request.getAppSdkConfig());
+        handleRsaResult(response);
         return response;
     }
 
@@ -77,7 +76,7 @@ public class YopRsaClient extends AbstractClient {
         sign(apiUri, request, HttpMethodName.POST);
         HttpUriRequest httpPost = buildFormHttpRequest(request, contentUrl, HttpMethodName.POST);
         YopResponse response = fetchContentByApacheHttpClient(httpPost);
-        handleRsaResult(response, request.getAppSdkConfig());
+        handleRsaResult(response);
         return response;
     }
 
@@ -94,7 +93,7 @@ public class YopRsaClient extends AbstractClient {
         sign(apiUri, request, HttpMethodName.POST);
         Pair<HttpUriRequest, List<CheckedInputStream>> pair = buildMultiFormRequest(request, contentUrl);
         YopResponse response = fetchContentByApacheHttpClient(pair.getLeft());
-        handleRsaResult(response, request.getAppSdkConfig());
+        handleRsaResult(response);
         if (pair.getRight() != null) {
             checkFileIntegrity(response, CRC64Utils.getCRC64(pair.getRight()));
         }
@@ -166,39 +165,11 @@ public class YopRsaClient extends AbstractClient {
         headers.put(Headers.AUTHORIZATION, "YOP-RSA2048-SHA256 " + InternalConfig.PROTOCOL_VERSION + "/" + appKey + "/" + timestamp + "/" + EXPIRED_SECONDS + "/" + signedHeaders + "/" + digitalSignatureDTO.getSignature());
     }
 
-    private static void handleRsaResult(YopResponse response, AppSdkConfig appSdkConfig) {
+    private static void handleRsaResult(YopResponse response) {
         String stringResult = response.getStringResult();
         if (StringUtils.isNotBlank(stringResult)) {
             response.setResult(JacksonJsonMarshaller.unmarshal(stringResult, Object.class));
         }
-
-        String sign = response.getSign();
-        if (StringUtils.isNotBlank(sign)) {
-            response.setValidSign(verifySignature(stringResult, sign, appSdkConfig));
-        }
-    }
-
-    /**
-     * 对业务结果签名进行校验
-     */
-    public static boolean verifySignature(String result, String expectedSign, AppSdkConfig appSdkConfig) {
-        String trimmedBizResult = result.replaceAll("[ \t\n]", "");
-
-        StringBuilder sb = new StringBuilder();
-        sb.append(StringUtils.trimToEmpty(trimmedBizResult));
-
-        DigitalSignatureDTO digitalSignatureDTO = new DigitalSignatureDTO();
-        digitalSignatureDTO.setCertType(CertTypeEnum.RSA2048);
-        digitalSignatureDTO.setSignature(expectedSign);
-        digitalSignatureDTO.setPlainText(sb.toString());
-
-        try {
-            DigitalEnvelopeUtils.verify(digitalSignatureDTO, appSdkConfig.getDefaultYopPublicKey());
-        } catch (Exception e) {
-            LOGGER.error("error verify sign", e);
-            return false;
-        }
-        return true;
     }
 
     private static String getCanonicalHeaders(SortedMap<String, String> headers) {
