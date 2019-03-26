@@ -315,7 +315,11 @@ public class AbstractClient {
             return parseResponse(remoteResponse);
         } catch (Throwable ex) {
             success = false;
-            throw ex;
+            if (ex instanceof IOException) {
+                throw (IOException) ex;
+            } else {
+                throw new YopClientException("unable to execute request", ex);
+            }
         } finally {
             String requestId = getRequestId(request);
             if (success) {
