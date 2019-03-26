@@ -5,7 +5,7 @@ import com.yeepay.g3.sdk.yop.config.AppSdkConfig;
 import com.yeepay.g3.sdk.yop.config.AppSdkConfigProvider;
 import com.yeepay.g3.sdk.yop.config.SDKConfig;
 import com.yeepay.g3.sdk.yop.config.provider.support.AppSdkConfigInitTask;
-import com.yeepay.g3.sdk.yop.config.support.CheckUtils;
+import com.yeepay.g3.sdk.yop.utils.CheckUtils;
 import com.yeepay.g3.sdk.yop.utils.Holder;
 import org.apache.commons.lang3.BooleanUtils;
 import org.slf4j.Logger;

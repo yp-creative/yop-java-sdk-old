@@ -30,7 +30,7 @@ public class YopConstants {
                 .replace(' ', '_');
     }
 
-    public static final String CLIENT_VERSION = "3.1.9";
+    public static final String CLIENT_VERSION = "3.2.7";
     public static final String CLIENT_LANGS = "java";
 
     public static String USER_AGENT;
@@ -85,6 +85,12 @@ public class YopConstants {
     public static final String DEFAULT_SERVER_ROOT = "https://openapi.yeepay.com/yop-center";
 
     public static final String DEFAULT_YOS_SERVER_ROOT = "https://yos.yeepay.com/yop-center";
+
+    public static final String DEFAULT_SANDBOX_SERVER_ROOT = "https://sandbox.yeepay.com/yop-center";
+
+    public static final String[] API_URI_PREFIX = {"/rest/v", "/yos/v"};
+
+    public static final String SANDBOX_GATEWAY_VIA = "sandbox";
 
     /**
      * 判断是否为保护参数

@@ -1,12 +1,12 @@
 package com.yeepay.g3.sdk.yop.client;
 
-import com.google.common.base.Joiner;
 import com.google.common.collect.Multimap;
 import com.yeepay.g3.sdk.yop.encrypt.AESEncrypter;
 import com.yeepay.g3.sdk.yop.encrypt.Digests;
 import com.yeepay.g3.sdk.yop.http.Headers;
 import com.yeepay.g3.sdk.yop.http.HttpMethodName;
 import com.yeepay.g3.sdk.yop.unmarshaller.JacksonJsonMarshaller;
+import com.yeepay.g3.sdk.yop.utils.CheckUtils;
 import com.yeepay.g3.sdk.yop.utils.DateUtils;
 import com.yeepay.g3.sdk.yop.utils.JsonUtils;
 import com.yeepay.g3.sdk.yop.utils.checksum.CRC64Utils;
@@ -35,8 +35,6 @@ public class YopClient extends AbstractClient {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(YopClient.class);
 
-    private static final Joiner queryStringOldJoiner = Joiner.on("");
-
     /**
      * 发起post请求，以YopResponse对象返回
      *
@@ -45,6 +43,7 @@ public class YopClient extends AbstractClient {
      * @return 响应对象
      */
     public static YopResponse post(String apiUri, YopRequest request) throws IOException {
+        CheckUtils.checkApiUri(apiUri);
         String contentUrl = richRequest(apiUri, request);
         normalize(request);
         sign(request);
@@ -63,6 +62,7 @@ public class YopClient extends AbstractClient {
      * @return 响应对象
      */
     public static YopResponse get(String apiUri, YopRequest request) throws IOException {
+        CheckUtils.checkApiUri(apiUri);
         String contentUrl = richRequest(apiUri, request);
         normalize(request);
         sign(request);
@@ -81,6 +81,7 @@ public class YopClient extends AbstractClient {
      * @return 响应对象
      */
     public static YopResponse upload(String apiUri, YopRequest request) throws IOException {
+        CheckUtils.checkApiUri(apiUri);
         String contentUrl = richRequest(apiUri, request);
         normalize(request);
         sign(request);
@@ -168,29 +169,6 @@ public class YopClient extends AbstractClient {
         if (StringUtils.isNotBlank(stringResult)) {
             response.setResult(JacksonJsonMarshaller.unmarshal(stringResult, Object.class));
         }
-        verifySignature(request, response);
-    }
-
-    /**
-     * 校验签名
-     *
-     * @param request
-     * @param response
-     * @return
-     */
-    private static void verifySignature(final YopRequest request, final YopResponse response) {
-        String expectedSign = response.getSign();
-        if (StringUtils.isBlank(expectedSign) || null == response.getStringResult()) {
-            return;
-        }
-
-        String trimmedBizResult = response.getStringResult().replaceAll("[ \t\n]", "");
-        StringBuilder sb = new StringBuilder(request.getAesSecretKey())
-                .append(StringUtils.trimToEmpty(response.getState() + trimmedBizResult + response.getTs()))
-                .append(request.getAesSecretKey());
-        String calculatedSign = Digests.digest2Hex(sb.toString(), StringUtils.isBlank(request.getSignAlg()) ? YopConstants.ALG_SHA1 : request.getSignAlg());
-        boolean valid = StringUtils.equalsIgnoreCase(expectedSign, calculatedSign);
-        response.setValidSign(valid);
     }
 
     /**

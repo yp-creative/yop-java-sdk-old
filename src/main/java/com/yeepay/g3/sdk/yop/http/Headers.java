@@ -88,4 +88,6 @@ public interface Headers {
      */
     String YOP_HASH_CRC64ECMA = "x-yop-hash-crc64ecma";
 
+    String YOP_VIA = "x-yop-via";
+
 }
