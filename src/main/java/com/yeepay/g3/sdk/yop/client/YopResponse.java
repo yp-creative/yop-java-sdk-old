@@ -75,6 +75,7 @@ public class YopResponse {
     /**
      * 业务结果签名是否合法，冗余字段
      */
+    @Deprecated
     private boolean validSign;
 
     public String getState() {
@@ -149,6 +150,7 @@ public class YopResponse {
         this.stringResult = stringResult;
     }
 
+    @Deprecated
     public boolean isValidSign() {
         return validSign;
     }
@@ -156,6 +158,7 @@ public class YopResponse {
     /**
      * 响应结果签名是否合法（响应结果数据防篡改）
      */
+    @Deprecated
     public void setValidSign(boolean validSign) {
         this.validSign = validSign;
     }
