@@ -120,6 +120,7 @@ public class AbstractClient {
                 .evictExpiredConnections()
                 .evictIdleConnections(5000, TimeUnit.MILLISECONDS)
                 .setRetryHandler(new YopHttpRequestRetryHandler())
+                .setKeepAliveStrategy(new YopConnectionKeepAliveStrategy())
                 .build();
 
         requestConfigBuilder = RequestConfig.custom();
