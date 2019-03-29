@@ -78,7 +78,7 @@ public class YopResponse {
      * 业务结果签名是否合法，冗余字段
      */
     @Deprecated
-    private boolean validSign;
+    private boolean validSign = true;
 
     public String getState() {
         return state;
