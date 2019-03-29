@@ -16,8 +16,10 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
+import java.util.zip.GZIPInputStream;
 
 /**
  * @author wang.bao
@@ -75,7 +77,8 @@ public class YopResponse {
     /**
      * 业务结果签名是否合法，冗余字段
      */
-    private boolean validSign;
+    @Deprecated
+    private boolean validSign = true;
 
     public String getState() {
         return state;
@@ -149,6 +152,7 @@ public class YopResponse {
         this.stringResult = stringResult;
     }
 
+    @Deprecated
     public boolean isValidSign() {
         return validSign;
     }
@@ -156,6 +160,7 @@ public class YopResponse {
     /**
      * 响应结果签名是否合法（响应结果数据防篡改）
      */
+    @Deprecated
     public void setValidSign(boolean validSign) {
         this.validSign = validSign;
     }
@@ -179,6 +184,10 @@ public class YopResponse {
 
     public InputStream getFile() {
         return (InputStream) result;
+    }
+
+    public GZIPInputStream getGZIPInputStream() throws IOException {
+        return new GZIPInputStream((InputStream) result);
     }
 
     @Override

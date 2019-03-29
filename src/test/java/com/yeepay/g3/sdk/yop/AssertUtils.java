@@ -22,7 +22,6 @@ public class AssertUtils {
             System.out.println(response);
 //        }
         assertTrue(response.isSuccess());
-        assertTrue(response.isValidSign());
     }
 
 }

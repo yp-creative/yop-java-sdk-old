@@ -120,6 +120,7 @@ public class AbstractClient {
                 .evictExpiredConnections()
                 .evictIdleConnections(5000, TimeUnit.MILLISECONDS)
                 .setRetryHandler(new YopHttpRequestRetryHandler())
+                .setKeepAliveStrategy(new YopConnectionKeepAliveStrategy())
                 .build();
 
         requestConfigBuilder = RequestConfig.custom();
@@ -317,8 +318,10 @@ public class AbstractClient {
             success = false;
             if (ex instanceof IOException) {
                 throw (IOException) ex;
+            } else if (ex instanceof YopClientException) {
+                throw (YopClientException) ex;
             } else {
-                throw new YopClientException("unable to execute request", ex);
+                throw new YopClientException("unable to execute request.", ex);
             }
         } finally {
             String requestId = getRequestId(request);
